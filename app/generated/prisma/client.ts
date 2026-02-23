@@ -54,3 +54,8 @@ export type Post = Prisma.PostModel
  * 
  */
 export type Testando = Prisma.TestandoModel
+/**
+ * Model Subject
+ * 
+ */
+export type Subject = Prisma.SubjectModel

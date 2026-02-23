@@ -30,7 +30,17 @@ model Post {
 } 
 
 
-model Testando {
-  id Int @id @default(autoincrement())
-  title String
+model Subject {
+  id    Int     @id @default(autoincrement())
+  name String
+  
+}
+
+model Topic {
+  id    Int     @id @default(autoincrement())
+  name String
+}
+
+model StudyLogs {
+    id    Int     @id @default(autoincrement())
 }

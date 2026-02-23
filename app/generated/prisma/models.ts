@@ -11,4 +11,5 @@
 export type * from './models/User'
 export type * from './models/Post'
 export type * from './models/Testando'
+export type * from './models/Subject'
 export type * from './commonInputTypes'
