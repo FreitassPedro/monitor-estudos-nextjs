@@ -1,6 +1,7 @@
 import { NewSubjectForm } from "@/components/features/subject/SubjectForm";
 
-import { getSubjectsWithTopicsAction } from "@/server/actions/subject.actions";
+import { getSubjectsAction, getSubjectsWithTopicsAction } from "@/server/actions/subject.actions";
+import { getTopics } from "@/server/actions/topic.action";
 
 export default async function SubjectPageAPI() {
     const subjects = await getSubjectsWithTopicsAction();

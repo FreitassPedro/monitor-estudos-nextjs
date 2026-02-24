@@ -15,25 +15,21 @@ datasource db {
 
 
 model User { 
-  id    Int     @id @default(autoincrement()) 
-  email String  @unique
-  name  String?
-  posts Post[]
-} 
-model Post { 
-  id        Int     @id @default(autoincrement()) 
-  title     String
-  content   String?
-  published Boolean @default(false) 
-  authorId  Int
-  author    User    @relation(fields: [authorId], references: [id]) 
+  id         String          @id @default(uuid()) 
+  email      String       @unique
+  name       String?
+  subjects   Subject[]
 } 
 
 
 model Subject {
-  id    String     @id @default(uuid())
-  name String
-  topics Topic[]
+  id         String   @id @default(uuid())
+  name       String
+  color      String
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  created_at DateTime @default(now()) @db.Timestamptz(3)
+  topics     Topic[]
 }
 
 model Topic {
@@ -45,7 +41,14 @@ model Topic {
 }
 
 model StudyLogs {
-    id    String     @id @default(uuid())
-    topicId String
-    topic Topic @relation(fields: [topicId], references: [id])
+    id               String   @id @default(uuid())
+    study_date       DateTime @db.Date
+    topicId          String
+    topic            Topic    @relation(fields: [topicId], references: [id])
+    start_time       DateTime @db.Timestamptz(3)
+    end_time         DateTime @db.Timestamptz(3)
+    duration_minutes Int
+    notes            String?
+    created_at       DateTime @default(now()) @db.Timestamptz(3)
+    updated_at       DateTime @updatedAt @db.Timestamptz(3)
 }

@@ -27,16 +27,25 @@ export type AggregateSubject = {
 export type SubjectMinAggregateOutputType = {
   id: string | null
   name: string | null
+  color: string | null
+  userId: string | null
+  created_at: Date | null
 }
 
 export type SubjectMaxAggregateOutputType = {
   id: string | null
   name: string | null
+  color: string | null
+  userId: string | null
+  created_at: Date | null
 }
 
 export type SubjectCountAggregateOutputType = {
   id: number
   name: number
+  color: number
+  userId: number
+  created_at: number
   _all: number
 }
 
@@ -44,16 +53,25 @@ export type SubjectCountAggregateOutputType = {
 export type SubjectMinAggregateInputType = {
   id?: true
   name?: true
+  color?: true
+  userId?: true
+  created_at?: true
 }
 
 export type SubjectMaxAggregateInputType = {
   id?: true
   name?: true
+  color?: true
+  userId?: true
+  created_at?: true
 }
 
 export type SubjectCountAggregateInputType = {
   id?: true
   name?: true
+  color?: true
+  userId?: true
+  created_at?: true
   _all?: true
 }
 
@@ -132,6 +150,9 @@ export type SubjectGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
 export type SubjectGroupByOutputType = {
   id: string
   name: string
+  color: string
+  userId: string
+  created_at: Date
   _count: SubjectCountAggregateOutputType | null
   _min: SubjectMinAggregateOutputType | null
   _max: SubjectMaxAggregateOutputType | null
@@ -158,12 +179,20 @@ export type SubjectWhereInput = {
   NOT?: Prisma.SubjectWhereInput | Prisma.SubjectWhereInput[]
   id?: Prisma.StringFilter<"Subject"> | string
   name?: Prisma.StringFilter<"Subject"> | string
+  color?: Prisma.StringFilter<"Subject"> | string
+  userId?: Prisma.StringFilter<"Subject"> | string
+  created_at?: Prisma.DateTimeFilter<"Subject"> | Date | string
+  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   topics?: Prisma.TopicListRelationFilter
 }
 
 export type SubjectOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  color?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
+  created_at?: Prisma.SortOrder
+  user?: Prisma.UserOrderByWithRelationInput
   topics?: Prisma.TopicOrderByRelationAggregateInput
 }
 
@@ -173,12 +202,19 @@ export type SubjectWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.SubjectWhereInput[]
   NOT?: Prisma.SubjectWhereInput | Prisma.SubjectWhereInput[]
   name?: Prisma.StringFilter<"Subject"> | string
+  color?: Prisma.StringFilter<"Subject"> | string
+  userId?: Prisma.StringFilter<"Subject"> | string
+  created_at?: Prisma.DateTimeFilter<"Subject"> | Date | string
+  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   topics?: Prisma.TopicListRelationFilter
 }, "id">
 
 export type SubjectOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  color?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
+  created_at?: Prisma.SortOrder
   _count?: Prisma.SubjectCountOrderByAggregateInput
   _max?: Prisma.SubjectMaxOrderByAggregateInput
   _min?: Prisma.SubjectMinOrderByAggregateInput
@@ -190,65 +226,153 @@ export type SubjectScalarWhereWithAggregatesInput = {
   NOT?: Prisma.SubjectScalarWhereWithAggregatesInput | Prisma.SubjectScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Subject"> | string
   name?: Prisma.StringWithAggregatesFilter<"Subject"> | string
+  color?: Prisma.StringWithAggregatesFilter<"Subject"> | string
+  userId?: Prisma.StringWithAggregatesFilter<"Subject"> | string
+  created_at?: Prisma.DateTimeWithAggregatesFilter<"Subject"> | Date | string
 }
 
 export type SubjectCreateInput = {
   id?: string
   name: string
+  color: string
+  created_at?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutSubjectsInput
   topics?: Prisma.TopicCreateNestedManyWithoutSubjectInput
 }
 
 export type SubjectUncheckedCreateInput = {
   id?: string
   name: string
+  color: string
+  userId: string
+  created_at?: Date | string
   topics?: Prisma.TopicUncheckedCreateNestedManyWithoutSubjectInput
 }
 
 export type SubjectUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  color?: Prisma.StringFieldUpdateOperationsInput | string
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutSubjectsNestedInput
   topics?: Prisma.TopicUpdateManyWithoutSubjectNestedInput
 }
 
 export type SubjectUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  color?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   topics?: Prisma.TopicUncheckedUpdateManyWithoutSubjectNestedInput
 }
 
 export type SubjectCreateManyInput = {
   id?: string
   name: string
+  color: string
+  userId: string
+  created_at?: Date | string
 }
 
 export type SubjectUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  color?: Prisma.StringFieldUpdateOperationsInput | string
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type SubjectUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  color?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type SubjectListRelationFilter = {
+  every?: Prisma.SubjectWhereInput
+  some?: Prisma.SubjectWhereInput
+  none?: Prisma.SubjectWhereInput
+}
+
+export type SubjectOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type SubjectCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  color?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
+  created_at?: Prisma.SortOrder
 }
 
 export type SubjectMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  color?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
+  created_at?: Prisma.SortOrder
 }
 
 export type SubjectMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  color?: Prisma.SortOrder
+  userId?: Prisma.SortOrder
+  created_at?: Prisma.SortOrder
 }
 
 export type SubjectScalarRelationFilter = {
   is?: Prisma.SubjectWhereInput
   isNot?: Prisma.SubjectWhereInput
+}
+
+export type SubjectCreateNestedManyWithoutUserInput = {
+  create?: Prisma.XOR<Prisma.SubjectCreateWithoutUserInput, Prisma.SubjectUncheckedCreateWithoutUserInput> | Prisma.SubjectCreateWithoutUserInput[] | Prisma.SubjectUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.SubjectCreateOrConnectWithoutUserInput | Prisma.SubjectCreateOrConnectWithoutUserInput[]
+  createMany?: Prisma.SubjectCreateManyUserInputEnvelope
+  connect?: Prisma.SubjectWhereUniqueInput | Prisma.SubjectWhereUniqueInput[]
+}
+
+export type SubjectUncheckedCreateNestedManyWithoutUserInput = {
+  create?: Prisma.XOR<Prisma.SubjectCreateWithoutUserInput, Prisma.SubjectUncheckedCreateWithoutUserInput> | Prisma.SubjectCreateWithoutUserInput[] | Prisma.SubjectUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.SubjectCreateOrConnectWithoutUserInput | Prisma.SubjectCreateOrConnectWithoutUserInput[]
+  createMany?: Prisma.SubjectCreateManyUserInputEnvelope
+  connect?: Prisma.SubjectWhereUniqueInput | Prisma.SubjectWhereUniqueInput[]
+}
+
+export type SubjectUpdateManyWithoutUserNestedInput = {
+  create?: Prisma.XOR<Prisma.SubjectCreateWithoutUserInput, Prisma.SubjectUncheckedCreateWithoutUserInput> | Prisma.SubjectCreateWithoutUserInput[] | Prisma.SubjectUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.SubjectCreateOrConnectWithoutUserInput | Prisma.SubjectCreateOrConnectWithoutUserInput[]
+  upsert?: Prisma.SubjectUpsertWithWhereUniqueWithoutUserInput | Prisma.SubjectUpsertWithWhereUniqueWithoutUserInput[]
+  createMany?: Prisma.SubjectCreateManyUserInputEnvelope
+  set?: Prisma.SubjectWhereUniqueInput | Prisma.SubjectWhereUniqueInput[]
+  disconnect?: Prisma.SubjectWhereUniqueInput | Prisma.SubjectWhereUniqueInput[]
+  delete?: Prisma.SubjectWhereUniqueInput | Prisma.SubjectWhereUniqueInput[]
+  connect?: Prisma.SubjectWhereUniqueInput | Prisma.SubjectWhereUniqueInput[]
+  update?: Prisma.SubjectUpdateWithWhereUniqueWithoutUserInput | Prisma.SubjectUpdateWithWhereUniqueWithoutUserInput[]
+  updateMany?: Prisma.SubjectUpdateManyWithWhereWithoutUserInput | Prisma.SubjectUpdateManyWithWhereWithoutUserInput[]
+  deleteMany?: Prisma.SubjectScalarWhereInput | Prisma.SubjectScalarWhereInput[]
+}
+
+export type SubjectUncheckedUpdateManyWithoutUserNestedInput = {
+  create?: Prisma.XOR<Prisma.SubjectCreateWithoutUserInput, Prisma.SubjectUncheckedCreateWithoutUserInput> | Prisma.SubjectCreateWithoutUserInput[] | Prisma.SubjectUncheckedCreateWithoutUserInput[]
+  connectOrCreate?: Prisma.SubjectCreateOrConnectWithoutUserInput | Prisma.SubjectCreateOrConnectWithoutUserInput[]
+  upsert?: Prisma.SubjectUpsertWithWhereUniqueWithoutUserInput | Prisma.SubjectUpsertWithWhereUniqueWithoutUserInput[]
+  createMany?: Prisma.SubjectCreateManyUserInputEnvelope
+  set?: Prisma.SubjectWhereUniqueInput | Prisma.SubjectWhereUniqueInput[]
+  disconnect?: Prisma.SubjectWhereUniqueInput | Prisma.SubjectWhereUniqueInput[]
+  delete?: Prisma.SubjectWhereUniqueInput | Prisma.SubjectWhereUniqueInput[]
+  connect?: Prisma.SubjectWhereUniqueInput | Prisma.SubjectWhereUniqueInput[]
+  update?: Prisma.SubjectUpdateWithWhereUniqueWithoutUserInput | Prisma.SubjectUpdateWithWhereUniqueWithoutUserInput[]
+  updateMany?: Prisma.SubjectUpdateManyWithWhereWithoutUserInput | Prisma.SubjectUpdateManyWithWhereWithoutUserInput[]
+  deleteMany?: Prisma.SubjectScalarWhereInput | Prisma.SubjectScalarWhereInput[]
+}
+
+export type DateTimeFieldUpdateOperationsInput = {
+  set?: Date | string
 }
 
 export type SubjectCreateNestedOneWithoutTopicsInput = {
@@ -265,14 +389,73 @@ export type SubjectUpdateOneRequiredWithoutTopicsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SubjectUpdateToOneWithWhereWithoutTopicsInput, Prisma.SubjectUpdateWithoutTopicsInput>, Prisma.SubjectUncheckedUpdateWithoutTopicsInput>
 }
 
+export type SubjectCreateWithoutUserInput = {
+  id?: string
+  name: string
+  color: string
+  created_at?: Date | string
+  topics?: Prisma.TopicCreateNestedManyWithoutSubjectInput
+}
+
+export type SubjectUncheckedCreateWithoutUserInput = {
+  id?: string
+  name: string
+  color: string
+  created_at?: Date | string
+  topics?: Prisma.TopicUncheckedCreateNestedManyWithoutSubjectInput
+}
+
+export type SubjectCreateOrConnectWithoutUserInput = {
+  where: Prisma.SubjectWhereUniqueInput
+  create: Prisma.XOR<Prisma.SubjectCreateWithoutUserInput, Prisma.SubjectUncheckedCreateWithoutUserInput>
+}
+
+export type SubjectCreateManyUserInputEnvelope = {
+  data: Prisma.SubjectCreateManyUserInput | Prisma.SubjectCreateManyUserInput[]
+  skipDuplicates?: boolean
+}
+
+export type SubjectUpsertWithWhereUniqueWithoutUserInput = {
+  where: Prisma.SubjectWhereUniqueInput
+  update: Prisma.XOR<Prisma.SubjectUpdateWithoutUserInput, Prisma.SubjectUncheckedUpdateWithoutUserInput>
+  create: Prisma.XOR<Prisma.SubjectCreateWithoutUserInput, Prisma.SubjectUncheckedCreateWithoutUserInput>
+}
+
+export type SubjectUpdateWithWhereUniqueWithoutUserInput = {
+  where: Prisma.SubjectWhereUniqueInput
+  data: Prisma.XOR<Prisma.SubjectUpdateWithoutUserInput, Prisma.SubjectUncheckedUpdateWithoutUserInput>
+}
+
+export type SubjectUpdateManyWithWhereWithoutUserInput = {
+  where: Prisma.SubjectScalarWhereInput
+  data: Prisma.XOR<Prisma.SubjectUpdateManyMutationInput, Prisma.SubjectUncheckedUpdateManyWithoutUserInput>
+}
+
+export type SubjectScalarWhereInput = {
+  AND?: Prisma.SubjectScalarWhereInput | Prisma.SubjectScalarWhereInput[]
+  OR?: Prisma.SubjectScalarWhereInput[]
+  NOT?: Prisma.SubjectScalarWhereInput | Prisma.SubjectScalarWhereInput[]
+  id?: Prisma.StringFilter<"Subject"> | string
+  name?: Prisma.StringFilter<"Subject"> | string
+  color?: Prisma.StringFilter<"Subject"> | string
+  userId?: Prisma.StringFilter<"Subject"> | string
+  created_at?: Prisma.DateTimeFilter<"Subject"> | Date | string
+}
+
 export type SubjectCreateWithoutTopicsInput = {
   id?: string
   name: string
+  color: string
+  created_at?: Date | string
+  user: Prisma.UserCreateNestedOneWithoutSubjectsInput
 }
 
 export type SubjectUncheckedCreateWithoutTopicsInput = {
   id?: string
   name: string
+  color: string
+  userId: string
+  created_at?: Date | string
 }
 
 export type SubjectCreateOrConnectWithoutTopicsInput = {
@@ -294,11 +477,47 @@ export type SubjectUpdateToOneWithWhereWithoutTopicsInput = {
 export type SubjectUpdateWithoutTopicsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  color?: Prisma.StringFieldUpdateOperationsInput | string
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  user?: Prisma.UserUpdateOneRequiredWithoutSubjectsNestedInput
 }
 
 export type SubjectUncheckedUpdateWithoutTopicsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  color?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type SubjectCreateManyUserInput = {
+  id?: string
+  name: string
+  color: string
+  created_at?: Date | string
+}
+
+export type SubjectUpdateWithoutUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  color?: Prisma.StringFieldUpdateOperationsInput | string
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  topics?: Prisma.TopicUpdateManyWithoutSubjectNestedInput
+}
+
+export type SubjectUncheckedUpdateWithoutUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  color?: Prisma.StringFieldUpdateOperationsInput | string
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  topics?: Prisma.TopicUncheckedUpdateManyWithoutSubjectNestedInput
+}
+
+export type SubjectUncheckedUpdateManyWithoutUserInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  color?: Prisma.StringFieldUpdateOperationsInput | string
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -335,6 +554,10 @@ export type SubjectCountOutputTypeCountTopicsArgs<ExtArgs extends runtime.Types.
 export type SubjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  color?: boolean
+  userId?: boolean
+  created_at?: boolean
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   topics?: boolean | Prisma.Subject$topicsArgs<ExtArgs>
   _count?: boolean | Prisma.SubjectCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["subject"]>
@@ -342,34 +565,54 @@ export type SubjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
 export type SubjectSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  color?: boolean
+  userId?: boolean
+  created_at?: boolean
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["subject"]>
 
 export type SubjectSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
+  color?: boolean
+  userId?: boolean
+  created_at?: boolean
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["subject"]>
 
 export type SubjectSelectScalar = {
   id?: boolean
   name?: boolean
+  color?: boolean
+  userId?: boolean
+  created_at?: boolean
 }
 
-export type SubjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name", ExtArgs["result"]["subject"]>
+export type SubjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "color" | "userId" | "created_at", ExtArgs["result"]["subject"]>
 export type SubjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   topics?: boolean | Prisma.Subject$topicsArgs<ExtArgs>
   _count?: boolean | Prisma.SubjectCountOutputTypeDefaultArgs<ExtArgs>
 }
-export type SubjectIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
-export type SubjectIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type SubjectIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+}
+export type SubjectIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+}
 
 export type $SubjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Subject"
   objects: {
+    user: Prisma.$UserPayload<ExtArgs>
     topics: Prisma.$TopicPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     name: string
+    color: string
+    userId: string
+    created_at: Date
   }, ExtArgs["result"]["subject"]>
   composites: {}
 }
@@ -764,6 +1007,7 @@ readonly fields: SubjectFieldRefs;
  */
 export interface Prisma__SubjectClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   topics<T extends Prisma.Subject$topicsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Subject$topicsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TopicPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -796,6 +1040,9 @@ export interface Prisma__SubjectClient<T, Null = never, ExtArgs extends runtime.
 export interface SubjectFieldRefs {
   readonly id: Prisma.FieldRef<"Subject", 'String'>
   readonly name: Prisma.FieldRef<"Subject", 'String'>
+  readonly color: Prisma.FieldRef<"Subject", 'String'>
+  readonly userId: Prisma.FieldRef<"Subject", 'String'>
+  readonly created_at: Prisma.FieldRef<"Subject", 'DateTime'>
 }
     
 
@@ -1045,6 +1292,10 @@ export type SubjectCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensi
    */
   data: Prisma.SubjectCreateManyInput | Prisma.SubjectCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubjectIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1115,6 +1366,10 @@ export type SubjectUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensi
    * Limit how many Subjects to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubjectIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**

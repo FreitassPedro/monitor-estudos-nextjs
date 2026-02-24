@@ -1,0 +1,45 @@
+import { prisma } from "@/lib/prisma";
+
+const include = {
+    topic: {
+        include: {
+            subject: true,
+        },
+    },
+} as const;
+
+export async function getStudyLogsByDateAction({
+    startDate,
+    endDate,
+}: {
+    startDate: Date;
+    endDate: Date;
+}) {
+    return prisma.studyLogs.findMany({
+        where: {
+            study_date: {
+                gte: startDate,
+                lte: endDate,
+            },
+        },
+        include,
+    });
+}
+
+export async function getTodayStudyLogsAction() {
+    "use cache";
+    const today = new Date();
+    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+
+    return prisma.studyLogs.findMany({
+        where: {
+            study_date: {
+                gte: startOfDay,
+                lte: endOfDay,
+            },
+        },
+        include,
+    });
+}
+    

@@ -20,40 +20,100 @@ export type StudyLogsModel = runtime.Types.Result.DefaultSelection<Prisma.$Study
 
 export type AggregateStudyLogs = {
   _count: StudyLogsCountAggregateOutputType | null
+  _avg: StudyLogsAvgAggregateOutputType | null
+  _sum: StudyLogsSumAggregateOutputType | null
   _min: StudyLogsMinAggregateOutputType | null
   _max: StudyLogsMaxAggregateOutputType | null
 }
 
+export type StudyLogsAvgAggregateOutputType = {
+  duration_minutes: number | null
+}
+
+export type StudyLogsSumAggregateOutputType = {
+  duration_minutes: number | null
+}
+
 export type StudyLogsMinAggregateOutputType = {
   id: string | null
+  study_date: Date | null
   topicId: string | null
+  start_time: Date | null
+  end_time: Date | null
+  duration_minutes: number | null
+  notes: string | null
+  created_at: Date | null
+  updated_at: Date | null
 }
 
 export type StudyLogsMaxAggregateOutputType = {
   id: string | null
+  study_date: Date | null
   topicId: string | null
+  start_time: Date | null
+  end_time: Date | null
+  duration_minutes: number | null
+  notes: string | null
+  created_at: Date | null
+  updated_at: Date | null
 }
 
 export type StudyLogsCountAggregateOutputType = {
   id: number
+  study_date: number
   topicId: number
+  start_time: number
+  end_time: number
+  duration_minutes: number
+  notes: number
+  created_at: number
+  updated_at: number
   _all: number
 }
 
 
+export type StudyLogsAvgAggregateInputType = {
+  duration_minutes?: true
+}
+
+export type StudyLogsSumAggregateInputType = {
+  duration_minutes?: true
+}
+
 export type StudyLogsMinAggregateInputType = {
   id?: true
+  study_date?: true
   topicId?: true
+  start_time?: true
+  end_time?: true
+  duration_minutes?: true
+  notes?: true
+  created_at?: true
+  updated_at?: true
 }
 
 export type StudyLogsMaxAggregateInputType = {
   id?: true
+  study_date?: true
   topicId?: true
+  start_time?: true
+  end_time?: true
+  duration_minutes?: true
+  notes?: true
+  created_at?: true
+  updated_at?: true
 }
 
 export type StudyLogsCountAggregateInputType = {
   id?: true
+  study_date?: true
   topicId?: true
+  start_time?: true
+  end_time?: true
+  duration_minutes?: true
+  notes?: true
+  created_at?: true
+  updated_at?: true
   _all?: true
 }
 
@@ -95,6 +155,18 @@ export type StudyLogsAggregateArgs<ExtArgs extends runtime.Types.Extensions.Inte
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: StudyLogsAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: StudyLogsSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: StudyLogsMinAggregateInputType
@@ -125,14 +197,25 @@ export type StudyLogsGroupByArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   _count?: StudyLogsCountAggregateInputType | true
+  _avg?: StudyLogsAvgAggregateInputType
+  _sum?: StudyLogsSumAggregateInputType
   _min?: StudyLogsMinAggregateInputType
   _max?: StudyLogsMaxAggregateInputType
 }
 
 export type StudyLogsGroupByOutputType = {
   id: string
+  study_date: Date
   topicId: string
+  start_time: Date
+  end_time: Date
+  duration_minutes: number
+  notes: string | null
+  created_at: Date
+  updated_at: Date
   _count: StudyLogsCountAggregateOutputType | null
+  _avg: StudyLogsAvgAggregateOutputType | null
+  _sum: StudyLogsSumAggregateOutputType | null
   _min: StudyLogsMinAggregateOutputType | null
   _max: StudyLogsMaxAggregateOutputType | null
 }
@@ -157,13 +240,27 @@ export type StudyLogsWhereInput = {
   OR?: Prisma.StudyLogsWhereInput[]
   NOT?: Prisma.StudyLogsWhereInput | Prisma.StudyLogsWhereInput[]
   id?: Prisma.StringFilter<"StudyLogs"> | string
+  study_date?: Prisma.DateTimeFilter<"StudyLogs"> | Date | string
   topicId?: Prisma.StringFilter<"StudyLogs"> | string
+  start_time?: Prisma.DateTimeFilter<"StudyLogs"> | Date | string
+  end_time?: Prisma.DateTimeFilter<"StudyLogs"> | Date | string
+  duration_minutes?: Prisma.IntFilter<"StudyLogs"> | number
+  notes?: Prisma.StringNullableFilter<"StudyLogs"> | string | null
+  created_at?: Prisma.DateTimeFilter<"StudyLogs"> | Date | string
+  updated_at?: Prisma.DateTimeFilter<"StudyLogs"> | Date | string
   topic?: Prisma.XOR<Prisma.TopicScalarRelationFilter, Prisma.TopicWhereInput>
 }
 
 export type StudyLogsOrderByWithRelationInput = {
   id?: Prisma.SortOrder
+  study_date?: Prisma.SortOrder
   topicId?: Prisma.SortOrder
+  start_time?: Prisma.SortOrder
+  end_time?: Prisma.SortOrder
+  duration_minutes?: Prisma.SortOrder
+  notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  created_at?: Prisma.SortOrder
+  updated_at?: Prisma.SortOrder
   topic?: Prisma.TopicOrderByWithRelationInput
 }
 
@@ -172,16 +269,32 @@ export type StudyLogsWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.StudyLogsWhereInput | Prisma.StudyLogsWhereInput[]
   OR?: Prisma.StudyLogsWhereInput[]
   NOT?: Prisma.StudyLogsWhereInput | Prisma.StudyLogsWhereInput[]
+  study_date?: Prisma.DateTimeFilter<"StudyLogs"> | Date | string
   topicId?: Prisma.StringFilter<"StudyLogs"> | string
+  start_time?: Prisma.DateTimeFilter<"StudyLogs"> | Date | string
+  end_time?: Prisma.DateTimeFilter<"StudyLogs"> | Date | string
+  duration_minutes?: Prisma.IntFilter<"StudyLogs"> | number
+  notes?: Prisma.StringNullableFilter<"StudyLogs"> | string | null
+  created_at?: Prisma.DateTimeFilter<"StudyLogs"> | Date | string
+  updated_at?: Prisma.DateTimeFilter<"StudyLogs"> | Date | string
   topic?: Prisma.XOR<Prisma.TopicScalarRelationFilter, Prisma.TopicWhereInput>
 }, "id">
 
 export type StudyLogsOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
+  study_date?: Prisma.SortOrder
   topicId?: Prisma.SortOrder
+  start_time?: Prisma.SortOrder
+  end_time?: Prisma.SortOrder
+  duration_minutes?: Prisma.SortOrder
+  notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  created_at?: Prisma.SortOrder
+  updated_at?: Prisma.SortOrder
   _count?: Prisma.StudyLogsCountOrderByAggregateInput
+  _avg?: Prisma.StudyLogsAvgOrderByAggregateInput
   _max?: Prisma.StudyLogsMaxOrderByAggregateInput
   _min?: Prisma.StudyLogsMinOrderByAggregateInput
+  _sum?: Prisma.StudyLogsSumOrderByAggregateInput
 }
 
 export type StudyLogsScalarWhereWithAggregatesInput = {
@@ -189,41 +302,97 @@ export type StudyLogsScalarWhereWithAggregatesInput = {
   OR?: Prisma.StudyLogsScalarWhereWithAggregatesInput[]
   NOT?: Prisma.StudyLogsScalarWhereWithAggregatesInput | Prisma.StudyLogsScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"StudyLogs"> | string
+  study_date?: Prisma.DateTimeWithAggregatesFilter<"StudyLogs"> | Date | string
   topicId?: Prisma.StringWithAggregatesFilter<"StudyLogs"> | string
+  start_time?: Prisma.DateTimeWithAggregatesFilter<"StudyLogs"> | Date | string
+  end_time?: Prisma.DateTimeWithAggregatesFilter<"StudyLogs"> | Date | string
+  duration_minutes?: Prisma.IntWithAggregatesFilter<"StudyLogs"> | number
+  notes?: Prisma.StringNullableWithAggregatesFilter<"StudyLogs"> | string | null
+  created_at?: Prisma.DateTimeWithAggregatesFilter<"StudyLogs"> | Date | string
+  updated_at?: Prisma.DateTimeWithAggregatesFilter<"StudyLogs"> | Date | string
 }
 
 export type StudyLogsCreateInput = {
   id?: string
+  study_date: Date | string
+  start_time: Date | string
+  end_time: Date | string
+  duration_minutes: number
+  notes?: string | null
+  created_at?: Date | string
+  updated_at?: Date | string
   topic: Prisma.TopicCreateNestedOneWithoutStudyLogsInput
 }
 
 export type StudyLogsUncheckedCreateInput = {
   id?: string
+  study_date: Date | string
   topicId: string
+  start_time: Date | string
+  end_time: Date | string
+  duration_minutes: number
+  notes?: string | null
+  created_at?: Date | string
+  updated_at?: Date | string
 }
 
 export type StudyLogsUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  study_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duration_minutes?: Prisma.IntFieldUpdateOperationsInput | number
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   topic?: Prisma.TopicUpdateOneRequiredWithoutStudyLogsNestedInput
 }
 
 export type StudyLogsUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  study_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   topicId?: Prisma.StringFieldUpdateOperationsInput | string
+  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duration_minutes?: Prisma.IntFieldUpdateOperationsInput | number
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type StudyLogsCreateManyInput = {
   id?: string
+  study_date: Date | string
   topicId: string
+  start_time: Date | string
+  end_time: Date | string
+  duration_minutes: number
+  notes?: string | null
+  created_at?: Date | string
+  updated_at?: Date | string
 }
 
 export type StudyLogsUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  study_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duration_minutes?: Prisma.IntFieldUpdateOperationsInput | number
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type StudyLogsUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  study_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   topicId?: Prisma.StringFieldUpdateOperationsInput | string
+  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duration_minutes?: Prisma.IntFieldUpdateOperationsInput | number
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type StudyLogsListRelationFilter = {
@@ -238,17 +407,46 @@ export type StudyLogsOrderByRelationAggregateInput = {
 
 export type StudyLogsCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  study_date?: Prisma.SortOrder
   topicId?: Prisma.SortOrder
+  start_time?: Prisma.SortOrder
+  end_time?: Prisma.SortOrder
+  duration_minutes?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
+  created_at?: Prisma.SortOrder
+  updated_at?: Prisma.SortOrder
+}
+
+export type StudyLogsAvgOrderByAggregateInput = {
+  duration_minutes?: Prisma.SortOrder
 }
 
 export type StudyLogsMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  study_date?: Prisma.SortOrder
   topicId?: Prisma.SortOrder
+  start_time?: Prisma.SortOrder
+  end_time?: Prisma.SortOrder
+  duration_minutes?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
+  created_at?: Prisma.SortOrder
+  updated_at?: Prisma.SortOrder
 }
 
 export type StudyLogsMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  study_date?: Prisma.SortOrder
   topicId?: Prisma.SortOrder
+  start_time?: Prisma.SortOrder
+  end_time?: Prisma.SortOrder
+  duration_minutes?: Prisma.SortOrder
+  notes?: Prisma.SortOrder
+  created_at?: Prisma.SortOrder
+  updated_at?: Prisma.SortOrder
+}
+
+export type StudyLogsSumOrderByAggregateInput = {
+  duration_minutes?: Prisma.SortOrder
 }
 
 export type StudyLogsCreateNestedManyWithoutTopicInput = {
@@ -293,12 +491,34 @@ export type StudyLogsUncheckedUpdateManyWithoutTopicNestedInput = {
   deleteMany?: Prisma.StudyLogsScalarWhereInput | Prisma.StudyLogsScalarWhereInput[]
 }
 
+export type IntFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type StudyLogsCreateWithoutTopicInput = {
   id?: string
+  study_date: Date | string
+  start_time: Date | string
+  end_time: Date | string
+  duration_minutes: number
+  notes?: string | null
+  created_at?: Date | string
+  updated_at?: Date | string
 }
 
 export type StudyLogsUncheckedCreateWithoutTopicInput = {
   id?: string
+  study_date: Date | string
+  start_time: Date | string
+  end_time: Date | string
+  duration_minutes: number
+  notes?: string | null
+  created_at?: Date | string
+  updated_at?: Date | string
 }
 
 export type StudyLogsCreateOrConnectWithoutTopicInput = {
@@ -332,51 +552,114 @@ export type StudyLogsScalarWhereInput = {
   OR?: Prisma.StudyLogsScalarWhereInput[]
   NOT?: Prisma.StudyLogsScalarWhereInput | Prisma.StudyLogsScalarWhereInput[]
   id?: Prisma.StringFilter<"StudyLogs"> | string
+  study_date?: Prisma.DateTimeFilter<"StudyLogs"> | Date | string
   topicId?: Prisma.StringFilter<"StudyLogs"> | string
+  start_time?: Prisma.DateTimeFilter<"StudyLogs"> | Date | string
+  end_time?: Prisma.DateTimeFilter<"StudyLogs"> | Date | string
+  duration_minutes?: Prisma.IntFilter<"StudyLogs"> | number
+  notes?: Prisma.StringNullableFilter<"StudyLogs"> | string | null
+  created_at?: Prisma.DateTimeFilter<"StudyLogs"> | Date | string
+  updated_at?: Prisma.DateTimeFilter<"StudyLogs"> | Date | string
 }
 
 export type StudyLogsCreateManyTopicInput = {
   id?: string
+  study_date: Date | string
+  start_time: Date | string
+  end_time: Date | string
+  duration_minutes: number
+  notes?: string | null
+  created_at?: Date | string
+  updated_at?: Date | string
 }
 
 export type StudyLogsUpdateWithoutTopicInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  study_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duration_minutes?: Prisma.IntFieldUpdateOperationsInput | number
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type StudyLogsUncheckedUpdateWithoutTopicInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  study_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duration_minutes?: Prisma.IntFieldUpdateOperationsInput | number
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type StudyLogsUncheckedUpdateManyWithoutTopicInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
+  study_date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  start_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  end_time?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  duration_minutes?: Prisma.IntFieldUpdateOperationsInput | number
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
 
 export type StudyLogsSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  study_date?: boolean
   topicId?: boolean
+  start_time?: boolean
+  end_time?: boolean
+  duration_minutes?: boolean
+  notes?: boolean
+  created_at?: boolean
+  updated_at?: boolean
   topic?: boolean | Prisma.TopicDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["studyLogs"]>
 
 export type StudyLogsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  study_date?: boolean
   topicId?: boolean
+  start_time?: boolean
+  end_time?: boolean
+  duration_minutes?: boolean
+  notes?: boolean
+  created_at?: boolean
+  updated_at?: boolean
   topic?: boolean | Prisma.TopicDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["studyLogs"]>
 
 export type StudyLogsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  study_date?: boolean
   topicId?: boolean
+  start_time?: boolean
+  end_time?: boolean
+  duration_minutes?: boolean
+  notes?: boolean
+  created_at?: boolean
+  updated_at?: boolean
   topic?: boolean | Prisma.TopicDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["studyLogs"]>
 
 export type StudyLogsSelectScalar = {
   id?: boolean
+  study_date?: boolean
   topicId?: boolean
+  start_time?: boolean
+  end_time?: boolean
+  duration_minutes?: boolean
+  notes?: boolean
+  created_at?: boolean
+  updated_at?: boolean
 }
 
-export type StudyLogsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "topicId", ExtArgs["result"]["studyLogs"]>
+export type StudyLogsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "study_date" | "topicId" | "start_time" | "end_time" | "duration_minutes" | "notes" | "created_at" | "updated_at", ExtArgs["result"]["studyLogs"]>
 export type StudyLogsInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   topic?: boolean | Prisma.TopicDefaultArgs<ExtArgs>
 }
@@ -394,7 +677,14 @@ export type $StudyLogsPayload<ExtArgs extends runtime.Types.Extensions.InternalA
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
+    study_date: Date
     topicId: string
+    start_time: Date
+    end_time: Date
+    duration_minutes: number
+    notes: string | null
+    created_at: Date
+    updated_at: Date
   }, ExtArgs["result"]["studyLogs"]>
   composites: {}
 }
@@ -820,7 +1110,14 @@ export interface Prisma__StudyLogsClient<T, Null = never, ExtArgs extends runtim
  */
 export interface StudyLogsFieldRefs {
   readonly id: Prisma.FieldRef<"StudyLogs", 'String'>
+  readonly study_date: Prisma.FieldRef<"StudyLogs", 'DateTime'>
   readonly topicId: Prisma.FieldRef<"StudyLogs", 'String'>
+  readonly start_time: Prisma.FieldRef<"StudyLogs", 'DateTime'>
+  readonly end_time: Prisma.FieldRef<"StudyLogs", 'DateTime'>
+  readonly duration_minutes: Prisma.FieldRef<"StudyLogs", 'Int'>
+  readonly notes: Prisma.FieldRef<"StudyLogs", 'String'>
+  readonly created_at: Prisma.FieldRef<"StudyLogs", 'DateTime'>
+  readonly updated_at: Prisma.FieldRef<"StudyLogs", 'DateTime'>
 }
     
 

@@ -52,7 +52,6 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   User: 'User',
-  Post: 'Post',
   Subject: 'Subject',
   Topic: 'Topic',
   StudyLogs: 'StudyLogs'
@@ -83,20 +82,12 @@ export const UserScalarFieldEnum = {
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
 
 
-export const PostScalarFieldEnum = {
-  id: 'id',
-  title: 'title',
-  content: 'content',
-  published: 'published',
-  authorId: 'authorId'
-} as const
-
-export type PostScalarFieldEnum = (typeof PostScalarFieldEnum)[keyof typeof PostScalarFieldEnum]
-
-
 export const SubjectScalarFieldEnum = {
   id: 'id',
-  name: 'name'
+  name: 'name',
+  color: 'color',
+  userId: 'userId',
+  created_at: 'created_at'
 } as const
 
 export type SubjectScalarFieldEnum = (typeof SubjectScalarFieldEnum)[keyof typeof SubjectScalarFieldEnum]
@@ -113,7 +104,14 @@ export type TopicScalarFieldEnum = (typeof TopicScalarFieldEnum)[keyof typeof To
 
 export const StudyLogsScalarFieldEnum = {
   id: 'id',
-  topicId: 'topicId'
+  study_date: 'study_date',
+  topicId: 'topicId',
+  start_time: 'start_time',
+  end_time: 'end_time',
+  duration_minutes: 'duration_minutes',
+  notes: 'notes',
+  created_at: 'created_at',
+  updated_at: 'updated_at'
 } as const
 
 export type StudyLogsScalarFieldEnum = (typeof StudyLogsScalarFieldEnum)[keyof typeof StudyLogsScalarFieldEnum]
