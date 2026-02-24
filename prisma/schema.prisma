@@ -31,16 +31,21 @@ model Post {
 
 
 model Subject {
-  id    Int     @id @default(autoincrement())
+  id    String     @id @default(uuid())
   name String
-  
+  topics Topic[]
 }
 
 model Topic {
-  id    Int     @id @default(autoincrement())
+  id    String     @id @default(uuid())
   name String
+  subjectId String
+  subject Subject @relation(fields: [subjectId], references: [id])
+  studyLogs StudyLogs[]
 }
 
 model StudyLogs {
-    id    Int     @id @default(autoincrement())
+    id    String     @id @default(uuid())
+    topicId String
+    topic Topic @relation(fields: [topicId], references: [id])
 }

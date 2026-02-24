@@ -20,58 +20,40 @@ export type SubjectModel = runtime.Types.Result.DefaultSelection<Prisma.$Subject
 
 export type AggregateSubject = {
   _count: SubjectCountAggregateOutputType | null
-  _avg: SubjectAvgAggregateOutputType | null
-  _sum: SubjectSumAggregateOutputType | null
   _min: SubjectMinAggregateOutputType | null
   _max: SubjectMaxAggregateOutputType | null
 }
 
-export type SubjectAvgAggregateOutputType = {
-  id: number | null
-}
-
-export type SubjectSumAggregateOutputType = {
-  id: number | null
-}
-
 export type SubjectMinAggregateOutputType = {
-  id: number | null
-  title: string | null
+  id: string | null
+  name: string | null
 }
 
 export type SubjectMaxAggregateOutputType = {
-  id: number | null
-  title: string | null
+  id: string | null
+  name: string | null
 }
 
 export type SubjectCountAggregateOutputType = {
   id: number
-  title: number
+  name: number
   _all: number
 }
 
 
-export type SubjectAvgAggregateInputType = {
-  id?: true
-}
-
-export type SubjectSumAggregateInputType = {
-  id?: true
-}
-
 export type SubjectMinAggregateInputType = {
   id?: true
-  title?: true
+  name?: true
 }
 
 export type SubjectMaxAggregateInputType = {
   id?: true
-  title?: true
+  name?: true
 }
 
 export type SubjectCountAggregateInputType = {
   id?: true
-  title?: true
+  name?: true
   _all?: true
 }
 
@@ -113,18 +95,6 @@ export type SubjectAggregateArgs<ExtArgs extends runtime.Types.Extensions.Intern
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
-   * Select which fields to average
-  **/
-  _avg?: SubjectAvgAggregateInputType
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-   * 
-   * Select which fields to sum
-  **/
-  _sum?: SubjectSumAggregateInputType
-  /**
-   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-   * 
    * Select which fields to find the minimum value
   **/
   _min?: SubjectMinAggregateInputType
@@ -155,18 +125,14 @@ export type SubjectGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   _count?: SubjectCountAggregateInputType | true
-  _avg?: SubjectAvgAggregateInputType
-  _sum?: SubjectSumAggregateInputType
   _min?: SubjectMinAggregateInputType
   _max?: SubjectMaxAggregateInputType
 }
 
 export type SubjectGroupByOutputType = {
-  id: number
-  title: string
+  id: string
+  name: string
   _count: SubjectCountAggregateOutputType | null
-  _avg: SubjectAvgAggregateOutputType | null
-  _sum: SubjectSumAggregateOutputType | null
   _min: SubjectMinAggregateOutputType | null
   _max: SubjectMaxAggregateOutputType | null
 }
@@ -190,126 +156,220 @@ export type SubjectWhereInput = {
   AND?: Prisma.SubjectWhereInput | Prisma.SubjectWhereInput[]
   OR?: Prisma.SubjectWhereInput[]
   NOT?: Prisma.SubjectWhereInput | Prisma.SubjectWhereInput[]
-  id?: Prisma.IntFilter<"Subject"> | number
-  title?: Prisma.StringFilter<"Subject"> | string
+  id?: Prisma.StringFilter<"Subject"> | string
+  name?: Prisma.StringFilter<"Subject"> | string
+  topics?: Prisma.TopicListRelationFilter
 }
 
 export type SubjectOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  title?: Prisma.SortOrder
+  name?: Prisma.SortOrder
+  topics?: Prisma.TopicOrderByRelationAggregateInput
 }
 
 export type SubjectWhereUniqueInput = Prisma.AtLeast<{
-  id?: number
+  id?: string
   AND?: Prisma.SubjectWhereInput | Prisma.SubjectWhereInput[]
   OR?: Prisma.SubjectWhereInput[]
   NOT?: Prisma.SubjectWhereInput | Prisma.SubjectWhereInput[]
-  title?: Prisma.StringFilter<"Subject"> | string
+  name?: Prisma.StringFilter<"Subject"> | string
+  topics?: Prisma.TopicListRelationFilter
 }, "id">
 
 export type SubjectOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  title?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   _count?: Prisma.SubjectCountOrderByAggregateInput
-  _avg?: Prisma.SubjectAvgOrderByAggregateInput
   _max?: Prisma.SubjectMaxOrderByAggregateInput
   _min?: Prisma.SubjectMinOrderByAggregateInput
-  _sum?: Prisma.SubjectSumOrderByAggregateInput
 }
 
 export type SubjectScalarWhereWithAggregatesInput = {
   AND?: Prisma.SubjectScalarWhereWithAggregatesInput | Prisma.SubjectScalarWhereWithAggregatesInput[]
   OR?: Prisma.SubjectScalarWhereWithAggregatesInput[]
   NOT?: Prisma.SubjectScalarWhereWithAggregatesInput | Prisma.SubjectScalarWhereWithAggregatesInput[]
-  id?: Prisma.IntWithAggregatesFilter<"Subject"> | number
-  title?: Prisma.StringWithAggregatesFilter<"Subject"> | string
+  id?: Prisma.StringWithAggregatesFilter<"Subject"> | string
+  name?: Prisma.StringWithAggregatesFilter<"Subject"> | string
 }
 
 export type SubjectCreateInput = {
-  title: string
+  id?: string
+  name: string
+  topics?: Prisma.TopicCreateNestedManyWithoutSubjectInput
 }
 
 export type SubjectUncheckedCreateInput = {
-  id?: number
-  title: string
+  id?: string
+  name: string
+  topics?: Prisma.TopicUncheckedCreateNestedManyWithoutSubjectInput
 }
 
 export type SubjectUpdateInput = {
-  title?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  topics?: Prisma.TopicUpdateManyWithoutSubjectNestedInput
 }
 
 export type SubjectUncheckedUpdateInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  title?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  topics?: Prisma.TopicUncheckedUpdateManyWithoutSubjectNestedInput
 }
 
 export type SubjectCreateManyInput = {
-  id?: number
-  title: string
+  id?: string
+  name: string
 }
 
 export type SubjectUpdateManyMutationInput = {
-  title?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type SubjectUncheckedUpdateManyInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  title?: Prisma.StringFieldUpdateOperationsInput | string
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type SubjectCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  title?: Prisma.SortOrder
-}
-
-export type SubjectAvgOrderByAggregateInput = {
-  id?: Prisma.SortOrder
+  name?: Prisma.SortOrder
 }
 
 export type SubjectMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  title?: Prisma.SortOrder
+  name?: Prisma.SortOrder
 }
 
 export type SubjectMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
-  title?: Prisma.SortOrder
+  name?: Prisma.SortOrder
 }
 
-export type SubjectSumOrderByAggregateInput = {
-  id?: Prisma.SortOrder
+export type SubjectScalarRelationFilter = {
+  is?: Prisma.SubjectWhereInput
+  isNot?: Prisma.SubjectWhereInput
 }
 
+export type SubjectCreateNestedOneWithoutTopicsInput = {
+  create?: Prisma.XOR<Prisma.SubjectCreateWithoutTopicsInput, Prisma.SubjectUncheckedCreateWithoutTopicsInput>
+  connectOrCreate?: Prisma.SubjectCreateOrConnectWithoutTopicsInput
+  connect?: Prisma.SubjectWhereUniqueInput
+}
+
+export type SubjectUpdateOneRequiredWithoutTopicsNestedInput = {
+  create?: Prisma.XOR<Prisma.SubjectCreateWithoutTopicsInput, Prisma.SubjectUncheckedCreateWithoutTopicsInput>
+  connectOrCreate?: Prisma.SubjectCreateOrConnectWithoutTopicsInput
+  upsert?: Prisma.SubjectUpsertWithoutTopicsInput
+  connect?: Prisma.SubjectWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SubjectUpdateToOneWithWhereWithoutTopicsInput, Prisma.SubjectUpdateWithoutTopicsInput>, Prisma.SubjectUncheckedUpdateWithoutTopicsInput>
+}
+
+export type SubjectCreateWithoutTopicsInput = {
+  id?: string
+  name: string
+}
+
+export type SubjectUncheckedCreateWithoutTopicsInput = {
+  id?: string
+  name: string
+}
+
+export type SubjectCreateOrConnectWithoutTopicsInput = {
+  where: Prisma.SubjectWhereUniqueInput
+  create: Prisma.XOR<Prisma.SubjectCreateWithoutTopicsInput, Prisma.SubjectUncheckedCreateWithoutTopicsInput>
+}
+
+export type SubjectUpsertWithoutTopicsInput = {
+  update: Prisma.XOR<Prisma.SubjectUpdateWithoutTopicsInput, Prisma.SubjectUncheckedUpdateWithoutTopicsInput>
+  create: Prisma.XOR<Prisma.SubjectCreateWithoutTopicsInput, Prisma.SubjectUncheckedCreateWithoutTopicsInput>
+  where?: Prisma.SubjectWhereInput
+}
+
+export type SubjectUpdateToOneWithWhereWithoutTopicsInput = {
+  where?: Prisma.SubjectWhereInput
+  data: Prisma.XOR<Prisma.SubjectUpdateWithoutTopicsInput, Prisma.SubjectUncheckedUpdateWithoutTopicsInput>
+}
+
+export type SubjectUpdateWithoutTopicsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+}
+
+export type SubjectUncheckedUpdateWithoutTopicsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+}
+
+
+/**
+ * Count Type SubjectCountOutputType
+ */
+
+export type SubjectCountOutputType = {
+  topics: number
+}
+
+export type SubjectCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  topics?: boolean | SubjectCountOutputTypeCountTopicsArgs
+}
+
+/**
+ * SubjectCountOutputType without action
+ */
+export type SubjectCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SubjectCountOutputType
+   */
+  select?: Prisma.SubjectCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * SubjectCountOutputType without action
+ */
+export type SubjectCountOutputTypeCountTopicsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TopicWhereInput
+}
 
 
 export type SubjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  title?: boolean
+  name?: boolean
+  topics?: boolean | Prisma.Subject$topicsArgs<ExtArgs>
+  _count?: boolean | Prisma.SubjectCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["subject"]>
 
 export type SubjectSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  title?: boolean
+  name?: boolean
 }, ExtArgs["result"]["subject"]>
 
 export type SubjectSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
-  title?: boolean
+  name?: boolean
 }, ExtArgs["result"]["subject"]>
 
 export type SubjectSelectScalar = {
   id?: boolean
-  title?: boolean
+  name?: boolean
 }
 
-export type SubjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title", ExtArgs["result"]["subject"]>
+export type SubjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name", ExtArgs["result"]["subject"]>
+export type SubjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  topics?: boolean | Prisma.Subject$topicsArgs<ExtArgs>
+  _count?: boolean | Prisma.SubjectCountOutputTypeDefaultArgs<ExtArgs>
+}
+export type SubjectIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type SubjectIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
 
 export type $SubjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Subject"
-  objects: {}
+  objects: {
+    topics: Prisma.$TopicPayload<ExtArgs>[]
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
-    id: number
-    title: string
+    id: string
+    name: string
   }, ExtArgs["result"]["subject"]>
   composites: {}
 }
@@ -704,6 +764,7 @@ readonly fields: SubjectFieldRefs;
  */
 export interface Prisma__SubjectClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  topics<T extends Prisma.Subject$topicsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Subject$topicsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TopicPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -733,8 +794,8 @@ export interface Prisma__SubjectClient<T, Null = never, ExtArgs extends runtime.
  * Fields of the Subject model
  */
 export interface SubjectFieldRefs {
-  readonly id: Prisma.FieldRef<"Subject", 'Int'>
-  readonly title: Prisma.FieldRef<"Subject", 'String'>
+  readonly id: Prisma.FieldRef<"Subject", 'String'>
+  readonly name: Prisma.FieldRef<"Subject", 'String'>
 }
     
 
@@ -751,6 +812,10 @@ export type SubjectFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.Inter
    * Omit specific fields from the Subject
    */
   omit?: Prisma.SubjectOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubjectInclude<ExtArgs> | null
   /**
    * Filter, which Subject to fetch.
    */
@@ -770,6 +835,10 @@ export type SubjectFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.Extension
    */
   omit?: Prisma.SubjectOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubjectInclude<ExtArgs> | null
+  /**
    * Filter, which Subject to fetch.
    */
   where: Prisma.SubjectWhereUniqueInput
@@ -787,6 +856,10 @@ export type SubjectFindFirstArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Omit specific fields from the Subject
    */
   omit?: Prisma.SubjectOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubjectInclude<ExtArgs> | null
   /**
    * Filter, which Subject to fetch.
    */
@@ -836,6 +909,10 @@ export type SubjectFindFirstOrThrowArgs<ExtArgs extends runtime.Types.Extensions
    */
   omit?: Prisma.SubjectOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubjectInclude<ExtArgs> | null
+  /**
    * Filter, which Subject to fetch.
    */
   where?: Prisma.SubjectWhereInput
@@ -884,6 +961,10 @@ export type SubjectFindManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    */
   omit?: Prisma.SubjectOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubjectInclude<ExtArgs> | null
+  /**
    * Filter, which Subjects to fetch.
    */
   where?: Prisma.SubjectWhereInput
@@ -926,6 +1007,10 @@ export type SubjectCreateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    * Omit specific fields from the Subject
    */
   omit?: Prisma.SubjectOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubjectInclude<ExtArgs> | null
   /**
    * The data needed to create a Subject.
    */
@@ -974,6 +1059,10 @@ export type SubjectUpdateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    * Omit specific fields from the Subject
    */
   omit?: Prisma.SubjectOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubjectInclude<ExtArgs> | null
   /**
    * The data needed to update a Subject.
    */
@@ -1041,6 +1130,10 @@ export type SubjectUpsertArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    */
   omit?: Prisma.SubjectOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubjectInclude<ExtArgs> | null
+  /**
    * The filter to search for the Subject to update in case it exists.
    */
   where: Prisma.SubjectWhereUniqueInput
@@ -1067,6 +1160,10 @@ export type SubjectDeleteArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    */
   omit?: Prisma.SubjectOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubjectInclude<ExtArgs> | null
+  /**
    * Filter which Subject to delete.
    */
   where: Prisma.SubjectWhereUniqueInput
@@ -1087,6 +1184,30 @@ export type SubjectDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
 }
 
 /**
+ * Subject.topics
+ */
+export type Subject$topicsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Topic
+   */
+  select?: Prisma.TopicSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Topic
+   */
+  omit?: Prisma.TopicOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TopicInclude<ExtArgs> | null
+  where?: Prisma.TopicWhereInput
+  orderBy?: Prisma.TopicOrderByWithRelationInput | Prisma.TopicOrderByWithRelationInput[]
+  cursor?: Prisma.TopicWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TopicScalarFieldEnum | Prisma.TopicScalarFieldEnum[]
+}
+
+/**
  * Subject without action
  */
 export type SubjectDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1098,4 +1219,8 @@ export type SubjectDefaultArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Omit specific fields from the Subject
    */
   omit?: Prisma.SubjectOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SubjectInclude<ExtArgs> | null
 }

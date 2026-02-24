@@ -53,8 +53,9 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   User: 'User',
   Post: 'Post',
-  Testando: 'Testando',
-  Subject: 'Subject'
+  Subject: 'Subject',
+  Topic: 'Topic',
+  StudyLogs: 'StudyLogs'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -93,20 +94,29 @@ export const PostScalarFieldEnum = {
 export type PostScalarFieldEnum = (typeof PostScalarFieldEnum)[keyof typeof PostScalarFieldEnum]
 
 
-export const TestandoScalarFieldEnum = {
-  id: 'id',
-  title: 'title'
-} as const
-
-export type TestandoScalarFieldEnum = (typeof TestandoScalarFieldEnum)[keyof typeof TestandoScalarFieldEnum]
-
-
 export const SubjectScalarFieldEnum = {
   id: 'id',
-  title: 'title'
+  name: 'name'
 } as const
 
 export type SubjectScalarFieldEnum = (typeof SubjectScalarFieldEnum)[keyof typeof SubjectScalarFieldEnum]
+
+
+export const TopicScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  subjectId: 'subjectId'
+} as const
+
+export type TopicScalarFieldEnum = (typeof TopicScalarFieldEnum)[keyof typeof TopicScalarFieldEnum]
+
+
+export const StudyLogsScalarFieldEnum = {
+  id: 'id',
+  topicId: 'topicId'
+} as const
+
+export type StudyLogsScalarFieldEnum = (typeof StudyLogsScalarFieldEnum)[keyof typeof StudyLogsScalarFieldEnum]
 
 
 export const SortOrder = {

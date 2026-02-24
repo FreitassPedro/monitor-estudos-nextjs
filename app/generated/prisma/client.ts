@@ -50,12 +50,17 @@ export type User = Prisma.UserModel
  */
 export type Post = Prisma.PostModel
 /**
- * Model Testando
- * 
- */
-export type Testando = Prisma.TestandoModel
-/**
  * Model Subject
  * 
  */
 export type Subject = Prisma.SubjectModel
+/**
+ * Model Topic
+ * 
+ */
+export type Topic = Prisma.TopicModel
+/**
+ * Model StudyLogs
+ * 
+ */
+export type StudyLogs = Prisma.StudyLogsModel
