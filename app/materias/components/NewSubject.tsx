@@ -8,6 +8,7 @@ import { PenTool, Plus } from 'lucide-react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { useCreateSubject } from '@/hooks/useSubjects';
+import { useRouter } from 'next/navigation';
  
 const PRESET_COLORS = [
     '#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6',
@@ -15,6 +16,7 @@ const PRESET_COLORS = [
 ];
 
 export function NewSubject() {
+    const router = useRouter();
     const createSubject = useCreateSubject();
     const [newName, setNewName] = useState('');
     const [newColor, setNewColor] = useState(PRESET_COLORS[0]);
@@ -42,6 +44,7 @@ export function NewSubject() {
                 name: newName.trim(),
                 color: newColor,
             });
+            router.refresh();
             setNewName('');
             setNewColor(PRESET_COLORS[Math.floor(Math.random() * PRESET_COLORS.length)]);
             toast.success('Matéria criada!');

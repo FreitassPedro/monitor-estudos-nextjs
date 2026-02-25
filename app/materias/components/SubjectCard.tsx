@@ -3,6 +3,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Settings, Trash2 } from "lucide-react";
+import { deleteSubjectAction } from "@/server/actions/subject.actions";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface Subject {
     id: string;
@@ -21,10 +24,19 @@ interface SubjectCardProps {
 }
 
 export function SubjectCard({ subject }: SubjectCardProps) {
+    const router = useRouter();
 
     const handleDelete = async () => {
-        // Implementation for delete would go here as a Server Action
-        console.log("Delete", subject.id);
+        if (!confirm(`Tem certeza que deseja excluir "${subject.name}"?`)) return;
+
+        try {
+            await deleteSubjectAction(subject.id);
+            toast.success("Matéria excluída");
+            router.refresh();
+        } catch (error) {
+            toast.error("Erro ao excluir matéria");
+            console.error(error);
+        }
     };
 
     return (

@@ -19,6 +19,12 @@ export async function createSubjectAction(data: { name: string; color: string })
     return subject;
 }
 
+export async function deleteSubjectAction(id: string) {
+    await prisma.subject.delete({
+        where: { id },
+    });
+}
+
 export async function getSubjectsAction(): Promise<Subject[]> {
     const subjects = await prisma.subject.findMany({
         where: { userId }
