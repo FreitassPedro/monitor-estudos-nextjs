@@ -1,6 +1,3 @@
-import { Suspense } from "react";
-import { RecentSessions } from "./components/RecentSessions";
-import { TodaySummary } from "./components/TodaySummary";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 function SkeletonBox({ className }: { className?: string }) {
@@ -11,7 +8,6 @@ function TodaySummarySkeleton() {
     return (
         <Card>
             <CardHeader className="pb-2">
-                Carregando...
                 <SkeletonBox className="h-5 w-36" />
             </CardHeader>
             <CardContent>
@@ -56,18 +52,13 @@ function RecentSessionsSkeleton() {
     );
 }
 
-export default function DashboardPage() {
-
+export default function DashboardLoading() {
     return (
         <div className="container mx-auto p-4 space-y-6">
-            <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p>Bem-vindo ao dashboard! Aqui você pode gerenciar seus estudos.</p>
-            <Suspense fallback={<TodaySummarySkeleton />}>
-                <TodaySummary />
-            </Suspense>
-            <Suspense fallback={<RecentSessionsSkeleton />}>
-                <RecentSessions />
-            </Suspense>
+            <SkeletonBox className="h-9 w-36" />
+            <SkeletonBox className="h-4 w-72" />
+            <TodaySummarySkeleton />
+            <RecentSessionsSkeleton />
         </div>
     );
 }

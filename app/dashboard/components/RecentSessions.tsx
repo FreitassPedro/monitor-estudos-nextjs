@@ -83,23 +83,6 @@ export async function RecentSessions() {
 
     const todayLogs = await getTodayStudyLogsAction(userId);
 
-    if (todayLogs === undefined || todayLogs.length === 0) {
-        return (
-            <Card>
-                <CardHeader className="pb-2">
-                    <CardTitle className="text-lg font-medium">Sessões de Hoje</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="animate-pulse space-y-3">
-                        {[1, 2].map((i) => (
-                            <div key={i} className="h-16 bg-muted rounded" />
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
-        );
-    }
-
     return (
         <Card>
             <CardHeader className="pb-2">
