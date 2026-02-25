@@ -12,25 +12,31 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { useCreateTopic } from "@/hooks/useTopics";
-import { Subject, Topic } from "@/types/types";
+import { Topic } from "@/types/types";
+import {  useSubjectsMap } from "@/hooks/useSubjects";
 
 interface Props {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
-    subject: Subject;
+    subjectId: string;
     onTopicCreated: (topic: Topic) => void;
 }
 
-export function NewTopicDialog({ isOpen, onOpenChange, subject, onTopicCreated }: Props) {
+export function NewTopicDialog({ isOpen, onOpenChange, subjectId, onTopicCreated }: Props) {
     const [name, setName] = useState("");
     const createTopic = useCreateTopic();
+
+    const { data: subjects } = useSubjectsMap();
+    const subject = subjects?.[subjectId];
+
+    if (!subject) return null;
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name.trim()) return;
 
         try {
-            const topic = await createTopic.mutateAsync({ name: name.trim(), subjectId: subject.id });
+            const topic = await createTopic.mutateAsync({ name: name.trim(), subjectId: subject!.id });
             toast.success(`Tópico "${topic.name}" criado!`);
             onTopicCreated(topic);
             setName("");

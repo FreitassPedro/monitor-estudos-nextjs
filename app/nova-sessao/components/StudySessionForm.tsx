@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Clock, Form, Plus } from "lucide-react";
+import { Clock, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +22,6 @@ import { useSubjects } from "@/hooks/useSubjects";
 import { useTopicsBySubject } from "@/hooks/useTopics";
 import { useCreateStudyLog } from "@/hooks/useStudyLogs";
 import { StudyLogInput } from "@/server/actions/studyLogs.action";
-import { Subject } from "@/types/types";
 import { NewTopicDialog } from "./NewTopicDialog";
 
 // --- Helpers ---
@@ -53,9 +52,8 @@ const calcDurationMinutes = (start?: Date, end?: Date): number => {
 // --- Form State ---
 
 interface FormData {
-    subject: Subject | null;
+    subjectId: string;
     topicId: string;
-    topicName: string;
     material_type: string;
     study_date: Date | undefined;
     start_time: Date | undefined;
@@ -71,9 +69,8 @@ interface Cronometer {
 }
 
 const emptyForm = (): FormData => ({
-    subject: null,
+    subjectId: "",
     topicId: "",
-    topicName: "",
     material_type: "",
     study_date: undefined,
     start_time: undefined,
@@ -94,7 +91,7 @@ export function StudySessionForm() {
         endTime: null,
     });
 
-   
+
     const [timeRegisterType, setTimeRegisterType] = useState<"manual" | "cronometer">("manual");
 
     const [newTopicDialogOpen, setNewTopicDialogOpen] = useState(false);
@@ -102,14 +99,14 @@ export function StudySessionForm() {
     const [endTimeError, setEndTimeError] = useState<string | null>(null);
 
     const { data: subjects = [], isLoading: loadingSubjects } = useSubjects();
-    const { data: topics = [], isLoading: loadingTopics } = useTopicsBySubject(form.subject?.id);
+    const { data: topics = [], isLoading: loadingTopics } = useTopicsBySubject(form?.subjectId);
 
     const createStudyLog = useCreateStudyLog();
 
     // Cronometer tick
     useEffect(() => {
         if (!cronometer.isRunning || !cronometer.startTime) return;
-        
+
         const interval = window.setInterval(() => {
             setCronometer(prev => ({ ...prev, seconds: prev.seconds + 1 }));
         }, 1000);
@@ -119,7 +116,7 @@ export function StudySessionForm() {
     // Warn on unsaved data
     useEffect(() => {
         const isDirty =
-            !!form.subject ||
+            !!form.subjectId ||
             !!form.topicId ||
             !!form.notes ||
             !!form.start_time ||
@@ -139,13 +136,11 @@ export function StudySessionForm() {
     // --- Handlers ---
 
     const handleSubjectChange = (subjectId: string) => {
-        const subject = subjects.find(s => s.id === subjectId) ?? null;
-        setForm(prev => ({ ...prev, subject, topicId: "", topicName: "" }));
+        setForm(prev => ({ ...prev, subjectId, topicId: "" }));
     };
 
     const handleTopicChange = (topicId: string) => {
-        const topic = topics.find(t => t.id === topicId);
-        setForm(prev => ({ ...prev, topicId, topicName: topic?.name ?? "" }));
+        setForm(prev => ({ ...prev, topicId }));
     };
 
     const handleTimeInput = (field: "start_time" | "end_time", value: string) => {
@@ -183,7 +178,7 @@ export function StudySessionForm() {
         e.preventDefault();
         setEndTimeError(null);
 
-        if (!form.subject) {
+        if (!form.subjectId) {
             toast.error("Selecione uma matéria.");
             return;
         }
@@ -243,7 +238,7 @@ export function StudySessionForm() {
                         <div className="space-y-2">
                             <Label>Matéria</Label>
                             <div className="flex items-center gap-2">
-                                <Select value={form.subject?.id ?? ""} onValueChange={handleSubjectChange}>
+                                <Select value={form.subjectId} onValueChange={handleSubjectChange}>
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Selecione uma matéria" />
                                     </SelectTrigger>
@@ -287,12 +282,12 @@ export function StudySessionForm() {
                                 <Select
                                     value={form.topicId}
                                     onValueChange={handleTopicChange}
-                                    disabled={!form.subject}
+                                    disabled={!form.subjectId}
                                 >
-                                    <SelectTrigger className="w-full" disabled={!form.subject}>
+                                    <SelectTrigger className="w-full" disabled={!form.subjectId}>
                                         <SelectValue
                                             placeholder={
-                                                !form.subject
+                                                !form.subjectId
                                                     ? "Selecione uma matéria primeiro"
                                                     : "Selecione um tópico"
                                             }
@@ -317,7 +312,7 @@ export function StudySessionForm() {
                                     variant="outline"
                                     onClick={() => setNewTopicDialogOpen(true)}
                                     className="shrink-0"
-                                    disabled={!form.subject}
+                                    disabled={!form.subjectId}
                                 >
                                     <Plus className="h-4 w-4" />
                                     Novo tópico
@@ -501,13 +496,13 @@ export function StudySessionForm() {
                 </CardContent>
             </Card>
 
-            {form.subject && (
+            {form.subjectId && (
                 <NewTopicDialog
                     isOpen={newTopicDialogOpen}
                     onOpenChange={setNewTopicDialogOpen}
-                    subject={form.subject}
+                    subjectId={form.subjectId}
                     onTopicCreated={topic => {
-                        setForm(prev => ({ ...prev, topicId: topic.id, topicName: topic.name }));
+                        setForm(prev => ({ ...prev, topicId: topic.id }));
                     }}
                 />
             )}
