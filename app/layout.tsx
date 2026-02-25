@@ -4,6 +4,8 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import QueryProvider from "./providers/QueryProvider";
 
+import MainNavbar from "@/components/MainNavbar";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -29,8 +31,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <QueryProvider>{children}</QueryProvider>
-        <Toaster position="top-right" />
+        <QueryProvider>
+          <MainNavbar />
+          <main>
+            {children}
+          </main>
+          <Toaster position="top-right" />
+
+        </QueryProvider>
       </body>
     </html>
   );
