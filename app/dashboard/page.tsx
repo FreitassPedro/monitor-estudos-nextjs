@@ -4,11 +4,11 @@ import { TodaySummary } from "./components/TodaySummary";
 export default function DashboardPage() {
 
     return (
-        <div>
-            <h1>Dashboard</h1>
-            <p>Welcome to the dashboard! Here you can manage your subjects and topics.</p>
+        <div className="container mx-auto p-4 space-y-6">
+            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <p>Bem-vindo ao dashboard! Aqui você pode gerenciar seus estudos.</p>
             <TodaySummary />
-            <RecentSessions />
+            <RecentSessions  />
         </div>
     );
 }

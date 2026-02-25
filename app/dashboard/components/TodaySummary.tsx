@@ -2,9 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getTodayStudyLogsAction } from "@/server/actions/studyLogs.action";
 import { BookOpen, Clock, Target } from "lucide-react";
 
+const userId = "8e4fba66-4d2e-4bb6-8200-c45db7a92f8e"
 
 export async function TodaySummary() {
-    const logs = await getTodayStudyLogsAction();
+    const logs = await getTodayStudyLogsAction(userId);
 
     const totalMinutes = logs.reduce((sum, log) => sum + log.duration_minutes, 0);
     const hours = Math.floor(totalMinutes / 60);

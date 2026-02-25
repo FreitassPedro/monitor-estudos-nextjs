@@ -7,12 +7,8 @@ import { prisma } from "@/lib/prisma";
  * Actions garante que os dados do banco não quebrem a UI
  ***/
 export async function getSubjectsAction(): Promise<Subject[]> {
-    await new Promise(resolve => setTimeout(resolve, 100)); // Simulate network delay
     const subjects = await prisma.subject.findMany();
-    return subjects.map(subject => ({
-        id: subject.id,
-        name: subject.name,
-    }));
+    return subjects;
 }
 
 export async function getSubjectsWithTopicsAction() {

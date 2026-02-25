@@ -11,9 +11,11 @@ const include = {
 export async function getStudyLogsByDateAction({
     startDate,
     endDate,
+    userId,
 }: {
     startDate: Date;
     endDate: Date;
+    userId: string;
 }) {
     return prisma.studyLogs.findMany({
         where: {
@@ -21,12 +23,17 @@ export async function getStudyLogsByDateAction({
                 gte: startDate,
                 lte: endDate,
             },
+            topic: {
+                subject: {
+                    userId: userId,
+                },
+            },
         },
         include,
     });
 }
 
-export async function getTodayStudyLogsAction() {
+export async function getTodayStudyLogsAction(userId: string) {
     "use cache";
     const today = new Date();
     const startOfDay = new Date(today.setHours(0, 0, 0, 0));
@@ -37,6 +44,11 @@ export async function getTodayStudyLogsAction() {
             study_date: {
                 gte: startOfDay,
                 lte: endOfDay,
+            },
+            topic: {
+                subject: {
+                    userId: userId,
+                },
             },
         },
         include,

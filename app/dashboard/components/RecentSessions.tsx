@@ -52,7 +52,7 @@ export const StudyLogItemResume = ({
 
 
                 <p className="text-sm text-muted-foreground whitespace-pre-line">
-                    <span className="font-medium">Notas:</span> {log?.notes ??  "Sem anotações para esta sessão."}
+                    <span className="font-medium">Notas:</span> {log?.notes ?? "Sem anotações para esta sessão."}
                 </p>
 
                 <div className="flex items-center gap-3 mt-2">
@@ -77,10 +77,11 @@ export const StudyLogItemResume = ({
         </div>
     );
 };
+const userId = "8e4fba66-4d2e-4bb6-8200-c45db7a92f8e"
 
 export async function RecentSessions() {
 
-    const todayLogs = await getTodayStudyLogsAction();
+    const todayLogs = await getTodayStudyLogsAction(userId);
 
     if (todayLogs === undefined || todayLogs.length === 0) {
         return (
