@@ -1,6 +1,7 @@
 export interface Subject {
     id: string;
     name: string;
+    color: string;
 }
 
 export interface Topic {
@@ -11,6 +12,9 @@ export interface Topic {
 
 export interface StudyLog {
     id: string;
+    start_time: string | Date;
+    end_time: string | Date;
+    notes?: string | null;
     topicId: string;
     duration: number;
 }

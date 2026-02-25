@@ -8,20 +8,16 @@ import { PenTool, Plus } from 'lucide-react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 import { useCreateSubject } from '@/hooks/useSubjects';
-
+ 
 const PRESET_COLORS = [
     '#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6',
     '#EC4899', '#06B6D4', '#84CC16', '#F97316', '#6366F1',
 ];
 
-
-
-export function NewSubjectForm() {
+export function NewSubject() {
     const createSubject = useCreateSubject();
     const [newName, setNewName] = useState('');
     const [newColor, setNewColor] = useState(PRESET_COLORS[0]);
-
-    const [isPending, setIsPending] = useState(false);
 
     const [rgbColor, setRgbColor] = React.useState('#f1f1f1');
 
@@ -49,9 +45,9 @@ export function NewSubjectForm() {
             setNewName('');
             setNewColor(PRESET_COLORS[Math.floor(Math.random() * PRESET_COLORS.length)]);
             toast.success('Matéria criada!');
-        } catch (error: any) {
+        } catch (error) {
             toast.error('Erro ao criar matéria');
-            console.error(error.message);
+            console.error(error);
         }
     };
 
@@ -115,9 +111,9 @@ export function NewSubjectForm() {
                         </div>
                     </div>
 
-                    <Button type="submit" disabled={isPending} className="w-full">
+                    <Button type="submit" disabled={createSubject.isPending} className="w-full">
                         <Plus className="h-4 w-4 mr-2" />
-                        {isPending ? 'Criando...' : 'Criar Matéria'}
+                        {createSubject.isPending ? 'Criando...' : 'Criar Matéria'}
                     </Button>
                 </form>
             </CardContent>
