@@ -1,11 +1,5 @@
-import { prisma } from "@/lib/prisma";
-import Image from "next/image";
+import { redirect } from "next/navigation";
 
-export default async function Home() {
-
-  return (
-    <div>
-      Olá
-    </div>
-  );
+export default function Home() {
+  redirect("/dashboard");
 }

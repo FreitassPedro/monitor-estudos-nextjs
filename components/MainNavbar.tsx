@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 const navItems = [
-    { href: '/', label: 'Dashboard', icon: BookOpen, isEnabled: true },
+    { href: '/dashboard', label: 'Dashboard', icon: BookOpen, isEnabled: true },
     { href: '/nova-sessao', label: 'Nova Sessão', icon: Plus, isEnabled: true },
     { href: '/historico', label: 'Histórico', icon: History, isEnabled: true },
     { href: '/materias', label: 'Matérias', icon: FolderOpen, isEnabled: true },
