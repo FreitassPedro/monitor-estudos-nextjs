@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Clock, Plus } from "lucide-react";
+import { Clock, Form, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -63,6 +63,13 @@ interface FormData {
     notes: string;
 }
 
+interface Cronometer {
+    isRunning: boolean;
+    seconds: number;
+    startTime: Date | null;
+    endTime: Date | null;
+}
+
 const emptyForm = (): FormData => ({
     subject: null,
     topicId: "",
@@ -73,32 +80,41 @@ const emptyForm = (): FormData => ({
     end_time: undefined,
     notes: "",
 });
-
 // --- Component ---
 
 export function StudySessionForm() {
     const router = useRouter();
 
-    const [form, setForm] = useState<FormData>(emptyForm);
-    const [isCronometerRunning, setIsCronometerRunning] = useState(false);
-    const [cronometerTime, setCronometerTime] = useState(0);
-    const [cronometerStartTime, setCronometerStartTime] = useState<number | null>(null);
+    const [form, setForm] = useState<FormData>(emptyForm());
+
+    const [cronometer, setCronometer] = useState<Cronometer>({
+        isRunning: false,
+        seconds: 0,
+        startTime: null,
+        endTime: null,
+    });
+
+   
     const [timeRegisterType, setTimeRegisterType] = useState<"manual" | "cronometer">("manual");
+
     const [newTopicDialogOpen, setNewTopicDialogOpen] = useState(false);
+
     const [endTimeError, setEndTimeError] = useState<string | null>(null);
 
     const { data: subjects = [], isLoading: loadingSubjects } = useSubjects();
     const { data: topics = [], isLoading: loadingTopics } = useTopicsBySubject(form.subject?.id);
-    const createStudyLog = useCreateStudyLog(); 
+
+    const createStudyLog = useCreateStudyLog();
 
     // Cronometer tick
     useEffect(() => {
-        if (!isCronometerRunning || !cronometerStartTime) return;
+        if (!cronometer.isRunning || !cronometer.startTime) return;
+        
         const interval = window.setInterval(() => {
-            setCronometerTime(Math.floor((Date.now() - cronometerStartTime) / 1000));
+            setCronometer(prev => ({ ...prev, seconds: prev.seconds + 1 }));
         }, 1000);
         return () => window.clearInterval(interval);
-    }, [isCronometerRunning, cronometerStartTime]);
+    }, [cronometer.isRunning, cronometer.startTime]);
 
     // Warn on unsaved data
     useEffect(() => {
@@ -108,7 +124,7 @@ export function StudySessionForm() {
             !!form.notes ||
             !!form.start_time ||
             !!form.end_time ||
-            isCronometerRunning;
+            cronometer.isRunning;
 
         if (!isDirty) return;
 
@@ -118,7 +134,7 @@ export function StudySessionForm() {
         };
         window.addEventListener("beforeunload", handler);
         return () => window.removeEventListener("beforeunload", handler);
-    }, [form, isCronometerRunning]);
+    }, [form, cronometer.isRunning]);
 
     // --- Handlers ---
 
@@ -149,21 +165,17 @@ export function StudySessionForm() {
 
     const toggleCronometer = () => {
         const now = new Date();
-        if (!isCronometerRunning) {
-            setCronometerStartTime(now.getTime());
-            setCronometerTime(0);
+        if (!cronometer.isRunning) {
+            setCronometer(prev => ({ ...prev, isRunning: true, startTime: now, endTime: null }));
             setForm(prev => ({ ...prev, start_time: now, end_time: undefined }));
-            setIsCronometerRunning(true);
         } else {
-            setIsCronometerRunning(false);
+            setCronometer(prev => ({ ...prev, isRunning: false, endTime: now }));
             setForm(prev => ({ ...prev, end_time: now }));
         }
     };
 
     const resetCronometer = () => {
-        setIsCronometerRunning(false);
-        setCronometerTime(0);
-        setCronometerStartTime(null);
+        setCronometer(prev => ({ ...prev, isRunning: false, seconds: 0, startTime: null, endTime: null }));
         setForm(prev => ({ ...prev, start_time: undefined, end_time: undefined }));
     };
 
@@ -177,6 +189,11 @@ export function StudySessionForm() {
         }
         if (!form.topicId) {
             toast.error("Selecione um tópico.");
+            return;
+        }
+
+        if (!form.study_date) {
+            toast.error("Informe a data de estudo.");
             return;
         }
         if (!form.start_time || !form.end_time) {
@@ -349,21 +366,21 @@ export function StudySessionForm() {
                                 <CardContent>
                                     <div className="flex flex-col items-center gap-4">
                                         <div className="text-3xl font-mono">
-                                            {formatCronometerTime(cronometerTime)}
+                                            {formatCronometerTime(cronometer.seconds)}
                                         </div>
                                         <div className="flex gap-2">
                                             <Button
                                                 type="button"
-                                                variant={isCronometerRunning ? "outline" : "default"}
+                                                variant={cronometer.isRunning ? "outline" : "default"}
                                                 onClick={toggleCronometer}
                                             >
-                                                {isCronometerRunning ? "Parar" : "Iniciar"}
+                                                {cronometer.isRunning ? "Parar" : "Iniciar"}
                                             </Button>
                                             <Button
                                                 type="button"
                                                 variant="outline"
                                                 onClick={resetCronometer}
-                                                disabled={isCronometerRunning}
+                                                disabled={cronometer.isRunning}
                                             >
                                                 Resetar
                                             </Button>
@@ -497,3 +514,4 @@ export function StudySessionForm() {
         </>
     );
 }
+
