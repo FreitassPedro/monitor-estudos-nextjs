@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { connection } from "next/server";
 
 const include = {
     topic: {
@@ -35,6 +36,17 @@ export async function getStudyLogsByDateAction({
     });
 }
 
+export async function getStudyLogsByDateRangeAction(startDate: Date, endDate: Date) {
+    return prisma.studyLogs.findMany({
+        where: {
+            study_date: {
+                gte: startDate,
+                lte: endDate,
+            },
+        },
+        include,
+    });
+}
 export interface StudyLogInput {
     topic_id: string;
     study_date: Date;
@@ -59,7 +71,9 @@ export async function createStudyLogAction(data: StudyLogInput) {
 }
 
 export async function getTodayStudyLogsAction(userId: string) {
-    // "use cache"; Não é possivel usar cache em client actions, e como essa função é usada em um componente server, ela não precisa ser cacheada. O React Query irá cuidar do cache no cliente.
+    "use server";
+    // 1. Dizemos ao Next.js: "Aguarde a requisição chegar. Isso não é estático."
+    await connection();
     const today = new Date();
     const startOfDay = new Date(today.setHours(0, 0, 0, 0));
     const endOfDay = new Date(today.setHours(23, 59, 59, 999));
@@ -79,4 +93,3 @@ export async function getTodayStudyLogsAction(userId: string) {
         include,
     });
 }
-    
