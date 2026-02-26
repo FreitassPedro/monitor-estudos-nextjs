@@ -11,6 +11,75 @@ const include = {
     },
 } as const;
 
+
+export async function getStudyLogsFeedAction({
+    cursor,
+    userId,
+    fromDate,
+}: {
+    cursor?: string;
+    userId: string;
+    fromDate?: Date | string;
+}) {
+    const limit = 10;
+
+    const parsedFromDate = fromDate ? new Date(fromDate) : undefined;
+
+    const baseWhere = {
+        topic: {
+            subject: {
+                userId: userId,
+            },
+        },
+    } as const;
+
+    const where = {
+        ...(parsedFromDate
+            ? {
+                study_date: {
+                    gte: parsedFromDate,
+                },
+            }
+            : {}),
+        ...baseWhere,
+    } as const;
+
+    let logs = await prisma.studyLogs.findMany({
+        take: limit + 1, // Buscar um a mais para verificar se há mais páginas
+        cursor: cursor ? { id: cursor } : undefined,
+        skip: cursor ? 1 : 0,
+        where,
+        orderBy: [
+            { study_date: "desc" },
+            { start_time: "desc" },
+            { id: "desc" },
+        ],
+        include,
+    });
+
+    if (!cursor && parsedFromDate && logs.length === 0) {
+        logs = await prisma.studyLogs.findMany({
+            take: limit + 1,
+            orderBy: [
+                { study_date: "desc" },
+                { start_time: "desc" },
+                { id: "desc" },
+            ],
+            where: baseWhere,
+            include,
+        });
+    }
+
+    let nextCursor: string | undefined = undefined;
+
+    if (logs.length > limit) {
+        const nextItem = logs.pop(); // Remove o item extra
+        nextCursor = nextItem?.id; // Define o cursor para a próxima página
+    }
+
+    return { logs, nextCursor };
+}
+
 export async function getStudyLogsByDateAction({
     startDate,
     endDate,
@@ -35,6 +104,23 @@ export async function getStudyLogsByDateAction({
         include,
     });
 }
+
+export async function getStudyLogDetailsAction(logId: string) {
+    return prisma.studyLogs.findUnique({
+        where: {
+            id: logId,
+        },
+        include:
+        {
+            topic: {
+                include: {
+                    subject: true,
+                },
+            },
+        }
+    });
+}
+
 
 export async function getStudyLogsByDateRangeAction(startDate: Date, endDate: Date) {
     return prisma.studyLogs.findMany({
