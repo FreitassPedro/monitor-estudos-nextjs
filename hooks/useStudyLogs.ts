@@ -24,6 +24,9 @@ export function useCreateStudyLog() {
     });
 }
 
+export function useStudyLogsHistory(startDate: Date, endDate: Date) {
+    return useQuery(studyLogsByDateQUeryOptions(startDate, endDate));
+}
 
 
 export function useTodayStudyLogs(userId?: string) {

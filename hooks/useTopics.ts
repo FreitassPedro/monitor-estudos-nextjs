@@ -1,4 +1,4 @@
-import { createTopic, getTopicsBySubjectAction } from "@/server/actions/topic.action";
+import { createTopic, getTopicsAction, getTopicsBySubjectAction } from "@/server/actions/topic.action";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 /// ********************
@@ -12,12 +12,28 @@ export const topicsBySubjectQueryOptions = (subjectId?: string) => ({
     enabled: !!subjectId,
 });
 
-// useTopics, useTopicById, useTopicsMap are unused since getTopics now requires userId.
-// Use useTopicsBySubject instead.
+export function useTopics() {
+    return useQuery({
+        queryKey: ['topics'],
+        queryFn: () => getTopicsAction(),
+        select: (topics) => {
+            const topicsMap: Record<string, string> = {};
+            topics.forEach(topic => {
+                topicsMap[topic.id] = topic.name;
+            });
+            return { topics, topicsMap};
+        },
+    });
+}
+
 export function useTopicsBySubject(subjectId?: string) {
     return useQuery(topicsBySubjectQueryOptions(subjectId));
 }
 
+export function useTopicsMap(subjectId?: string) {
+    const { data } = useTopics();
+    return data?.topicsMap || {};
+}
 
 export function useCreateTopic() {
     const queryClient = useQueryClient();

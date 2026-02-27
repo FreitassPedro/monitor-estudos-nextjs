@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useStudyLogsHistory } from "@/hooks/useStudyLogs";
 import { getStudyLogDetailsAction, getStudyLogsByDateAction } from "@/server/actions/studyLogs.action";
 import { useQuery } from "@tanstack/react-query";
-import { addWeeks, endOfWeek, format, startOfWeek, subWeeks } from "date-fns";
+import { addWeeks, endOfWeek, format, isSameWeek, startOfWeek, subWeeks } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
     BookOpen,
@@ -18,6 +19,7 @@ import {
     Trash2,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { DateRange } from "./HistoryDateNav";
 
 const USER_ID = "8e4fba66-4d2e-4bb6-8200-c45db7a92f8e";
 
@@ -219,35 +221,21 @@ export function DateGroup({
     );
 }
 
-export function LogsHistory() {
+interface LogHistoryProps {
+    range: DateRange;   
+}
+
+export function LogsHistory({ range }: LogHistoryProps) {
     const today = useMemo(() => new Date(), []);
     const initialStart = useMemo(
         () => startOfWeek(today, { weekStartsOn: 1 }),
         [today]
     );
     const [currentStart, setCurrentStart] = useState(initialStart);
-    const isCurrentWeek =
-        format(currentStart, "yyyy-MM-dd") ===
-        format(initialStart, "yyyy-MM-dd");
-    const currentEnd = isCurrentWeek
-        ? today
-        : endOfWeek(currentStart, { weekStartsOn: 1 });
+    const isCurrentWeek = isSameWeek(today, currentStart, { weekStartsOn: 1 });
+    const currentEnd = isCurrentWeek ? today : endOfWeek(currentStart, { weekStartsOn: 1 });
 
-    const { data, status, error, isFetching } = useQuery({
-        queryKey: [
-            "studyLogs",
-            "week",
-            USER_ID,
-            format(currentStart, "yyyy-MM-dd"),
-            format(currentEnd, "yyyy-MM-dd"),
-        ],
-        queryFn: () =>
-            getStudyLogsByDateAction({
-                startDate: currentStart,
-                endDate: currentEnd,
-                userId: USER_ID,
-            }),
-    });
+    const { data, status, error, isFetching } = useStudyLogsHistory(currentStart, currentEnd);
 
     const groupedLogs = useMemo(() => {
         const allLogs = data ?? [];

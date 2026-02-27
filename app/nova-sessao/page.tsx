@@ -2,7 +2,7 @@ import { StudySessionForm } from "./components/StudySessionForm";
 
 export default function NovaSessaoPage() {
     return (
-        <div>
+        <div >
             <StudySessionForm />
         </div>
     );
