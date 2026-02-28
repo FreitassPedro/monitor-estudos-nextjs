@@ -1,5 +1,4 @@
-import { prisma } from "@/lib/prisma";
-import { createStudyLogAction, getStudyLogsByDateAction, getStudyLogsByDateRangeAction, getTodayStudyLogsAction, StudyLogInput } from "@/server/actions/studyLogs.action";
+import { createStudyLogAction, getStudyLogsByDateAction, getTodayStudyLogsAction, StudyLogInput } from "@/server/actions/studyLogs.action";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getDay } from "date-fns";
 

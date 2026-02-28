@@ -179,3 +179,43 @@ export async function getTodayStudyLogsAction(userId: string) {
         include,
     });
 }
+
+export async function getRecentLogsByTopicAction(topicId: string) {
+    return prisma.studyLogs.findMany({
+        where: {
+            topicId: topicId,
+        },
+        include: {
+            topic: {
+                select: {
+                    name: true,
+                }
+            }
+        },
+        orderBy: {
+            study_date: 'desc',
+        },
+        take: 3,
+    });
+}
+
+export async function getRecentLogsBySubjectAction(subjectId: string) {
+    return prisma.studyLogs.findMany({
+        where: {
+            topic: {
+                subjectId: subjectId,
+            },
+        },
+        include: {
+            topic: {
+                select: {
+                    name: true,
+                }
+            }
+        },
+        orderBy: {
+            study_date: 'desc',
+        },
+        take: 3,
+    });
+}

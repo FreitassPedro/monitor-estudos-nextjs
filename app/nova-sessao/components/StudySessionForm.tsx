@@ -23,6 +23,7 @@ import { useTopicsBySubject } from "@/hooks/useTopics";
 import { useCreateStudyLog } from "@/hooks/useStudyLogs";
 import { StudyLogInput } from "@/server/actions/studyLogs.action";
 import { NewTopicDialog } from "./NewTopicDialog";
+import useSessionFormStore from "@/store/useSessionFormStore";
 
 // --- Helpers ---
 
@@ -101,6 +102,7 @@ export function StudySessionForm() {
     const { data: subjects = [], isLoading: loadingSubjects } = useSubjects();
     const { data: topics = [], isLoading: loadingTopics } = useTopicsBySubject(form?.subjectId);
 
+    const { setSelectedSubject, setSelectedTopic, selectedSubject, selectedTopic } = useSessionFormStore();
     const createStudyLog = useCreateStudyLog();
 
     // Cronometer tick
@@ -132,6 +134,22 @@ export function StudySessionForm() {
         window.addEventListener("beforeunload", handler);
         return () => window.removeEventListener("beforeunload", handler);
     }, [form, cronometer.isRunning]);
+
+    // 
+    useEffect(() => {
+        if (form.subjectId && form.subjectId !== selectedSubject?.id) {
+            const findSubject = subjects.find(s => s.id === form.subjectId);
+            setSelectedSubject(findSubject);
+            setSelectedTopic(undefined);
+        }
+
+        if (form.topicId && form.topicId !== selectedTopic?.id) {
+            const findTopic = topics.find(t => t.id === form.topicId);
+            setSelectedTopic(findTopic);
+        }
+
+    }, [form.subjectId, form.topicId, setSelectedSubject, setSelectedTopic, subjects, topics, selectedSubject?.id, selectedTopic?.id]);
+
 
     // --- Handlers ---
 

@@ -18,3 +18,12 @@ export interface StudyLog {
     topicId: string;
     duration: number;
 }
+
+
+export interface SessionForm {
+    subject?: Subject;
+    topic?: Topic;
+    startTime?: string;
+    endTime?: string;
+    notes?: string;
+}
