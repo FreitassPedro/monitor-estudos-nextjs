@@ -97,7 +97,6 @@ export const LogSection = ({ type, title }: { type: 'topic' | 'subject', title: 
                 <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                     <BookOpen className="w-4 h-4 text-muted-foreground" />
                     <span>Recentes de: {title}</span>
-                    <span>CARREGANDO...</span>
                 </div>
                 <Separator className="my-2" />
                 <EmptyLog />
@@ -110,7 +109,7 @@ export const LogSection = ({ type, title }: { type: 'topic' | 'subject', title: 
 
             <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                 <BookOpen className="w-4 h-4 text-muted-foreground" />
-                <span>{title}</span> aa
+                <span>Recentes de: {title}</span>
                 <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform bg-background ${isOpen ? '' : '-rotate-90'}`}
                     onClick={() => setIsOpen(!isOpen)}
                     style={{ cursor: 'pointer' }}
