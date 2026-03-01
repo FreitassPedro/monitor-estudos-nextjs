@@ -1,6 +1,8 @@
 "use client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTodayStudyLogs } from "@/hooks/useStudyLogs";
+import { useSubjectsMap } from "@/hooks/useSubjects";
+import { useTopicsMap } from "@/hooks/useTopics";
 import useSessionFormStore from "@/store/useSessionFormStore";
 import { Clock } from "lucide-react";
 
@@ -82,6 +84,9 @@ export function TodayTimeline() {
     const { data: logs } = useTodayStudyLogs();
     const { cronometer, selectedSubject, selectedTopic } = useSessionFormStore();
 
+    const { data: subjectsMap } = useSubjectsMap();
+    const { data: topicsMap } = useTopicsMap();
+
     console.log("Teste Cronometer Load:", cronometer);
 
     return (
@@ -117,38 +122,74 @@ export function TodayTimeline() {
                             />
                         ))}
 
-
-                        {cronometer.startTime && selectedSubject && selectedTopic && (
-                            <div
-                                key={selectedSubject.id + '_current'}
-                                className={`absolute z-10 left-2 right-2 rounded-lg p-2 border-l-4 overflow-hidden cursor-pointer hover:scale-[1.01] hover:z-20 transition-all
-                                    ${cronometer.isRunning ? 'border-red-500 animate-pulse duration-3000 border-b border-dotted' : 'border-green-500'}
-                                    `}
-                                style={{
-                                    top: `${calculateTop(cronometer.startTime)}%`,
-                                    height: `${calculateFinalHeight(cronometer.startTime, cronometer.endTime)}%`,
-                                    backgroundColor: '#a1a1aa33',
-                                    borderLeftColor: '#a1a1aa',
-                                }}
-                            >
-                                <div className="flex justify-between h-full">
-                                    <div>
-                                        <h4 className="font-semibold text-xs text-slate-900 truncate">{selectedTopic?.name}</h4>
-                                        <span className="text-xs text-slate-600 truncate">{selectedSubject.name}</span>
-                                    </div>
-                                    <div className="text-xs text-slate-600 flex items-center gap-1  flex-row justify-between">
-                                        <div className='flex flex-row items-center gap-1'>
-                                            <Clock className="w-3 h-3" />
-                                            {formatTimeFromTimestamp(cronometer.startTime)}
+                        {logs?.map(log => {
+                            const subject = subjectsMap?.[log.topic.subjectId];;
+                            return (
+                                <div
+                                    key={log.id}
+                                    className="absolute z-0 left-2 right-2 rounded-lg p-2 border-l-4 overflow-hidden cursor-pointer hover:scale-[1.01] hover:z-20 transition-all
+                                    border-blue-500"
+                                    style={{
+                                        top: `${calculateTop(log.start_time)}%`,
+                                        height: `${calculateFinalHeight(log.start_time, log.end_time)}%`,
+                                        backgroundColor: '#3b82f633',
+                                        borderLeftColor: '#3b82f6',
+                                    }}
+                                >
+                                    <div className="flex justify-between h-full">
+                                        <div>
+                                            <h4 className="font-semibold text-xs text-slate-900 truncate">{log.topic?.name}</h4>
+                                            <span className="text-xs text-slate-600 truncate">{subject?.name}</span>
                                         </div>
-                                        <div className='flex flex-row items-center gap-1'>
-                                            <Clock className="w-3 h-3" />
-                                            {formatTimeFromTimestamp(cronometer.endTime)}
+                                        <div className="text-xs text-slate-600 flex items-center gap-1  flex-row justify-between">
+                                            <div className='flex flex-row items-center gap-1'>
+                                                <Clock className="w-3 h-3" />
+                                                {formatTimeFromTimestamp(log.start_time)}
+                                            </div>
+                                            <div className='flex flex-row items-center gap-1'>
+                                                <Clock className="w-3 h-3" />
+                                                {formatTimeFromTimestamp(log.end_time)}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        )}
+                            );
+                        })}
+
+
+                        {
+                            cronometer.startTime && selectedSubject && selectedTopic && (
+                                <div
+                                    key={selectedSubject.id + '_current'}
+                                    className={`absolute z-10 left-2 right-2 rounded-lg p-2 border-l-4 overflow-hidden cursor-pointer hover:scale-[1.01] hover:z-20 transition-all
+                                    ${cronometer.isRunning ? 'border-red-500 animate-pulse duration-3000 border-b border-dotted' : 'border-green-500'}
+                                    `}
+                                    style={{
+                                        top: `${calculateTop(cronometer.startTime)}%`,
+                                        height: `${calculateFinalHeight(cronometer.startTime, cronometer.endTime)}%`,
+                                        backgroundColor: '#a1a1aa33',
+                                        borderLeftColor: '#a1a1aa',
+                                    }}
+                                >
+                                    <div className="flex justify-between h-full">
+                                        <div>
+                                            <h4 className="font-semibold text-xs text-slate-900 truncate">{selectedTopic?.name}</h4>
+                                            <span className="text-xs text-slate-600 truncate">{selectedSubject.name}</span>
+                                        </div>
+                                        <div className="text-xs text-slate-600 flex items-center gap-1  flex-row justify-between">
+                                            <div className='flex flex-row items-center gap-1'>
+                                                <Clock className="w-3 h-3" />
+                                                {formatTimeFromTimestamp(cronometer.startTime)}
+                                            </div>
+                                            <div className='flex flex-row items-center gap-1'>
+                                                <Clock className="w-3 h-3" />
+                                                {formatTimeFromTimestamp(cronometer.endTime)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        }
                     </div>
                 </div>
 
