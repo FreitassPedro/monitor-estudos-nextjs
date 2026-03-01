@@ -2,12 +2,10 @@
 
 import { Clock, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getStudyLogsByDateAction } from "@/server/actions/studyLogs.action";
 import { isSameDay } from "date-fns";
 import { useStudyLogsRange } from "@/hooks/useStudyLogs";
 import useSearchRangeStore from "@/store/useSearchRangeStore";
 
-type StudyLog = Awaited<ReturnType<typeof getStudyLogsByDateAction>>[number];
 
 const formatTimeFromTimestamp = (time: Date | string) => {
     const timeDate = typeof time === 'string' ? new Date(time) : time;
@@ -52,9 +50,7 @@ const TimelineCardProps = {
 
 }
 
-const USER_ID = "8e4fba66-4d2e-4bb6-8200-c45db7a92f8e";
-
-export function RangeDayTimeline() {
+export function TimelineLogs() {
     const { startDate, endDate } = useSearchRangeStore();
     const range = { startDate, endDate };
     const isSingleDay = range && isSameDay(range.startDate, range.endDate);

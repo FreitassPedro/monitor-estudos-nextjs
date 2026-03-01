@@ -1,7 +1,7 @@
 "use client";
 
 import { HistoryDateNav } from "./components/HistoryDateNav";
-import { RangeDayTimeline } from "./components/RangeDayTimeline";
+import { TimelineLogs } from "./components/TimelineLogs";
 import { LogsHistory } from "./components/LogsHistory";
 import { SummaryCards } from "./components/SummaryCards";
 import { HistoryCharts } from "./components/HistoryCharts";
@@ -13,7 +13,7 @@ export function HistoryContent() {
       <HistoryDateNav />
       <SummaryCards />
       <HistoryCharts />
-      <RangeDayTimeline />
+      <TimelineLogs />
       <LogsHistory />
     </div>
   )
