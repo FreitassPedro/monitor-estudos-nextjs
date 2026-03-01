@@ -62,13 +62,6 @@ interface FormData {
     notes: string;
 }
 
-interface Cronometer {
-    isRunning: boolean;
-    seconds: number;
-    startTime: Date | null;
-    endTime: Date | null;
-}
-
 const emptyForm = (): FormData => ({
     subjectId: "",
     topicId: "",
@@ -84,14 +77,15 @@ export function StudySessionForm() {
     const router = useRouter();
 
     const [form, setForm] = useState<FormData>(emptyForm());
-
-    const [cronometer, setCronometer] = useState<Cronometer>({
-        isRunning: false,
-        seconds: 0,
-        startTime: null,
-        endTime: null,
-    });
-
+    const { 
+        setSelectedSubject, 
+        setSelectedTopic, 
+        selectedSubject, 
+        selectedTopic, 
+        cronometer,
+        updateCronometer,
+        resetCronometer 
+    } = useSessionFormStore();
 
     const [timeRegisterType, setTimeRegisterType] = useState<"manual" | "cronometer">("manual");
 
@@ -102,7 +96,6 @@ export function StudySessionForm() {
     const { data: subjects = [], isLoading: loadingSubjects } = useSubjects();
     const { data: topics = [], isLoading: loadingTopics } = useTopicsBySubject(form?.subjectId);
 
-    const { setSelectedSubject, setSelectedTopic, selectedSubject, selectedTopic } = useSessionFormStore();
     const createStudyLog = useCreateStudyLog();
 
     // Cronometer tick
@@ -110,10 +103,10 @@ export function StudySessionForm() {
         if (!cronometer.isRunning || !cronometer.startTime) return;
 
         const interval = window.setInterval(() => {
-            setCronometer(prev => ({ ...prev, seconds: prev.seconds + 1 }));
+            updateCronometer({ seconds: cronometer.seconds + 1 });
         }, 1000);
         return () => window.clearInterval(interval);
-    }, [cronometer.isRunning, cronometer.startTime]);
+    }, [cronometer.isRunning, cronometer.startTime, cronometer.seconds, updateCronometer]);
 
     // Warn on unsaved data
     useEffect(() => {
@@ -135,7 +128,7 @@ export function StudySessionForm() {
         return () => window.removeEventListener("beforeunload", handler);
     }, [form, cronometer.isRunning]);
 
-    // 
+    // Update Glob
     useEffect(() => {
         if (form.subjectId && form.subjectId !== selectedSubject?.id) {
             const findSubject = subjects.find(s => s.id === form.subjectId);
@@ -170,6 +163,8 @@ export function StudySessionForm() {
         const date = new Date();
         date.setHours(+hours, +minutes, 0, 0);
         setForm(prev => ({ ...prev, [field]: date }));
+
+        updateCronometer({ startTime: field === "start_time" ? date : cronometer.startTime, endTime: field === "end_time" ? date : cronometer.endTime });
     };
 
     const setCurrentTime = (field: "start_time" | "end_time") => {
@@ -179,16 +174,16 @@ export function StudySessionForm() {
     const toggleCronometer = () => {
         const now = new Date();
         if (!cronometer.isRunning) {
-            setCronometer(prev => ({ ...prev, isRunning: true, startTime: now, endTime: null }));
+            updateCronometer({ isRunning: true, startTime: now, endTime: null });
             setForm(prev => ({ ...prev, start_time: now, end_time: undefined }));
         } else {
-            setCronometer(prev => ({ ...prev, isRunning: false, endTime: now }));
+            updateCronometer({ isRunning: false, endTime: now });
             setForm(prev => ({ ...prev, end_time: now }));
         }
     };
 
-    const resetCronometer = () => {
-        setCronometer(prev => ({ ...prev, isRunning: false, seconds: 0, startTime: null, endTime: null }));
+    const handleResetCronometer = () => {
+        resetCronometer();
         setForm(prev => ({ ...prev, start_time: undefined, end_time: undefined }));
     };
 
@@ -300,14 +295,14 @@ export function StudySessionForm() {
                                 <Select
                                     value={form.topicId}
                                     onValueChange={handleTopicChange}
-                                    disabled={!form.subjectId}
+                                    disabled={!form.subjectId || topics.length === 0}
                                 >
                                     <SelectTrigger className="w-full" disabled={!form.subjectId}>
                                         <SelectValue
                                             placeholder={
-                                                !form.subjectId
+                                                !form.subjectId 
                                                     ? "Selecione uma matéria primeiro"
-                                                    : "Selecione um tópico"
+                                                    : (topics.length === 0 ? "Nenhum tópico cadastrado" : "Selecione um tópico")
                                             }
                                         />
                                     </SelectTrigger>
@@ -392,7 +387,7 @@ export function StudySessionForm() {
                                             <Button
                                                 type="button"
                                                 variant="outline"
-                                                onClick={resetCronometer}
+                                                onClick={handleResetCronometer}
                                                 disabled={cronometer.isRunning}
                                             >
                                                 Resetar
