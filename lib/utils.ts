@@ -7,18 +7,19 @@ export function cn(...inputs: ClassValue[]) {
 
 /**
  * Converte uma string de data (YYYY-MM-DD) ou Date do PostgreSQL para uma Date local
- * sem problemas de timezone. Útil para campos @db.Date do Prisma.
+ * sem problemas de timezone. Útil para campos @db.Date do Prisma quando usados na UI.
  * 
  * Problema: new Date("2026-03-02") interpreta como UTC e causa shift de timezone
  * Solução: Extrai os componentes e cria data local explicitamente
  */
 export function parseDateAsLocal(dateInput: Date | string): Date {
   if (dateInput instanceof Date) {
-    // Se já é Date, extrair componentes para garantir data local
+    // Para Date objects vindos do Prisma (@db.Date vem como UTC midnight),
+    // usar componentes UTC para evitar shift de timezone
     return new Date(
-      dateInput.getFullYear(),
-      dateInput.getMonth(),
-      dateInput.getDate()
+      dateInput.getUTCFullYear(),
+      dateInput.getUTCMonth(),
+      dateInput.getUTCDate()
     );
   }
   
@@ -28,11 +29,20 @@ export function parseDateAsLocal(dateInput: Date | string): Date {
 }
 
 /**
- * Formata uma Date para string "YYYY-MM-DD"
+ * Formata Date ou string de data para "YYYY-MM-DD"
+ * Usa UTC para extrair componentes quando é Date (padrão Prisma para @db.Date)
  */
-export function formatDateKey(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+export function formatDateKey(date: Date | string): string {
+  if (typeof date === 'string') {
+    // Se já é string no formato correto, retorna direto
+    if (/^\d{4}-\d{2}-\d{2}$/.test(date)) return date;
+    // Senão, converte para Date primeiro
+    date = new Date(date);
+  }
+  
+  // Usar UTC para evitar problemas de timezone com @db.Date do Prisma
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }

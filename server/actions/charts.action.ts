@@ -2,7 +2,7 @@
 
 import { AreaChartData } from "@/app/historico/components/charts/StudyAreaChart";
 import { prisma } from "@/lib/prisma";
-import { formatDateKey, parseDateAsLocal } from "@/lib/utils";
+import { formatDateKey } from "@/lib/utils";
 
 
 const userId = "8e4fba66-4d2e-4bb6-8200-c45db7a92f8e";
@@ -27,12 +27,19 @@ export type HeatmapMonthResponse = {
 };
 
 export async function getPieChartDataAction(startDate: Date, endDate: Date): Promise<PieChartResponse> {
+    // Normalizar datas para evitar problemas de timezone
+    const normalizedStart = new Date(startDate);
+    normalizedStart.setHours(0, 0, 0, 0);
+    
+    const normalizedEnd = new Date(endDate);
+    normalizedEnd.setHours(23, 59, 59, 999);
+
     const aggregated = await prisma.studyLogs.groupBy({
         by: ['topicId'],
         where: {
             study_date: {
-                gte: startDate,
-                lte: endDate,
+                gte: normalizedStart,
+                lte: normalizedEnd,
             },
             topic: {
                 subject: {
@@ -80,13 +87,21 @@ export async function getPieChartDataAction(startDate: Date, endDate: Date): Pro
 
 
 export async function getAreaChartACtion(startDate: Date, endDate: Date) {
+    // Normalizar datas para evitar problemas de timezone
+    // Quando comparamos com @db.Date, precisamos garantir que estamos comparando apenas a data
+    const normalizedStart = new Date(startDate);
+    normalizedStart.setHours(0, 0, 0, 0);
+    
+    const normalizedEnd = new Date(endDate);
+    normalizedEnd.setHours(23, 59, 59, 999);
+
     // Aggregate by study_date and topic with subject relationship
     const aggregated = await prisma.studyLogs.groupBy({
         by: ['study_date', 'topicId'],
         where: {
             study_date: {
-                gte: startDate,
-                lte: endDate,
+                gte: normalizedStart,
+                lte: normalizedEnd,
             },
             topic: {
                 subject: {
@@ -112,7 +127,8 @@ export async function getAreaChartACtion(startDate: Date, endDate: Date) {
     const chart: AreaChartData = {};
 
     aggregated.forEach(agg => {
-        const dateKey = formatDateKey(parseDateAsLocal(agg.study_date));
+        // formatDateKey agora usa UTC internamente, lidando corretamente com @db.Date
+        const dateKey = formatDateKey(agg.study_date);
         const minutes = agg._sum.duration_minutes || 0;
 
         if (!chart[dateKey]) {
@@ -162,7 +178,8 @@ export async function getHeatmapMonthDataAction(monthDate: Date): Promise<Heatma
     let monthTotalMinutes = 0;
 
     aggregated.forEach((agg) => {
-        const key = formatDateKey(parseDateAsLocal(agg.study_date));
+        // formatDateKey agora usa UTC internamente, lidando corretamente com @db.Date
+        const key = formatDateKey(agg.study_date);
         const minutes = agg._sum.duration_minutes || 0;
         minutesByDate[key] = minutes;
         monthTotalMinutes += minutes;

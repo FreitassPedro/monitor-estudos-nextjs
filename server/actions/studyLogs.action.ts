@@ -23,7 +23,11 @@ export async function getStudyLogsFeedAction({
 }) {
     const limit = 10;
 
+    // Normalizar data para evitar problemas de timezone ao comparar com @db.Date
     const parsedFromDate = fromDate ? new Date(fromDate) : undefined;
+    if (parsedFromDate) {
+        parsedFromDate.setHours(0, 0, 0, 0);
+    }
 
     const baseWhere = {
         topic: {
@@ -89,11 +93,18 @@ export async function getStudyLogsByDateAction({
     endDate: Date;
     userId: string;
 }) {
+    // Normalizar datas para evitar problemas de timezone ao comparar com @db.Date
+    const normalizedStart = new Date(startDate);
+    normalizedStart.setHours(0, 0, 0, 0);
+    
+    const normalizedEnd = new Date(endDate);
+    normalizedEnd.setHours(23, 59, 59, 999);
+
     return prisma.studyLogs.findMany({
         where: {
             study_date: {
-                gte: startDate,
-                lte: endDate,
+                gte: normalizedStart,
+                lte: normalizedEnd,
             },
             topic: {
                 subject: {
@@ -123,11 +134,18 @@ export async function getStudyLogDetailsAction(logId: string) {
 
 
 export async function getStudyLogsByDateRangeAction(startDate: Date, endDate: Date) {
+    // Normalizar datas para evitar problemas de timezone ao comparar com @db.Date
+    const normalizedStart = new Date(startDate);
+    normalizedStart.setHours(0, 0, 0, 0);
+    
+    const normalizedEnd = new Date(endDate);
+    normalizedEnd.setHours(23, 59, 59, 999);
+
     return prisma.studyLogs.findMany({
         where: {
             study_date: {
-                gte: startDate,
-                lte: endDate,
+                gte: normalizedStart,
+                lte: normalizedEnd,
             },
         },
         include,
