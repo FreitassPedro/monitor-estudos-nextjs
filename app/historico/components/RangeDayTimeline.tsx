@@ -3,9 +3,9 @@
 import { Clock, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getStudyLogsByDateAction } from "@/server/actions/studyLogs.action";
-import type { DateRange } from "./HistoryDateNav";
 import { isSameDay } from "date-fns";
 import { useStudyLogsRange } from "@/hooks/useStudyLogs";
+import useSearchRangeStore from "@/store/useSearchRangeStore";
 
 type StudyLog = Awaited<ReturnType<typeof getStudyLogsByDateAction>>[number];
 
@@ -54,7 +54,9 @@ const TimelineCardProps = {
 
 const USER_ID = "8e4fba66-4d2e-4bb6-8200-c45db7a92f8e";
 
-export function RangeDayTimeline({ range }: { range: DateRange }) {
+export function RangeDayTimeline() {
+    const { startDate, endDate } = useSearchRangeStore();
+    const range = { startDate, endDate };
     const isSingleDay = range && isSameDay(range.startDate, range.endDate);
 
     const { data: logs, isLoading } = useStudyLogsRange(range.startDate, range.endDate);

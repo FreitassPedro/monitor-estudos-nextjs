@@ -10,23 +10,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar } from '@/components/ui/calendar';
 import { addDays, addMonths, addWeeks, endOfMonth, endOfWeek, format, startOfMonth, startOfWeek, subDays, subMonths, subWeeks } from 'date-fns';
+import useSearchRangeStore from '@/store/useSearchRangeStore';
 
 export type RangeType = 'day' | 'week' | 'month' | 'custom';
 
-export interface DateRange {
-    startDate: Date;
-    endDate: Date;
-}
+export function HistoryDateNav() {
 
-interface HistoryDateNavProps {
-    range: DateRange;
-    setRange: (range: DateRange) => void;
-}
-
-export function HistoryDateNav({
-    range,
-    setRange
-}: HistoryDateNavProps) {
+    const { startDate, endDate, setRange } = useSearchRangeStore();
+    const range = { startDate, endDate };
 
     const [isOpenPicker, setIsOpenPicker] = useState(false);
     const [pickingRange, setPickingRange] = useState<CalendarDateRange>({ from: range.startDate, to: range.endDate });

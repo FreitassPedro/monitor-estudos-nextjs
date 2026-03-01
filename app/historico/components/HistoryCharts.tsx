@@ -1,37 +1,46 @@
 "use client";
 
-import { ProductivityByPeriod } from "./charts/ProductivityByPeriod";
 import { StudyAreaChart } from "./charts/StudyAreaChart";
 import { StudyHeatmap } from "./charts/StudyHeatmap";
 import { StudyPieChart } from "./charts/StudyPieChart";
-import { useQuery } from "@tanstack/react-query";
-import { getAreaChartACtion, getPieChartDataAction } from "@/server/actions/charts.action";
+import { Suspense } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { PieChartIcon } from "lucide-react";
 
+const ChartSkeleton = () => {
+    return (
+       <Card>
+            <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center gap-2">
+                    <PieChartIcon className="h-4 w-4 text-cyan-500" />
+                    Distribuição por Matéria
+                </CardTitle>
+                <CardDescription>Tempo dedicado a cada área</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="flex items-center justify-center h-[200px] text-sm text-muted-foreground">
+                    Carregando...
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+export const HistoryCharts = () => {
 
-export const HistoryCharts = ({ range }: { range: { startDate: Date; endDate: Date } }) => {
-    // Derived: pie chart data
-
-    const dataPieChart = useQuery({
-        queryKey: ['charts', 'pie', range.startDate, range.endDate],
-        queryFn: () => getPieChartDataAction(range.startDate, range.endDate),
-        staleTime: 1000 * 60 * 5, // 5 minutos
-    });
-
-    const dataAreaChart = useQuery({
-        queryKey: ['charts', 'area', range.startDate, range.endDate],
-        queryFn: () => getAreaChartACtion(range.startDate, range.endDate),
-        staleTime: 1000 * 60 * 5, // 5 minutos
-    });
 
     return (
         <>
             <div className="grid gap-4 md:grid-cols-2">
-                <StudyAreaChart data={dataAreaChart.data ?? {}} />
-                <StudyPieChart data={dataPieChart.data ?? []} />
+                <Suspense fallback={<ChartSkeleton />}>
+                    <StudyAreaChart />
+                </Suspense>
+                <Suspense fallback={<ChartSkeleton />}>
+                    <StudyPieChart />
+                </Suspense>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
                 {/* <ProductivityByPeriod logs={logs} /> */}
-                {/* <StudyHeatmap range={range} onSelectDate={() => { }} /> */}
+                 {/* <StudyHeatmap onSelectDate={() => { }} /> */}
             </div>
         </>
     );

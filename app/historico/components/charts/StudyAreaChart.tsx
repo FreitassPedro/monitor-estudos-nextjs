@@ -3,6 +3,9 @@
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { getAreaChartACtion } from "@/server/actions/charts.action";
+import useSearchRangeStore from "@/store/useSearchRangeStore";
 
 const formatTime = (minutes: number) => {
     if (minutes === 0) return '0min';
@@ -21,10 +24,6 @@ interface StudyData {
         totalMinutes: number;
         materia: { minutes: number; name: string; color?: string }[];
     };
-}
-
-interface StudyAreaChartProps {
-    data: StudyData;
 }
 
 const CustomTooltip = ({ active, payload, data }: { active?: boolean; payload?: any[]; data: StudyData }) => {
@@ -55,13 +54,39 @@ const CustomTooltip = ({ active, payload, data }: { active?: boolean; payload?: 
     return null;
 };
 
-export const StudyAreaChart = ({ data }: StudyAreaChartProps) => {
-    const chartData = Object.entries(data).map(([date, value]) => ({
+export const StudyAreaChart = () => {
+    const { startDate, endDate } = useSearchRangeStore();
+
+    const dataAreaChart = useQuery({
+        queryKey: ['charts', 'area', startDate, endDate],
+        queryFn: () => getAreaChartACtion(startDate, endDate),
+        staleTime: 1000 * 60 * 5, // 5 minutos
+    });
+
+    const chartData = Object.entries(dataAreaChart.data || {}).map(([date, info]) => ({
         date,
-        minutes: value.totalMinutes,
+        minutes: info.totalMinutes,
     }));
 
-    const hasData = chartData.some(d => d.minutes > 0);
+    if (dataAreaChart.isLoading) {
+        return (
+            <Card>
+                <CardHeader className="pb-2">
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4 text-violet-500" />
+                        Evolução de Estudo
+                    </CardTitle>
+                    <CardDescription>Tempo total por dia no período</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex items-center justify-center h-50 text-sm text-muted-foreground">
+                        Carregando...
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
 
     return (
         <Card>
@@ -73,7 +98,7 @@ export const StudyAreaChart = ({ data }: StudyAreaChartProps) => {
                 <CardDescription>Tempo total por dia no período</CardDescription>
             </CardHeader>
             <CardContent>
-                {!hasData ? (
+                {!chartData || chartData.length === 0 ? (
                     <div className="flex items-center justify-center h-50 text-sm text-muted-foreground">
                         Sem dados para exibir neste período
                     </div>
@@ -100,7 +125,7 @@ export const StudyAreaChart = ({ data }: StudyAreaChartProps) => {
                                 axisLine={false}
                                 tickLine={false}
                             />
-                            <Tooltip content={<CustomTooltip data={data} />} />
+                            <Tooltip content={<CustomTooltip data={dataAreaChart.data || {}} />} />
                             <Area
                                 type="monotone"
                                 dataKey="minutes"

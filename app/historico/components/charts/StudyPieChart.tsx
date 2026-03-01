@@ -3,6 +3,9 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart as PieChartIcon } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { getPieChartDataAction } from "@/server/actions/charts.action";
+import useSearchRangeStore from "@/store/useSearchRangeStore";
 
 const formatTime = (minutes: number) => {
     if (minutes === 0) return '0min';
@@ -10,15 +13,6 @@ const formatTime = (minutes: number) => {
     const mins = minutes % 60;
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
 };
-
-interface StudyPieChartProps {
-    data: {
-        name: string;
-        value: number;
-        sessions: number;
-        color?: string;
-    }[];
-}
 
 const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -62,10 +56,18 @@ const renderCustomLabel = ({
     );
 };
 
-export const StudyPieChart = ({ data }: StudyPieChartProps) => {
-    const sorted = [...data].sort((a, b) => b.value - a.value);
-    const hasData = sorted.length > 0 && sorted.some(d => d.value > 0);
-    const totalMinutes = sorted.reduce((sum, s) => sum + s.value, 0);
+export const StudyPieChart = () => {
+    const { startDate, endDate } = useSearchRangeStore();
+
+    const { data: chartData } = useQuery({
+        queryKey: ['charts', 'pie', startDate, endDate],
+        queryFn: () => getPieChartDataAction(startDate, endDate),
+        staleTime: 1000 * 60 * 5, // 5 minutos
+    });
+
+    const data = chartData?.data ?? [];
+    const totalMinutes = chartData?.totalMinutes ?? 0;
+    const hasData = chartData?.hasData ?? false;
 
     return (
         <Card>
@@ -86,7 +88,7 @@ export const StudyPieChart = ({ data }: StudyPieChartProps) => {
                         <ResponsiveContainer width="100%" height={200}>
                             <PieChart>
                                 <Pie
-                                    data={sorted}
+                                    data={data}
                                     cx="50%"
                                     cy="50%"
                                     labelLine={false}
@@ -96,7 +98,7 @@ export const StudyPieChart = ({ data }: StudyPieChartProps) => {
                                     paddingAngle={2}
                                     dataKey="value"
                                 >
-                                    {sorted.map((entry, index) => (
+                                    {data.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.color || '#8884d8'} />
                                     ))}
                                 </Pie>
@@ -105,7 +107,7 @@ export const StudyPieChart = ({ data }: StudyPieChartProps) => {
                         </ResponsiveContainer>
 
                         <div className="space-y-2 mt-3">
-                            {sorted.map((subject, index) => {
+                            {data.map((subject, index) => {
                                 const percentage = totalMinutes > 0
                                     ? ((subject.value / totalMinutes) * 100).toFixed(0)
                                     : '0';

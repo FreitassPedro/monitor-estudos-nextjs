@@ -1,10 +1,10 @@
 import { useStudyLogsHistory } from "@/hooks/useStudyLogs";
-import { DateRange } from "./HistoryDateNav";
 import { useMemo } from "react";
 import { BookOpen, Clock, Icon, Timer, TrendingUp, Trophy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSubjectsMap } from "@/hooks/useSubjects";
 import { useTopicsBySubject, useTopicsMap } from "@/hooks/useTopics";
+import useSearchRangeStore from "@/store/useSearchRangeStore";
 
 
 const formatDuration = (minutes: number) => {
@@ -56,12 +56,11 @@ export const SummaryCard = ({ card }: { card: CardInfo }) => {
     );
 }
 
-interface SummaryCardProps {
-    range: DateRange;
-}
-export function SummaryCards({ range }: SummaryCardProps) {
+export function SummaryCards() {
 
-    const { data, status, error, isLoading } = useStudyLogsHistory(range.startDate, range.endDate);
+    const { startDate, endDate } = useSearchRangeStore();
+
+    const { data, status, error, isLoading } = useStudyLogsHistory(startDate, endDate);
 
     const { data: subjectsMap } = useSubjectsMap();
     const { data: topicsMap } = useTopicsMap();

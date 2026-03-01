@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 
 
-const userId = "";
+const userId = "8e4fba66-4d2e-4bb6-8200-c45db7a92f8e";
 
 export type PieChartData = {
     name: string;
@@ -12,8 +12,13 @@ export type PieChartData = {
     color?: string;
 }
 
+export type PieChartResponse = {
+    data: PieChartData[];
+    totalMinutes: number;
+    hasData: boolean;
+}
 
-export async function getPieChartDataAction(startDate: Date, endDate: Date): Promise<PieChartData[]> {
+export async function getPieChartDataAction(startDate: Date, endDate: Date): Promise<PieChartResponse> {
     const logs = await prisma.studyLogs.findMany({
         where: {
             study_date: {
@@ -48,7 +53,16 @@ export async function getPieChartDataAction(startDate: Date, endDate: Date): Pro
         grouped[name].sessions += 1;
     });
 
-    return Object.values(grouped);
+    const dataArray = Object.values(grouped);
+    const sorted = dataArray.sort((a, b) => b.value - a.value);
+    const totalMinutes = sorted.reduce((sum, item) => sum + item.value, 0);
+    const hasData = sorted.length > 0 && sorted.some(d => d.value > 0);
+
+    return {
+        data: sorted,
+        totalMinutes,
+        hasData
+    };
 }
 
 

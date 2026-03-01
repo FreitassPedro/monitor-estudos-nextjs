@@ -3,14 +3,12 @@ import { useMemo, useState } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useStudyLogs } from '@/hooks/useStudyLogs';
-import { type StudyLog } from '@/types/studyLog';
-import type { DateRange } from '../HistoryDateNav';
+
+import useSearchRangeStore from '@/store/useSearchRangeStore';
 
 interface StudyHeatmapProps {
-  range: DateRange;
   onSelectDate: (date: Date) => void;
-}
+} 
 
 const getDaysInMonth = (date: Date) => {
   const year = date.getFullYear();
@@ -50,7 +48,9 @@ const formatTime = (minutes: number) => {
 
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
-export function StudyHeatmap({ range, onSelectDate }: StudyHeatmapProps) {
+export function StudyHeatmap({ onSelectDate }: StudyHeatmapProps) {
+  const { startDate, endDate } = useSearchRangeStore();
+  const range = { startDate, endDate };
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
   const { data: allLogs = [] } = useStudyLogs();
 

@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useStudyLogsHistory } from "@/hooks/useStudyLogs";
 import { getStudyLogDetailsAction, getStudyLogsByDateAction } from "@/server/actions/studyLogs.action";
 import { useQuery } from "@tanstack/react-query";
-import { addWeeks, endOfWeek, format, isSameWeek, startOfWeek, subWeeks } from "date-fns";
+import { addWeeks, endOfWeek, format, isSameWeek, subWeeks } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
     BookOpen,
@@ -19,7 +19,7 @@ import {
     Trash2,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import { DateRange } from "./HistoryDateNav";
+import useSearchRangeStore from "@/store/useSearchRangeStore";
 
 const USER_ID = "8e4fba66-4d2e-4bb6-8200-c45db7a92f8e";
 
@@ -221,19 +221,11 @@ export function DateGroup({
     );
 }
 
-interface LogHistoryProps {
-    range: DateRange;   
-}
-
-export function LogsHistory({ range }: LogHistoryProps) {
-    const today = useMemo(() => new Date(), []);
-    const initialStart = useMemo(
-        () => startOfWeek(today, { weekStartsOn: 1 }),
-        [today]
-    );
-    const [currentStart, setCurrentStart] = useState(initialStart);
-    const isCurrentWeek = isSameWeek(today, currentStart, { weekStartsOn: 1 });
-    const currentEnd = isCurrentWeek ? today : endOfWeek(currentStart, { weekStartsOn: 1 });
+export function LogsHistory() {
+    const { startDate, endDate, setRange } = useSearchRangeStore();
+    const isCurrentWeek = isSameWeek(endDate, new Date(), { weekStartsOn: 1 });
+    const currentStart = startDate;
+    const currentEnd = endDate;
 
     const { data, status, error, isFetching } = useStudyLogsHistory(currentStart, currentEnd);
 
@@ -262,14 +254,26 @@ export function LogsHistory({ range }: LogHistoryProps) {
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setCurrentStart((prev) => subWeeks(prev, 1))}
+                        onClick={() => {
+                            const previousWeekStart = subWeeks(currentStart, 1);
+                            setRange({
+                                startDate: previousWeekStart,
+                                endDate: endOfWeek(previousWeekStart, { weekStartsOn: 1 }),
+                            });
+                        }}
                     >
                         Prev
                     </Button>
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setCurrentStart((prev) => addWeeks(prev, 1))}
+                        onClick={() => {
+                            const nextWeekStart = addWeeks(currentStart, 1);
+                            setRange({
+                                startDate: nextWeekStart,
+                                endDate: endOfWeek(nextWeekStart, { weekStartsOn: 1 }),
+                            });
+                        }}
                         disabled={isCurrentWeek}
                     >
                         Next
