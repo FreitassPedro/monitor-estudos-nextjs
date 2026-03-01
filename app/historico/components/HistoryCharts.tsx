@@ -18,7 +18,7 @@ const ChartSkeleton = () => {
                 <CardDescription>Tempo dedicado a cada área</CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="flex items-center justify-center h-[200px] text-sm text-muted-foreground">
+                <div className="flex items-center justify-center h-50 text-sm text-muted-foreground">
                     Carregando...
                 </div>
             </CardContent>
@@ -40,7 +40,7 @@ export const HistoryCharts = () => {
             </div>
             <div className="grid gap-4 md:grid-cols-2">
                 {/* <ProductivityByPeriod logs={logs} /> */}
-                 {/* <StudyHeatmap onSelectDate={() => { }} /> */}
+                  <StudyHeatmap onSelectDate={() => { }} />
             </div>
         </>
     );

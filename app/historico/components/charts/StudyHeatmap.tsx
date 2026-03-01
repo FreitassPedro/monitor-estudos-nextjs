@@ -1,8 +1,10 @@
 "use client";
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useQuery } from '@tanstack/react-query';
+import { getHeatmapMonthDataAction } from '@/server/actions/charts.action';
 
 import useSearchRangeStore from '@/store/useSearchRangeStore';
 
@@ -52,19 +54,13 @@ export function StudyHeatmap({ onSelectDate }: StudyHeatmapProps) {
   const { startDate, endDate } = useSearchRangeStore();
   const range = { startDate, endDate };
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
-  const { data: allLogs = [] } = useStudyLogs();
+  const { data: heatmapData, isLoading } = useQuery({
+    queryKey: ['charts', 'heatmap', currentMonth.getFullYear(), currentMonth.getMonth()],
+    queryFn: () => getHeatmapMonthDataAction(currentMonth),
+    staleTime: 1000 * 60 * 5,
+  });
 
-  // Build a map: "YYYY-MM-DD" -> total minutes for the displayed month
-  const minutesByDate = useMemo(() => {
-    const map: Record<string, number> = {};
-    allLogs.forEach((log: StudyLog) => {
-      const dateStr = typeof log.study_date === 'string'
-        ? (log.study_date as string).split('T')[0]
-        : new Date(log.study_date).toISOString().split('T')[0];
-      map[dateStr] = (map[dateStr] || 0) + log.duration_minutes;
-    });
-    return map;
-  }, [allLogs]);
+  const minutesByDate = heatmapData?.minutesByDate ?? {};
 
   const getMinutesForDate = (date: Date | null) => {
     if (!date) return 0;
@@ -102,12 +98,7 @@ export function StudyHeatmap({ onSelectDate }: StudyHeatmapProps) {
     );
   };
 
-  // Monthly total for the displayed month
-  const monthTotal = useMemo(() => {
-    let total = 0;
-    days.forEach(d => { total += getMinutesForDate(d); });
-    return total;
-  }, [days, minutesByDate]);
+  const monthTotal = heatmapData?.monthTotalMinutes ?? 0;
 
   return (
     <Card>
@@ -117,7 +108,9 @@ export function StudyHeatmap({ onSelectDate }: StudyHeatmapProps) {
           Calendário de Atividades
         </CardTitle>
         <CardDescription>
-          {monthTotal > 0
+          {isLoading
+            ? 'Carregando...'
+            : monthTotal > 0
             ? `${formatTime(monthTotal)} estudados em ${currentMonth.toLocaleDateString('pt-BR', { month: 'long' })}`
             : 'Clique em um dia para ver detalhes'}
         </CardDescription>

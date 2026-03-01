@@ -18,8 +18,22 @@ export type PieChartResponse = {
     hasData: boolean;
 }
 
+export type HeatmapMonthResponse = {
+    monthLabel: string;
+    monthTotalMinutes: number;
+    minutesByDate: Record<string, number>;
+};
+
+const formatDateKey = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+};
+
 export async function getPieChartDataAction(startDate: Date, endDate: Date): Promise<PieChartResponse> {
-    const logs = await prisma.studyLogs.findMany({
+    const aggregated = await prisma.studyLogs.groupBy({
+        by: ['topicId'],
         where: {
             study_date: {
                 gte: startDate,
@@ -30,45 +44,50 @@ export async function getPieChartDataAction(startDate: Date, endDate: Date): Pro
                     userId: userId,
                 },
             },
-
         },
-        include: {
-            topic: {
-                include: {
-                    subject: true,
-                },
-            },
+        _sum: {
+            duration_minutes: true,
         },
+        _count: true,
     });
 
-    const grouped: Record<string, PieChartData> = {};
-
-    logs.forEach(log => {
-        const subject = log.topic.subject;
-        const name = subject?.name || 'Desconecido';
-
-        if (!grouped[name]) grouped[name] = { name, value: 0, sessions: 0, color: subject?.color || '#888888' };
-
-        grouped[name].value += log.duration_minutes;
-        grouped[name].sessions += 1;
+    // Fetch subject info for each topic
+    const topicIds = aggregated.map(agg => agg.topicId);
+    const topics = await prisma.topic.findMany({
+        where: { id: { in: topicIds } },
+        include: { subject: true },
     });
 
-    const dataArray = Object.values(grouped);
-    const sorted = dataArray.sort((a, b) => b.value - a.value);
-    const totalMinutes = sorted.reduce((sum, item) => sum + item.value, 0);
-    const hasData = sorted.length > 0 && sorted.some(d => d.value > 0);
+    const topicMap = new Map(topics.map(t => [t.id, t]));
+
+    const data = aggregated
+        .map(agg => {
+            const topic = topicMap.get(agg.topicId);
+            const subject = topic?.subject;
+            return {
+                name: subject?.name || 'Desconhecido',
+                value: agg._sum.duration_minutes || 0,
+                sessions: agg._count,
+                color: subject?.color || '#888888',
+            };
+        })
+        .sort((a, b) => b.value - a.value);
+
+    const totalMinutes = data.reduce((sum, item) => sum + item.value, 0);
+    const hasData = data.length > 0 && data.some(d => d.value > 0);
 
     return {
-        data: sorted,
+        data,
         totalMinutes,
-        hasData
+        hasData,
     };
 }
 
 
 export async function getAreaChartACtion(startDate: Date, endDate: Date) {
-
-    const logs = await prisma.studyLogs.findMany({
+    // Aggregate by study_date and topic with subject relationship
+    const aggregated = await prisma.studyLogs.groupBy({
+        by: ['study_date', 'topicId'],
         where: {
             study_date: {
                 gte: startDate,
@@ -80,48 +99,86 @@ export async function getAreaChartACtion(startDate: Date, endDate: Date) {
                 },
             },
         },
-        include: {
-            topic: {
-                include: {
-                    subject: true,
-                },
-            },
+        _sum: {
+            duration_minutes: true,
         },
     });
 
-
-    const chart: Record<string, {
-        totalMinutes: number;
-        materia: { minutes: number; name: string; color?: string, }[]
-    }> = {};
-
-    const materiasAux: Record<string, { name: string; color?: string, minutes: number }> = {};
-
-    logs.forEach(log => {
-        const logDate = log.study_date.toDateString();
-        if (!chart[logDate]) {
-            chart[logDate] = { totalMinutes: 0, materia: [] };
-        }
-
-        chart[logDate].totalMinutes += log.duration_minutes;
-        const subject = log.topic.subject;
-
-        if (!materiasAux[subject.id]) {
-            materiasAux[subject.id] = {
-                name: subject.name,
-                color: subject.color,
-                minutes: log.duration_minutes,
-            };
-        } else {
-            materiasAux[subject.id].minutes += log.duration_minutes;
-        }
-
+    // Fetch necessary topic/subject info
+    const topicIds = [...new Set(aggregated.map(agg => agg.topicId))];
+    const topics = await prisma.topic.findMany({
+        where: { id: { in: topicIds } },
+        include: { subject: true },
     });
 
-    // Agora preenchemos o array de matérias para cada dia
-    Object.keys(chart).forEach(date => {
-        chart[date].materia = Object.values(materiasAux);
+    const topicMap = new Map(topics.map(t => [t.id, t]));
+
+    // Build chart structure grouped by date
+    const chart: Record<string, {
+        totalMinutes: number;
+        materia: { minutes: number; name: string; color?: string }[]
+    }> = {};
+
+    aggregated.forEach(agg => {
+        const dateKey = agg.study_date.toDateString();
+        const minutes = agg._sum.duration_minutes || 0;
+
+        if (!chart[dateKey]) {
+            chart[dateKey] = { totalMinutes: 0, materia: [] };
+        }
+
+        chart[dateKey].totalMinutes += minutes;
+
+        const topic = topicMap.get(agg.topicId);
+        const subject = topic?.subject;
+
+        if (subject) {
+            chart[dateKey].materia.push({
+                name: subject.name,
+                color: subject.color,
+                minutes,
+            });
+        }
     });
 
     return chart;
+}
+
+export async function getHeatmapMonthDataAction(monthDate: Date): Promise<HeatmapMonthResponse> {
+    const startDate = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1, 0, 0, 0, 0);
+    const endDate = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0, 23, 59, 59, 999);
+
+    const aggregated = await prisma.studyLogs.groupBy({
+        by: ['study_date'],
+        where: {
+            study_date: {
+                gte: startDate,
+                lte: endDate,
+            },
+            topic: {
+                subject: {
+                    userId,
+                },
+            },
+        },
+        _sum: {
+            duration_minutes: true,
+        },
+    });
+
+    const minutesByDate: Record<string, number> = {};
+    let monthTotalMinutes = 0;
+
+    aggregated.forEach((agg) => {
+        const key = formatDateKey(agg.study_date);
+        const minutes = agg._sum.duration_minutes || 0;
+        minutesByDate[key] = minutes;
+        monthTotalMinutes += minutes;
+    });
+
+    return {
+        monthLabel: monthDate.toLocaleDateString("pt-BR", { month: "long", year: "numeric" }),
+        monthTotalMinutes,
+        minutesByDate,
+    };
 }
