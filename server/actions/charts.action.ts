@@ -1,5 +1,6 @@
 "use server";
 
+import { AreaChartData } from "@/app/historico/components/charts/StudyAreaChart";
 import { prisma } from "@/lib/prisma";
 
 
@@ -114,10 +115,7 @@ export async function getAreaChartACtion(startDate: Date, endDate: Date) {
     const topicMap = new Map(topics.map(t => [t.id, t]));
 
     // Build chart structure grouped by date
-    const chart: Record<string, {
-        totalMinutes: number;
-        materia: { minutes: number; name: string; color?: string }[]
-    }> = {};
+    const chart: AreaChartData = {};
 
     aggregated.forEach(agg => {
         const dateKey = agg.study_date.toDateString();

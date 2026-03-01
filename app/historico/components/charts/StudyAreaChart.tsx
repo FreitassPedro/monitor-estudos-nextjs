@@ -1,6 +1,6 @@
 "use client";
 
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, TooltipProps } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -19,56 +19,76 @@ const formatDateLabel = (dateString: string) => {
     return `${parts[2]}/${parts[1]}`;
 };
 
-interface StudyData {
-    [date: string]: {
-        totalMinutes: number;
-        materia: { minutes: number; name: string; color?: string }[];
-    };
+interface Subject {
+    name: string;
+    minutes: number;
+    color?: string;
 }
 
-const CustomTooltip = ({ active, payload, data }: { active?: boolean; payload?: any[]; data: StudyData }) => {
-    if (active && payload && payload.length) {
-        const dateKey = payload[0]?.payload?.date;
-        const materias = data[dateKey]?.materia || [];
+interface DayStudyData {
+    totalMinutes: number;
+    materia: Subject[];
+}
 
-        return (
-            <div className="bg-popover text-popover-foreground border rounded-lg shadow-lg p-3 text-sm">
-                <p className="font-semibold mb-1">{formatDateLabel(dateKey)}</p>
-                <p className="text-muted-foreground">Total: {formatTime(payload[0].value)}</p>
-                {materias.length > 0 && (
-                    <div className="mt-2 pt-2 border-t space-y-1">
-                        {materias.map((m: { name: string; minutes: number; color?: string }, i: number) => (
-                            <div key={i} className="flex items-center gap-2">
-                                <span
-                                    className="w-2 h-2 rounded-full shrink-0"
-                                    style={{ backgroundColor: m.color || '#8b5cf6' }}
-                                />
-                                <span>{m.name}: {formatTime(m.minutes)}</span>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
-        );
+export interface AreaChartData {
+    [date: string]: DayStudyData;
+}
+
+interface ChartDataPoint {
+    date: string;
+    minutes: number;
+}
+interface CustomToolTipProps extends TooltipProps<number, string> {
+    data: AreaChartData;
+    payload?: Array<{ payload: { date: string } }>;
+}
+
+const CustomTooltip = ({ active, payload, data }: CustomToolTipProps) => {
+    if (!active || !payload || payload.length === 0 ) {
+        return null;
     }
-    return null;
+
+
+    const dateKey = payload[0]?.payload?.date;
+    const materias = data[dateKey]?.materia || [];
+
+    return (
+        <div className="bg-popover text-popover-foreground border rounded-lg shadow-lg p-3 text-sm">
+            <p className="font-semibold mb-1">{formatDateLabel(dateKey)}</p>
+            <p className="text-muted-foreground">Total: {formatTime(data[dateKey]?.totalMinutes || 0)}</p>
+            {materias.length > 0 && (
+                <div className="mt-2 pt-2 border-t space-y-1">
+                    {materias.map((subj: Subject, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                            <span
+                                className="w-2 h-2 rounded-full shrink-0"
+                                style={{ backgroundColor: subj.color || '#8b5cf6' }}
+                            />
+                            <span>{subj.name}: {formatTime(subj.minutes)}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
 };
 
 export const StudyAreaChart = () => {
     const { startDate, endDate } = useSearchRangeStore();
 
-    const dataAreaChart = useQuery({
+    const { data: rawData, isLoading } = useQuery({
         queryKey: ['charts', 'area', startDate, endDate],
         queryFn: () => getAreaChartACtion(startDate, endDate),
         staleTime: 1000 * 60 * 5, // 5 minutos
     });
 
-    const chartData = Object.entries(dataAreaChart.data || {}).map(([date, info]) => ({
+
+    const chartData: ChartDataPoint[] = Object.entries(rawData || {}).map(([date, info]) => ({
         date,
         minutes: info.totalMinutes,
     }));
 
-    if (dataAreaChart.isLoading) {
+    if (isLoading) {
         return (
             <Card>
                 <CardHeader className="pb-2">
@@ -87,6 +107,7 @@ export const StudyAreaChart = () => {
         );
     }
 
+    const hasData = chartData && chartData.length > 0;
 
     return (
         <Card>
@@ -98,7 +119,7 @@ export const StudyAreaChart = () => {
                 <CardDescription>Tempo total por dia no período</CardDescription>
             </CardHeader>
             <CardContent>
-                {!chartData || chartData.length === 0 ? (
+                {!hasData ? (
                     <div className="flex items-center justify-center h-50 text-sm text-muted-foreground">
                         Sem dados para exibir neste período
                     </div>
@@ -125,7 +146,7 @@ export const StudyAreaChart = () => {
                                 axisLine={false}
                                 tickLine={false}
                             />
-                            <Tooltip content={<CustomTooltip data={dataAreaChart.data || {}} />} />
+                            <Tooltip content={<CustomTooltip data={rawData || {}} />} />
                             <Area
                                 type="monotone"
                                 dataKey="minutes"
