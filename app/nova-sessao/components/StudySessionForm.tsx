@@ -407,7 +407,9 @@ export function StudySessionForm() {
                                     type="date"
                                     value={form.study_date ? formatDate(form.study_date) : ""}
                                     onChange={e => {
-                                        const d = new Date(e.target.value + "T00:00:00");
+                                        // Parse como data local explicitamente
+                                        const [year, month, day] = e.target.value.split('-').map(Number);
+                                        const d = new Date(year, month - 1, day);
                                         setForm(prev => ({ ...prev, study_date: d }));
                                     }}
                                 />

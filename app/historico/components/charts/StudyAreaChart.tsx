@@ -44,27 +44,39 @@ interface CustomToolTipProps extends TooltipProps<number, string> {
 }
 
 const CustomTooltip = ({ active, payload, data }: CustomToolTipProps) => {
-    if (!active || !payload || payload.length === 0 ) {
+    // Early returns para casos inválidos
+    if (!active || !payload || payload.length === 0) {
         return null;
     }
 
+    // Extrai a data do payload
+    const date = payload[0]?.payload?.date;
+    if (!date || !data[date]) {
+        return null;
+    }
 
-    const dateKey = payload[0]?.payload?.date;
-    const materias = data[dateKey]?.materia || [];
+    // Extrai dados do dia
+    const dayData = data[date];
+    const totalMinutes = dayData.totalMinutes || 0;
+    const subjects = dayData.materia || [];
+
+    console.log("Tooltip Data:", { date, totalMinutes, subjects });
+    console.log("Full Data Object:", data);
 
     return (
         <div className="bg-popover text-popover-foreground border rounded-lg shadow-lg p-3 text-sm">
-            <p className="font-semibold mb-1">{formatDateLabel(dateKey)}</p>
-            <p className="text-muted-foreground">Total: {formatTime(data[dateKey]?.totalMinutes || 0)}</p>
-            {materias.length > 0 && (
+            <p className="font-semibold mb-1">{formatDateLabel(date)}</p>
+            <p className="text-muted-foreground">Total: {formatTime(totalMinutes)}</p>
+            
+            {subjects.length > 0 && (
                 <div className="mt-2 pt-2 border-t space-y-1">
-                    {materias.map((subj: Subject, i) => (
-                        <div key={i} className="flex items-center gap-2">
+                    {subjects.map((subject, index) => (
+                        <div key={index} className="flex items-center gap-2">
                             <span
                                 className="w-2 h-2 rounded-full shrink-0"
-                                style={{ backgroundColor: subj.color || '#8b5cf6' }}
+                                style={{ backgroundColor: subject.color || '#8b5cf6' }}
                             />
-                            <span>{subj.name}: {formatTime(subj.minutes)}</span>
+                            <span>{subject.name}: {formatTime(subject.minutes)}</span>
                         </div>
                     ))}
                 </div>
@@ -108,6 +120,8 @@ export const StudyAreaChart = () => {
     }
 
     const hasData = chartData && chartData.length > 0;
+
+    console.log("Area Chart Data:", chartData);
 
     return (
         <Card>

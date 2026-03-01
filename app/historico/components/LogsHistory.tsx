@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import useSearchRangeStore from "@/store/useSearchRangeStore";
+import { parseDateAsLocal } from "@/lib/utils";
 
 const USER_ID = "8e4fba66-4d2e-4bb6-8200-c45db7a92f8e";
 
@@ -84,7 +85,7 @@ const LogDetailsDialog = ({ logId, isOpen, isOpenChange }: { logId: string; isOp
                         </div>
                         <div className='space-y-2'>
                             <p className="text-sm text-muted-foreground">Data</p>
-                            <p>{format(new Date(logDetails.study_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</p>
+                            <p>{format(parseDateAsLocal(logDetails.study_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</p>
                         </div>
                     </>
                 ) : (
@@ -174,7 +175,7 @@ export function DateGroup({
         (sum, log) => sum + log.duration_minutes,
         0
     );
-    const dateLabel = format(new Date(dateKey), "EEEE, dd 'de' MMMM", {
+    const dateLabel = format(parseDateAsLocal(dateKey), "EEEE, dd 'de' MMMM", {
         locale: ptBR,
     });
 
@@ -232,7 +233,7 @@ export function LogsHistory() {
     const groupedLogs = useMemo(() => {
         const allLogs = data ?? [];
         return allLogs.reduce((acc, log) => {
-            const dateKey = format(new Date(log.study_date), "yyyy-MM-dd");
+            const dateKey = format(parseDateAsLocal(log.study_date), "yyyy-MM-dd");
             if (!acc[dateKey]) acc[dateKey] = [];
             acc[dateKey].push(log);
             return acc;

@@ -6,6 +6,7 @@ import useSessionFormStore from "@/store/useSessionFormStore";
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen, ChevronDown } from "lucide-react";
 import React from "react";
+import { parseDateAsLocal } from "@/lib/utils";
 
 const diffInDays = (date1: Date, date2: Date) => {
     const diffTime = Math.abs(date2.getTime() - date1.getTime());
@@ -23,6 +24,7 @@ const daysAgo = (date: Date) => {
 }
 
 export const LogCard = ({ name, date, notes }: { name: string; date: Date | string; notes?: string }) => {
+    const localDate = parseDateAsLocal(date);
     return (
         <Card className="p-3 space-y-2 bg-muted/50 border-none ">
             <div className="flex justify-between items-center">
@@ -30,9 +32,9 @@ export const LogCard = ({ name, date, notes }: { name: string; date: Date | stri
                     {name}
                 </div>
                 <div className="text-xs font-medium text-foreground">
-                    <span>{new Date(date).toLocaleDateString('pt-BR')}</span>
+                    <span>{localDate.toLocaleDateString('pt-BR')}</span>
                     -
-                    <span className="text-muted-foreground">{daysAgo(new Date(date))}</span>
+                    <span className="text-muted-foreground">{daysAgo(localDate)}</span>
                 </div>
             </div>
             {notes && <div className="text-xs text-muted-foreground whitespace-pre-line">{notes}</div>}

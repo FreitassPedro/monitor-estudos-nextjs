@@ -2,6 +2,7 @@
 
 import { AreaChartData } from "@/app/historico/components/charts/StudyAreaChart";
 import { prisma } from "@/lib/prisma";
+import { formatDateKey, parseDateAsLocal } from "@/lib/utils";
 
 
 const userId = "8e4fba66-4d2e-4bb6-8200-c45db7a92f8e";
@@ -23,13 +24,6 @@ export type HeatmapMonthResponse = {
     monthLabel: string;
     monthTotalMinutes: number;
     minutesByDate: Record<string, number>;
-};
-
-const formatDateKey = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
 };
 
 export async function getPieChartDataAction(startDate: Date, endDate: Date): Promise<PieChartResponse> {
@@ -118,7 +112,7 @@ export async function getAreaChartACtion(startDate: Date, endDate: Date) {
     const chart: AreaChartData = {};
 
     aggregated.forEach(agg => {
-        const dateKey = agg.study_date.toDateString();
+        const dateKey = formatDateKey(parseDateAsLocal(agg.study_date));
         const minutes = agg._sum.duration_minutes || 0;
 
         if (!chart[dateKey]) {
@@ -168,7 +162,7 @@ export async function getHeatmapMonthDataAction(monthDate: Date): Promise<Heatma
     let monthTotalMinutes = 0;
 
     aggregated.forEach((agg) => {
-        const key = formatDateKey(agg.study_date);
+        const key = formatDateKey(parseDateAsLocal(agg.study_date));
         const minutes = agg._sum.duration_minutes || 0;
         minutesByDate[key] = minutes;
         monthTotalMinutes += minutes;
