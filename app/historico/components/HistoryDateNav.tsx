@@ -35,14 +35,13 @@ export function HistoryDateNav() {
                 setRange({ startDate: today, endDate: today });
                 break;
             case 'week':
-                setIsOpenPicker(false);
+                const mondayStart = startOfWeek(today, { weekStartsOn: 1 });
                 setRange({
-                    startDate: startOfWeek(today, { weekStartsOn: 0 }),
-                    endDate: endOfWeek(today, { weekStartsOn: 0 }),
+                    startDate: mondayStart,
+                    endDate: today,
                 });
                 break;
             case 'month':
-                setIsOpenPicker(false);
                 setRange({
                     startDate: startOfMonth(today),
                     endDate: endOfMonth(today),
@@ -66,7 +65,11 @@ export function HistoryDateNav() {
                 break;
             case 'week':
                 newStart = direction === 1 ? addWeeks(startDate, 1) : subWeeks(startDate, 1);
-                newEnd = endOfWeek(newStart, { weekStartsOn: 0 });
+                const dayOfWeek = newStart.getDay();
+                const daysToSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
+                newEnd = new Date(newStart);
+                newEnd.setDate(newStart.getDate() + daysToSunday);
+                newEnd.setHours(0, 0, 0, 0);
                 break;
             case 'month':
                 newStart = direction === 1 ? addMonths(startDate, 1) : subMonths(startDate, 1);
