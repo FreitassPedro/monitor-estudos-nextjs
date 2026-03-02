@@ -51,3 +51,17 @@ export function useCreateSubject() {
         },
     });
 }
+
+
+export function useUpdateSubject() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: async (updatedSubject: { id: string; name: string; color: string }) => {
+            return createSubjectAction(updatedSubject);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["subjects"] });
+        },
+    });
+}

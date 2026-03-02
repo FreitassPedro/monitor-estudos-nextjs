@@ -32,3 +32,17 @@ export async function createTopic(name: string, subjectId: string): Promise<Topi
     });
     return newTopic;
 }
+
+export async function deleteTopicAction(topicId: string): Promise<void> {
+    await prisma.topic.delete({
+        where: { id: topicId },
+    });
+}
+
+export async function updateTopicAction(topicId: string, name: string): Promise<Topic> {
+    const updatedTopic = await prisma.topic.update({
+        where: { id: topicId },
+        data: { name },
+    });
+    return updatedTopic;
+}

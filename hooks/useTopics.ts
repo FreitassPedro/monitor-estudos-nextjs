@@ -1,4 +1,4 @@
-import { createTopic, getTopicsAction, getTopicsBySubjectAction } from "@/server/actions/topic.action";
+import { createTopic, getTopicsAction, getTopicsBySubjectAction, deleteTopicAction, updateTopicAction } from "@/server/actions/topic.action";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 /// ********************
@@ -43,6 +43,29 @@ export function useCreateTopic() {
             createTopic(name, subjectId),
         onSuccess: (_data, variables) => {
             queryClient.invalidateQueries({ queryKey: ['topics', 'subject', variables.subjectId] });
+        },
+    });
+}
+
+export function useDeleteTopic() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (topicId: string) => deleteTopicAction(topicId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['topics'] });
+        },
+    });
+}
+
+export function useUpdateTopic() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ topicId, name }: { topicId: string; name: string }) =>
+            updateTopicAction(topicId, name),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['topics'] });
         },
     });
 }
