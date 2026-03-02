@@ -127,7 +127,7 @@ const EditSubjectDialog = ({ open, onOpenChange, subject, topics }: { open: bool
         }
     };
 
-    const handleRenameTopic = async (topicId: string, topicName: string) => {
+    const handleRenameTopic = async (topicId: string) => {
         const topic = localTopics.find(t => t.id === topicId);
         if (topic) {
             setEditingTopic(topic);
@@ -205,7 +205,7 @@ const EditSubjectDialog = ({ open, onOpenChange, subject, topics }: { open: bool
                                             {topic.name}
 
                                             <button
-                                                onClick={() => handleRenameTopic(topic.id, topic.name)}
+                                                onClick={() => handleRenameTopic(topic.id)}
                                                 className="hover:text-primary ml-1"
                                                 type="button"
                                             >
