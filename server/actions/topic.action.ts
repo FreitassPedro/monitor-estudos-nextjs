@@ -34,6 +34,17 @@ export async function createTopic(name: string, subjectId: string): Promise<Topi
 }
 
 export async function deleteTopicAction(topicId: string): Promise<void> {
+    // Verifica se existem StudyLogs vinculadas ao tópico
+    const studyLogsCount = await prisma.studyLogs.count({
+        where: { topicId },
+    });
+
+    if (studyLogsCount > 0) {
+        throw new Error(
+            `Não é possível excluir este tópico pois existem ${studyLogsCount} registro(s) de estudo vinculado(s). Delete os registros primeiro.`
+        );
+    }
+
     await prisma.topic.delete({
         where: { id: topicId },
     });

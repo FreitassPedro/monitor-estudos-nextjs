@@ -122,7 +122,8 @@ const EditSubjectDialog = ({ open, onOpenChange, subject, topics }: { open: bool
             setLocalTopics(localTopics.filter(t => t.id !== topicId));
             toast.success('Tópico excluído com sucesso');
         } catch (error) {
-            toast.error('Erro ao excluir tópico');
+            const errorMessage = error instanceof Error ? error.message : 'Erro ao excluir tópico';
+            toast.error(errorMessage);
         }
     };
 
