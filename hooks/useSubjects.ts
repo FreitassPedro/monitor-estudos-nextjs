@@ -1,23 +1,15 @@
 import { createSubjectAction, getSubjectsAction } from "@/server/actions/subject.actions";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Subject } from "../types/types";
 import { indexSubjectById } from "@/server/normalizers/indexSubject";
-
-const userId = "440d0b38-58e0-4a56-9f37-96932cfbe3e1"
-
-const indexSubectsById = (subjects: Subject[]) => {
-    return subjects.reduce((acc, subject) => {
-        acc[subject.id] = subject;
-        return acc;
-    }, {} as Record<string, Subject>);
-}
+import { useAuthStore } from "@/store/useAuthStore";
 /***
  * Options
  * 
 ***/
-export const useSubjectsOptions = queryOptions({
-    queryKey: ["subjects"],
-    queryFn: getSubjectsAction,
+export const useSubjectsOptions = (userId?: string) => queryOptions({
+    queryKey: ["subjects", userId],
+    queryFn: () => getSubjectsAction(userId!),
+    enabled: !!userId,
 });
 
 /***
@@ -26,28 +18,34 @@ export const useSubjectsOptions = queryOptions({
 ***/
 
 export function useSubjectsMap() {
+    const userId = useAuthStore((state) => state.user?.id);
     return useQuery({
-        ...useSubjectsOptions,
+        ...useSubjectsOptions(userId),
         select: (subjects) => indexSubjectById(subjects),
     });
 };
 
 
 export function useSubjects() {
+    const userId = useAuthStore((state) => state.user?.id);
     return useQuery(
-        useSubjectsOptions
+        useSubjectsOptions(userId)
     );
 }
 
 export function useCreateSubject() {
     const queryClient = useQueryClient();
+    const userId = useAuthStore((state) => state.user?.id);
 
     return useMutation({
         mutationFn: async (newSubject: { name: string; color: string }) => {
-            return createSubjectAction(newSubject);
+            if (!userId) {
+                throw new Error("Usuário não selecionado");
+            }
+            return createSubjectAction({ ...newSubject, userId });
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["subjects"] });
+            queryClient.invalidateQueries({ queryKey: ["subjects", userId] });
         },
     });
 }
@@ -55,13 +53,17 @@ export function useCreateSubject() {
 
 export function useUpdateSubject() {
     const queryClient = useQueryClient();
+    const userId = useAuthStore((state) => state.user?.id);
 
     return useMutation({
         mutationFn: async (updatedSubject: { id: string; name: string; color: string }) => {
-            return createSubjectAction(updatedSubject);
+            if (!userId) {
+                throw new Error("Usuário não selecionado");
+            }
+            return createSubjectAction({ name: updatedSubject.name, color: updatedSubject.color, userId });
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["subjects"] });
+            queryClient.invalidateQueries({ queryKey: ["subjects", userId] });
         },
     });
 }

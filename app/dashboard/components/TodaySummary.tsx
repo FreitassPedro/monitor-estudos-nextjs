@@ -1,11 +1,11 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getTodayStudyLogsAction } from "@/server/actions/studyLogs.action";
+import { useTodayStudyLogs } from "@/hooks/useStudyLogs";
 import { BookOpen, Clock, Target } from "lucide-react";
 
-const userId = "440d0b38-58e0-4a56-9f37-96932cfbe3e1"
-
-export async function TodaySummary() {
-    const logs = await getTodayStudyLogsAction(userId);
+export function TodaySummary() {
+    const { data: logs = [] } = useTodayStudyLogs();
     const totalMinutes = logs.reduce((sum, log) => sum + log.duration_minutes, 0);
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;

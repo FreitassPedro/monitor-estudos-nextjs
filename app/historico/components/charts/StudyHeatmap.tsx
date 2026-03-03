@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getHeatmapMonthDataAction } from '@/server/actions/charts.action';
 
 import useSearchRangeStore from '@/store/useSearchRangeStore';
+import { useAuthStore } from '@/store/useAuthStore';
 
 interface StudyHeatmapProps {
   onSelectDate: (date: Date) => void;
@@ -52,11 +53,13 @@ const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 export function StudyHeatmap({ onSelectDate }: StudyHeatmapProps) {
   const { startDate, endDate, setRange } = useSearchRangeStore();
+  const userId = useAuthStore((state) => state.user?.id);
   const range = { startDate, endDate };
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
   const { data: heatmapData, isLoading } = useQuery({
-    queryKey: ['charts', 'heatmap', currentMonth.getFullYear(), currentMonth.getMonth()],
-    queryFn: () => getHeatmapMonthDataAction(currentMonth),
+    queryKey: ['charts', 'heatmap', currentMonth.getFullYear(), currentMonth.getMonth(), userId],
+    queryFn: () => getHeatmapMonthDataAction(currentMonth, userId!),
+    enabled: !!userId,
     staleTime: 1000 * 60 * 5,
   });
 

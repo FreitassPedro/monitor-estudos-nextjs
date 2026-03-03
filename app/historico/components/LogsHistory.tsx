@@ -22,8 +22,6 @@ import { useMemo, useState } from "react";
 import useSearchRangeStore from "@/store/useSearchRangeStore";
 import { parseDateAsLocal } from "@/lib/utils";
 
-const USER_ID = "440d0b38-58e0-4a56-9f37-96932cfbe3e1";
-
 type StudyLogFeedItem = Awaited<ReturnType<typeof getStudyLogsByDateAction>>[number];
 
 const formatMinutes = (minutes: number) => {

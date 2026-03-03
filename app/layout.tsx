@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Outfit } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import QueryProvider from "./providers/QueryProvider";
+import { UserSelector } from "@/components/UserSelector";
 
 import MainNavbar from "@/components/MainNavbar";
 
@@ -37,6 +38,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} antialiased`}
       >
         <QueryProvider>
+          <UserSelector />
           <MainNavbar />
           {children}
           <Toaster position="top-right" />

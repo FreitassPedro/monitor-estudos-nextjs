@@ -1,6 +1,8 @@
+"use client";
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getTodayStudyLogsAction } from '@/server/actions/studyLogs.action';
+import { useTodayStudyLogs } from '@/hooks/useStudyLogs';
 import { BookOpen, Clock, FileText, Trash2 } from 'lucide-react';
 
 export const StudyLogItemResume = ({
@@ -31,7 +33,7 @@ export const StudyLogItemResume = ({
         <div className="group flex items-start gap-4 p-4 bg-card border border-border/40 hover:border-border rounded-lg transition-all hover:shadow-sm">
             {/* Indicador de Cor do Assunto */}
             <div
-                className="w-1.5 h-full min-h-[3rem] rounded-full shrink-0"
+                className="w-1.5 h-full min-h-12 rounded-full shrink-0"
                 style={{ backgroundColor: subject?.color || '#ccc' }}
             />
 
@@ -77,11 +79,8 @@ export const StudyLogItemResume = ({
         </div>
     );
 };
-const userId = "440d0b38-58e0-4a56-9f37-96932cfbe3e1"
-
-export async function RecentSessions() {
-
-    const todayLogs = await getTodayStudyLogsAction(userId);
+export function RecentSessions() {
+    const { data: todayLogs = [] } = useTodayStudyLogs();
 
     return (
         <Card>

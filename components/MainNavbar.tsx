@@ -1,7 +1,11 @@
-import { BookOpen, Plus, History, FolderOpen, CheckSquare, CalendarClock } from 'lucide-react';
+"use client";
+
+import { BookOpen, Plus, History, FolderOpen, CheckSquare, CalendarClock, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { useAuthStore } from '@/store/useAuthStore';
+import { usePathname } from 'next/navigation';
 
 const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: BookOpen, isEnabled: true },
@@ -14,7 +18,8 @@ const navItems = [
 ];
 
 export default function MainNavbar() {
-    const location = typeof window !== 'undefined' ? window.location : { pathname: '' };
+    const pathname = usePathname();
+    const { user, clearUser } = useAuthStore();
 
     return (
         <header>
@@ -29,7 +34,7 @@ export default function MainNavbar() {
                         <div className="hidden md:flex items-center gap-1">
                             {navItems.map((item) => {
                                 const Icon = item.icon;
-                                const isActive = location.pathname === item.href;
+                                const isActive = pathname === item.href;
 
                                 if (!item.isEnabled) {
                                     return (
@@ -62,10 +67,26 @@ export default function MainNavbar() {
                             })}
                         </div>
 
+                        {user && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground hidden sm:inline">
+                                    {user.name || user.email}
+                                </span>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => clearUser()}
+                                    title="Trocar usuário"
+                                >
+                                    <User className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        )}
+
                         <div className="flex md:hidden items-center gap-1">
                             {navItems.slice(0, 4).map((item) => {
                                 const Icon = item.icon;
-                                const isActive = location.pathname === item.href;
+                                const isActive = pathname === item.href;
 
                                 return (
                                     <Link

@@ -1,5 +1,6 @@
 import { createTopic, getTopicsAction, getTopicsBySubjectAction, deleteTopicAction, updateTopicAction } from "@/server/actions/topic.action";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from "@/store/useAuthStore";
 
 /// ********************
 //
@@ -13,9 +14,11 @@ export const topicsBySubjectQueryOptions = (subjectId?: string) => ({
 });
 
 export function useTopics() {
+    const userId = useAuthStore((state) => state.user?.id);
     return useQuery({
-        queryKey: ['topics'],
-        queryFn: () => getTopicsAction(),
+        queryKey: ['topics', userId],
+        queryFn: () => getTopicsAction(userId!),
+        enabled: !!userId,
         select: (topics) => {
             const topicsMap: Record<string, typeof topics[number]> = {};
             topics.forEach(topic => {

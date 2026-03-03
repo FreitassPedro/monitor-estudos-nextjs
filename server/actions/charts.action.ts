@@ -5,8 +5,6 @@ import { prisma } from "@/lib/prisma";
 import { formatDateKey } from "@/lib/utils";
 
 
-const userId = "440d0b38-58e0-4a56-9f37-96932cfbe3e1";
-
 export type PieChartData = {
     name: string;
     value: number;
@@ -26,7 +24,7 @@ export type HeatmapMonthResponse = {
     minutesByDate: Record<string, number>;
 };
 
-export async function getPieChartDataAction(startDate: Date, endDate: Date): Promise<PieChartResponse> {
+export async function getPieChartDataAction(startDate: Date, endDate: Date, userId: string): Promise<PieChartResponse> {
     // Normalizar datas para evitar problemas de timezone
     const normalizedStart = new Date(startDate);
     normalizedStart.setHours(0, 0, 0, 0);
@@ -86,7 +84,7 @@ export async function getPieChartDataAction(startDate: Date, endDate: Date): Pro
 }
 
 
-export async function getAreaChartACtion(startDate: Date, endDate: Date) {
+export async function getAreaChartACtion(startDate: Date, endDate: Date, userId: string) {
     // Normalizar datas para evitar problemas de timezone
     // Quando comparamos com @db.Date, precisamos garantir que estamos comparando apenas a data
     const normalizedStart = new Date(startDate);
@@ -156,7 +154,7 @@ export async function getAreaChartACtion(startDate: Date, endDate: Date) {
     return chart;
 }
 
-export async function getHeatmapMonthDataAction(monthDate: Date): Promise<HeatmapMonthResponse> {
+export async function getHeatmapMonthDataAction(monthDate: Date, userId: string): Promise<HeatmapMonthResponse> {
     const startDate = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1, 0, 0, 0, 0);
     const endDate = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0, 23, 59, 59, 999);
 

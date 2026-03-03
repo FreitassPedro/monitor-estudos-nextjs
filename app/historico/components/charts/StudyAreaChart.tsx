@@ -6,6 +6,7 @@ import { TrendingUp } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { getAreaChartACtion } from "@/server/actions/charts.action";
 import useSearchRangeStore from "@/store/useSearchRangeStore";
+import { useAuthStore } from "@/store/useAuthStore";
 
 const formatTime = (minutes: number) => {
     if (minutes === 0) return '0min';
@@ -87,10 +88,12 @@ const CustomTooltip = ({ active, payload, data }: CustomToolTipProps) => {
 
 export const StudyAreaChart = () => {
     const { startDate, endDate } = useSearchRangeStore();
+    const userId = useAuthStore((state) => state.user?.id);
 
     const { data: rawData, isLoading } = useQuery({
-        queryKey: ['charts', 'area', startDate, endDate],
-        queryFn: () => getAreaChartACtion(startDate, endDate),
+        queryKey: ['charts', 'area', startDate, endDate, userId],
+        queryFn: () => getAreaChartACtion(startDate, endDate, userId!),
+        enabled: !!userId,
         staleTime: 1000 * 60 * 5, // 5 minutos
     });
 

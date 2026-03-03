@@ -1,13 +1,11 @@
 import { createStudyLogAction, getStudyLogsByDateAction, getTodayStudyLogsAction, StudyLogInput } from "@/server/actions/studyLogs.action";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getDay } from "date-fns";
+import { useAuthStore } from "@/store/useAuthStore";
 
-const USER_ID = "440d0b38-58e0-4a56-9f37-96932cfbe3e1";
-
-
-export const studyLogsByDateQUeryOptions = (startDate: Date, endDate: Date) => ({
-    queryKey: ["studyLogs", "range", getDay(startDate), getDay(endDate)],
-    queryFn: () => getStudyLogsByDateAction({ startDate, endDate, userId: USER_ID }),
+export const studyLogsByDateQUeryOptions = (startDate: Date, endDate: Date, userId?: string) => ({
+    queryKey: ["studyLogs", "range", getDay(startDate), getDay(endDate), userId],
+    queryFn: () => getStudyLogsByDateAction({ startDate, endDate, userId: userId! }),
     enabled: !!startDate && !!endDate,
     staleTime: 1000 * 60 * 5, // 5 minutos
 });
@@ -24,18 +22,29 @@ export function useCreateStudyLog() {
 }
 
 export function useStudyLogsHistory(startDate: Date, endDate: Date) {
-    return useQuery(studyLogsByDateQUeryOptions(startDate, endDate));
+    const userId = useAuthStore((state) => state.user?.id);
+    return useQuery({
+        ...studyLogsByDateQUeryOptions(startDate, endDate, userId),
+        enabled: !!userId,
+    });
 }
 
 
-export function useTodayStudyLogs(userId?: string) {
+export function useTodayStudyLogs() {
+    const userId = useAuthStore((state) => state.user?.id);
+
     return useQuery({
-        queryKey: ["studyLogs", "today"],
-        queryFn: () => getTodayStudyLogsAction(userId || USER_ID),
+        queryKey: ["studyLogs", "today", userId],
+        queryFn: () => getTodayStudyLogsAction(userId!),
+        enabled: !!userId,
         staleTime: 1000 * 60 * 5, // 5 minutos
     });
 }
 
 export function useStudyLogsRange(startDate: Date, endDate: Date) {
-    return useQuery(studyLogsByDateQUeryOptions(startDate, endDate));
+    const userId = useAuthStore((state) => state.user?.id);
+    return useQuery({
+        ...studyLogsByDateQUeryOptions(startDate, endDate, userId),
+        enabled: !!userId,
+    });
 }

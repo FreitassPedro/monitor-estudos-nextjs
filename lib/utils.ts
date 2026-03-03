@@ -22,9 +22,16 @@ export function parseDateAsLocal(dateInput: Date | string): Date {
       dateInput.getUTCDate()
     );
   }
-  
-  // Se é string "YYYY-MM-DD"
-  const [year, month, day] = dateInput.split('-').map(Number);
+
+  // Aceita "YYYY-MM-DD" e também datetime ISO, extraindo apenas a parte da data
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(dateInput);
+  if (!match) {
+    throw new Error(`Invalid date string for parseDateAsLocal: ${dateInput}`);
+  }
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
   return new Date(year, month - 1, day);
 }
 
