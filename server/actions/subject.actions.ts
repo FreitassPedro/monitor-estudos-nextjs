@@ -17,6 +17,20 @@ export async function createSubjectAction(data: { name: string; color: string; u
     return subject;
 }
 
+export async function updateSubjectAction(data: { name: string; color: string; userId: string }) {
+    const subject = await prisma.subject.update({
+        where: {
+            id: data.userId,
+        },
+        data: {
+            name: data.name,
+            color: data.color,
+        },
+    });
+    return subject;
+}
+
+
 export async function deleteSubjectAction(id: string) {
     await prisma.subject.delete({
         where: { id },

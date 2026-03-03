@@ -1,4 +1,4 @@
-import { createSubjectAction, getSubjectsAction } from "@/server/actions/subject.actions";
+import { createSubjectAction, getSubjectsAction, updateSubjectAction } from "@/server/actions/subject.actions";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { indexSubjectById } from "@/server/normalizers/indexSubject";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -33,6 +33,7 @@ export function useSubjects() {
     );
 }
 
+
 export function useCreateSubject() {
     const queryClient = useQueryClient();
     const userId = useAuthStore((state) => state.user?.id);
@@ -60,7 +61,7 @@ export function useUpdateSubject() {
             if (!userId) {
                 throw new Error("Usuário não selecionado");
             }
-            return createSubjectAction({ name: updatedSubject.name, color: updatedSubject.color, userId });
+            return updateSubjectAction({ ...updatedSubject, userId });
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["subjects", userId] });
