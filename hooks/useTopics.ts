@@ -17,9 +17,9 @@ export function useTopics() {
         queryKey: ['topics'],
         queryFn: () => getTopicsAction(),
         select: (topics) => {
-            const topicsMap: Record<string, string> = {};
+            const topicsMap: Record<string, typeof topics[number]> = {};
             topics.forEach(topic => {
-                topicsMap[topic.id] = topic.name;
+                topicsMap[topic.id] = topic;
             });
             return { topics, topicsMap};
         },
@@ -30,9 +30,9 @@ export function useTopicsBySubject(subjectId?: string) {
     return useQuery(topicsBySubjectQueryOptions(subjectId));
 }
 
-export function useTopicsMap(subjectId?: string) {
+export function useTopicsMap() {
     const { data } = useTopics();
-    return data?.topicsMap || {};
+    return { data: data?.topicsMap };
 }
 
 export function useCreateTopic() {

@@ -36,7 +36,7 @@ const SUBJECT_COLORS: Record<string, string> = {
 export const StudyBarChart = () => {
     // Transforma dados aninhados em formato plano para o gráfico
     const chartData = BarChartMock.map(day => {
-        const dataPoint: Record<string, any> = { dayDate: day.dayDate };
+        const dataPoint: Record<string, string | number> = { dayDate: day.dayDate };
         day.materias.forEach(materia => {
             dataPoint[materia.materia] = materia.minutos;
         });
@@ -63,7 +63,7 @@ export const StudyBarChart = () => {
                         <XAxis dataKey="dayDate" />
                         <YAxis label={{ value: 'Minutos', angle: -90, position: 'insideLeft' }} />
                         <Tooltip 
-                            formatter={(value: number) => `${value} min`}
+                            formatter={(value: number | undefined) => value !== undefined ? `${value} min` : ''}
                             labelStyle={{ color: '#000' }}
                         />
                         <Legend />

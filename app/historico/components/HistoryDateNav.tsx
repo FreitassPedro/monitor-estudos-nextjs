@@ -54,7 +54,7 @@ export function HistoryDateNav() {
     };
 
     const navigate = (direction: -1 | 1) => {
-        const { startDate } = range;
+        const { startDate, endDate } = range;
         let newStart: Date;
         let newEnd: Date;
 
@@ -74,6 +74,10 @@ export function HistoryDateNav() {
             case 'month':
                 newStart = direction === 1 ? addMonths(startDate, 1) : subMonths(startDate, 1);
                 newEnd = endOfMonth(newStart);
+                break;
+            default:
+                newStart = startDate;
+                newEnd = endDate;
                 break;
         }
 
@@ -96,6 +100,7 @@ export function HistoryDateNav() {
     };
 
 
+    /*
     const onPickingCalendarChange = (selected: CalendarDateRange | undefined) => {
         // Clear calendar first
         console.log("Picking range changed:", selected);
@@ -123,6 +128,7 @@ export function HistoryDateNav() {
             setIsOpenPicker(false);
         }
     };
+    */
 
 
     const isToday = () => {

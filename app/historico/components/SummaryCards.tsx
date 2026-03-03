@@ -1,9 +1,9 @@
 import { useStudyLogsHistory } from "@/hooks/useStudyLogs";
 import { useMemo } from "react";
-import { BookOpen, Clock, Icon, Timer, TrendingUp, Trophy } from "lucide-react";
+import { BookOpen, Clock, Timer, TrendingUp, Trophy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSubjectsMap } from "@/hooks/useSubjects";
-import { useTopicsBySubject, useTopicsMap } from "@/hooks/useTopics";
+import { useTopicsMap } from "@/hooks/useTopics";
 import useSearchRangeStore from "@/store/useSearchRangeStore";
 
 
@@ -60,7 +60,7 @@ export function SummaryCards() {
 
     const { startDate, endDate } = useSearchRangeStore();
 
-    const { data, status, error, isLoading } = useStudyLogsHistory(startDate, endDate);
+    const { data, error, isLoading } = useStudyLogsHistory(startDate, endDate);
 
     const { data: subjectsMap } = useSubjectsMap();
     const { data: topicsMap } = useTopicsMap();
@@ -83,7 +83,7 @@ export function SummaryCards() {
                 longestSession = log.duration_minutes;
             }
 
-            const topic = topicsMap?.[log.topicId];
+            const topic = topicsMap?.[log.topicId as string];
 
             if (topic) {
                 const subjectId = topic.subjectId;
