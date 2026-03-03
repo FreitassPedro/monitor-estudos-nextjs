@@ -84,8 +84,7 @@ export const LogSection = ({ type, title }: { type: 'topic' | 'subject', title: 
             <div className="space-y-3 transition-all duration-300 ease-in-out">
                 <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                     <BookOpen className="w-4 h-4 text-muted-foreground" />
-                    <span>Recentes de: {title}</span>
-                    <span>NÃO CARREGOU</span>
+                    <span>Recentes de {`${title === "subject" ? selectedSubject?.name ?? title : selectedTopic?.name ?? title}`}</span>
                 </div>
                 <Separator className="my-2" />
                 <EmptyLog />
@@ -98,7 +97,7 @@ export const LogSection = ({ type, title }: { type: 'topic' | 'subject', title: 
             <div className="space-y-3 transition-all duration-300 ease-in-out">
                 <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                     <BookOpen className="w-4 h-4 text-muted-foreground" />
-                    <span>Recentes de: {title}</span>
+                    <span>Recentes da {selectedSubject?.name ?? title}</span>
                 </div>
                 <Separator className="my-2" />
                 <EmptyLog />
@@ -111,7 +110,7 @@ export const LogSection = ({ type, title }: { type: 'topic' | 'subject', title: 
 
             <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                 <BookOpen className="w-4 h-4 text-muted-foreground" />
-                <span>Recentes de: {title}</span>
+                <span>Recentes da {selectedTopic?.name ?? title}</span>
                 <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform bg-background ${isOpen ? '' : '-rotate-90'}`}
                     onClick={() => setIsOpen(!isOpen)}
                     style={{ cursor: 'pointer' }}

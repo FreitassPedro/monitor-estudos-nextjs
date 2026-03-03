@@ -31,16 +31,24 @@ export default function MainNavbar() {
                                 const Icon = item.icon;
                                 const isActive = location.pathname === item.href;
 
+                                if (!item.isEnabled) {
+                                    return (
+                                        <Button variant="ghost" size="sm" key={item.label} disabled className=" cursor-not-allowed opacity-20">
+                                            <Icon className="h-4 w-4" />
+                                            {item.label}
+                                        </Button>
+                                    );
+                                }
+
                                 return (
                                     <Button variant="ghost" size="sm"
-                                        key={item.href}
+                                        key={item.label}
                                         className={cn(
                                             isActive ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground",
                                             !item.isEnabled && "pointer-events-none opacity-20 cursor-not-allowed"
                                         )}
                                     >
                                         <Link
-                                            key={item.href}
                                             href={item.href}
                                             className={cn(
                                                 "flex items-center gap-1 px-3 py-2",
@@ -61,7 +69,7 @@ export default function MainNavbar() {
 
                                 return (
                                     <Link
-                                        key={item.href}
+                                        key={item.label}
                                         href={item.href}
                                         className={cn(
                                             "p-2 transition-colors",
