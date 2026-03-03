@@ -10,7 +10,7 @@ import useSearchRangeStore from '@/store/useSearchRangeStore';
 
 interface StudyHeatmapProps {
   onSelectDate: (date: Date) => void;
-} 
+}
 
 const getDaysInMonth = (date: Date) => {
   const year = date.getFullYear();
@@ -51,7 +51,7 @@ const formatTime = (minutes: number) => {
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 export function StudyHeatmap({ onSelectDate }: StudyHeatmapProps) {
-  const { startDate, endDate } = useSearchRangeStore();
+  const { startDate, endDate, setRange } = useSearchRangeStore();
   const range = { startDate, endDate };
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
   const { data: heatmapData, isLoading } = useQuery({
@@ -111,8 +111,8 @@ export function StudyHeatmap({ onSelectDate }: StudyHeatmapProps) {
           {isLoading
             ? 'Carregando...'
             : monthTotal > 0
-            ? `${formatTime(monthTotal)} estudados em ${currentMonth.toLocaleDateString('pt-BR', { month: 'long' })}`
-            : 'Clique em um dia para ver detalhes'}
+              ? `${formatTime(monthTotal)} estudados em ${currentMonth.toLocaleDateString('pt-BR', { month: 'long' })}`
+              : 'Clique em um dia para ver detalhes'}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -147,7 +147,7 @@ export function StudyHeatmap({ onSelectDate }: StudyHeatmapProps) {
               return (
                 <button
                   key={index}
-                  onClick={() => date && onSelectDate(date)}
+                  onClick={() => date && setRange({ startDate: date, endDate: date })}
                   disabled={!date}
                   className={`
                     aspect-square rounded-md transition-all text-[11px] font-medium
