@@ -16,7 +16,6 @@ export const useSubjectsOptions = (userId?: string) => queryOptions({
  * Hooks
  * 
 ***/
-
 export function useSubjectsMap() {
     const userId = useAuthStore((state) => state.user?.id);
     return useQuery({
