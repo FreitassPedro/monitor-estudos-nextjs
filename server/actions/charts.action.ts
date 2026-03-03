@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { formatDateKey } from "@/lib/utils";
 
 
-const userId = "8e4fba66-4d2e-4bb6-8200-c45db7a92f8e";
+const userId = "440d0b38-58e0-4a56-9f37-96932cfbe3e1";
 
 export type PieChartData = {
     name: string;
@@ -95,6 +95,8 @@ export async function getAreaChartACtion(startDate: Date, endDate: Date) {
     const normalizedEnd = new Date(endDate);
     normalizedEnd.setHours(23, 59, 59, 999);
 
+    console.log("Fetching Area Chart Data with:", { normalizedStart, normalizedEnd, userId });
+
     // Aggregate by study_date and topic with subject relationship
     const aggregated = await prisma.studyLogs.groupBy({
         by: ['study_date', 'topicId'],
@@ -113,6 +115,8 @@ export async function getAreaChartACtion(startDate: Date, endDate: Date) {
             duration_minutes: true,
         },
     });
+
+    console.log("Aggregated Area Chart Data:", aggregated);
 
     // Fetch necessary topic/subject info
     const topicIds = [...new Set(aggregated.map(agg => agg.topicId))];

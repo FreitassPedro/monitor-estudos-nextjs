@@ -95,6 +95,8 @@ export const StudyAreaChart = () => {
     });
 
 
+    console.log("Fetched Area Chart Data:", rawData, { startDate, endDate });
+
     const chartData: ChartDataPoint[] = Object.entries(rawData || {}).map(([date, info]) => ({
         date,
         minutes: info.totalMinutes,

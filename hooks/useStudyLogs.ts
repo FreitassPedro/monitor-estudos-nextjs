@@ -2,7 +2,7 @@ import { createStudyLogAction, getStudyLogsByDateAction, getTodayStudyLogsAction
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getDay } from "date-fns";
 
-const USER_ID = "8e4fba66-4d2e-4bb6-8200-c45db7a92f8e";
+const USER_ID = "440d0b38-58e0-4a56-9f37-96932cfbe3e1";
 
 
 export const studyLogsByDateQUeryOptions = (startDate: Date, endDate: Date) => ({
