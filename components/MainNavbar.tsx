@@ -8,9 +8,9 @@ const navItems = [
     { href: '/nova-sessao', label: 'Nova Sessão', icon: Plus, isEnabled: true },
     { href: '/historico', label: 'Histórico', icon: History, isEnabled: true },
     { href: '/materias', label: 'Matérias', icon: FolderOpen, isEnabled: true },
-    { href: '/tarefas', label: 'Tarefas', icon: CheckSquare, isEnabled: false },
-    { href: '/reviews', label: 'Revisões', icon: CalendarClock, isEnabled: false },
-    { href: '/cycle-study', label: 'Ciclos', icon: CalendarClock, isEnabled: false },
+    { href: '/', label: 'Tarefas', icon: CheckSquare, isEnabled: false },
+    { href: '/', label: 'Revisões', icon: CalendarClock, isEnabled: false },
+    { href: '/', label: 'Ciclos', icon: CalendarClock, isEnabled: false },
 ];
 
 export default function MainNavbar() {
