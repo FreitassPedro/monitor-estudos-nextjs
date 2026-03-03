@@ -17,6 +17,34 @@ export async function createSubjectAction(data: { name: string; color: string; u
     return subject;
 }
 
+export async function updateSubjectAction(data: { id: string; name: string; color: string; userId: string }) {
+    const updateResult = await prisma.subject.updateMany({
+        where: {
+            id: data.id,
+            userId: data.userId,
+        },
+        data: {
+            name: data.name,
+            color: data.color,
+        },
+    });
+
+    if (updateResult.count === 0) {
+        throw new Error("Matéria não encontrada para atualização");
+    }
+
+    const updatedSubject = await prisma.subject.findUnique({
+        where: { id: data.id },
+    });
+
+    if (!updatedSubject) {
+        throw new Error("Matéria não encontrada após atualização");
+    }
+
+    return updatedSubject;
+}
+
+
 export async function deleteSubjectAction(id: string) {
     await prisma.subject.delete({
         where: { id },
