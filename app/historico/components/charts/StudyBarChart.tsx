@@ -63,7 +63,7 @@ export const StudyBarChart = () => {
                         <XAxis dataKey="dayDate" />
                         <YAxis label={{ value: 'Minutos', angle: -90, position: 'insideLeft' }} />
                         <Tooltip 
-                            formatter={(value: number | undefined) => value !== undefined ? `${value} min` : ''}
+                            formatter={(value: any) => typeof value === 'number' ? `${value} min` : ''}
                             labelStyle={{ color: '#000' }}
                         />
                         <Legend />
