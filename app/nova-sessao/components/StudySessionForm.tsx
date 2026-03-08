@@ -77,14 +77,16 @@ export function StudySessionForm() {
     const router = useRouter();
 
     const [form, setForm] = useState<FormData>(emptyForm());
-    const { 
-        setSelectedSubject, 
-        setSelectedTopic, 
-        selectedSubject, 
-        selectedTopic, 
+    const {
+        setSelectedSubject,
+        setSelectedTopic,
+        selectedSubject,
+        selectedTopic,
         cronometer,
         updateCronometer,
-        resetCronometer 
+        resetCronometer,
+        startTicking,
+        stopTicking
     } = useSessionFormStore();
 
     const [timeRegisterType, setTimeRegisterType] = useState<"manual" | "cronometer">("manual");
@@ -97,16 +99,6 @@ export function StudySessionForm() {
     const { data: topics = [], isLoading: loadingTopics } = useTopicsBySubject(form?.subjectId);
 
     const createStudyLog = useCreateStudyLog();
-
-    // Cronometer tick
-    useEffect(() => {
-        if (!cronometer.isRunning || !cronometer.startTime) return;
-
-        const interval = window.setInterval(() => {
-            updateCronometer({ seconds: cronometer.seconds + 1 });
-        }, 1000);
-        return () => window.clearInterval(interval);
-    }, [cronometer.isRunning, cronometer.startTime, cronometer.seconds, updateCronometer]);
 
     // Warn on unsaved data
     useEffect(() => {
@@ -175,8 +167,10 @@ export function StudySessionForm() {
         const now = new Date();
         if (!cronometer.isRunning) {
             updateCronometer({ isRunning: true, startTime: now, endTime: null });
+            startTicking();
             setForm(prev => ({ ...prev, start_time: now, end_time: undefined }));
         } else {
+            stopTicking();
             updateCronometer({ isRunning: false, endTime: now });
             setForm(prev => ({ ...prev, end_time: now }));
         }
@@ -290,7 +284,7 @@ export function StudySessionForm() {
 
                         {/* Tópico */}
                         <div className="space-y-2">
-                            <Label>Conteúdo Estudado</Label>
+                            <Label>Tópico Estudado</Label>
                             <div className="flex items-center gap-2">
                                 <Select
                                     value={form.topicId}
@@ -300,7 +294,7 @@ export function StudySessionForm() {
                                     <SelectTrigger className="w-full" disabled={!form.subjectId}>
                                         <SelectValue
                                             placeholder={
-                                                !form.subjectId 
+                                                !form.subjectId
                                                     ? "Selecione uma matéria primeiro"
                                                     : (topics.length === 0 ? "Nenhum tópico cadastrado" : "Selecione um tópico")
                                             }
@@ -328,7 +322,6 @@ export function StudySessionForm() {
                                     disabled={!form.subjectId}
                                 >
                                     <Plus className="h-4 w-4" />
-                                    Novo tópico
                                 </Button>
                             </div>
                         </div>

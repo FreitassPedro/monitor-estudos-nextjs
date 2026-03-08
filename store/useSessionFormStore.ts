@@ -17,11 +17,14 @@ interface SessionFormState {
     setSelectedTopic: (selectedTopic: Topic | undefined) => void;
     setCronometer: (cronometer: Cronometer) => void;
     updateCronometer: (partial: Partial<Cronometer>) => void;
-    incrementSeconds: () => void;
+    startTicking: () => void;
+    stopTicking: () => void;
     resetCronometer: () => void;
 }
 
-const useSessionFormStore = create<SessionFormState>((set) => ({
+let tickIntervalId: ReturnType<typeof setInterval> | null = null;
+
+const useSessionFormStore = create<SessionFormState>((set, get) => ({
     selectedSubject: undefined,
     selectedTopic: undefined,
     cronometer: { isRunning: false, seconds: 0, startTime: null, endTime: null },
@@ -32,12 +35,38 @@ const useSessionFormStore = create<SessionFormState>((set) => ({
     updateCronometer: (partial) => set((state) => ({
         cronometer: { ...state.cronometer, ...partial }
     })),
-    incrementSeconds: () => set((state) => ({
-        cronometer: { ...state.cronometer, seconds: state.cronometer.seconds + 1 }
-    })),
-    resetCronometer: () => set({
-        cronometer: { isRunning: false, seconds: 0, startTime: null, endTime: null }
-    }),
+    startTicking: () => {
+        if (tickIntervalId) return;
+
+        const tick = () => {
+            const { cronometer } = get();
+            if (!cronometer.startTime) return;
+            const elapsed = Math.floor(
+                (Date.now() - new Date(cronometer.startTime).getTime()) / 1000
+            );
+            set((state) => ({
+                cronometer: { ...state.cronometer, seconds: elapsed }
+            }));
+        };
+
+        tick();
+        tickIntervalId = setInterval(tick, 1000);
+    },
+    stopTicking: () => {
+        if (tickIntervalId) {
+            clearInterval(tickIntervalId);
+            tickIntervalId = null;
+        }
+    },
+    resetCronometer: () => {
+        if (tickIntervalId) {
+            clearInterval(tickIntervalId);
+            tickIntervalId = null;
+        }
+        set({
+            cronometer: { isRunning: false, seconds: 0, startTime: null, endTime: null }
+        });
+    },
 }));
 
 export default useSessionFormStore;

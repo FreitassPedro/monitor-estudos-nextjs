@@ -13,7 +13,9 @@ export default function NovaSessaoPage() {
                         <TodayTimeline />
                     </Suspense>
                 </main>
-                <aside className="p-4 bg-gray-100 static w-1/5 h-screen translate-y-0 bottom-0 left-0 right-0 flex flex-col">
+                <aside className="p-4 bg-card static w-1/5 h-screen translate-y-0 bottom-0 left-0 right-0 flex flex-col
+                    border-t border-l border-border
+                ">
                     <SessionSidebar />
                 </aside>
             </div>
