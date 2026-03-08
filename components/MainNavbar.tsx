@@ -37,8 +37,11 @@ export default function MainNavbar() {
                                 const isActive = pathname === item.href;
 
                                 if (!item.isEnabled) {
+                                    return;
+                                }
+                                if (!item.isEnabled) {
                                     return (
-                                        <Button variant="ghost" size="sm" key={item.label} disabled className=" cursor-not-allowed opacity-20">
+                                        <Button variant="ghost" size="sm" key={item.label} disabled className="cursor-not-allowed opacity-5">
                                             <Icon className="h-4 w-4" />
                                             {item.label}
                                         </Button>
@@ -67,22 +70,6 @@ export default function MainNavbar() {
                             })}
                         </div>
 
-                        {user && (
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm text-muted-foreground hidden sm:inline">
-                                    {user.name || user.email}
-                                </span>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => clearUser()}
-                                    title="Trocar usuário"
-                                >
-                                    <User className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        )}
-
                         <div className="flex md:hidden items-center gap-1">
                             {navItems.slice(0, 4).map((item) => {
                                 const Icon = item.icon;
@@ -104,6 +91,25 @@ export default function MainNavbar() {
                                 );
                             })}
                         </div>
+
+                        
+                        {user && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground hidden sm:inline">
+                                    {user.name || user.email}
+                                </span>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => clearUser()}
+                                    title="Trocar usuário"
+                                >
+                                    <User className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        )}
+
+
                     </div>
                 </div>
             </nav >
