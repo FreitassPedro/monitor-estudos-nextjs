@@ -87,8 +87,6 @@ export function TodayTimeline() {
     const { data: subjectsMap } = useSubjectsMap();
     const { data: topicsMap } = useTopicsMap();
 
-    console.log("Teste Cronometer Load:", cronometer);
-
     return (
         <Card>
             <CardHeader>
@@ -123,7 +121,7 @@ export function TodayTimeline() {
                         ))}
 
                         {logs?.map(log => {
-                            const subject = subjectsMap?.[log.topic.subjectId];;
+                            const subject = subjectsMap?.[log.topic.subjectId];
                             return (
                                 <div
                                     key={log.id}
@@ -132,8 +130,8 @@ export function TodayTimeline() {
                                     style={{
                                         top: `${calculateTop(log.start_time)}%`,
                                         height: `${calculateFinalHeight(log.start_time, log.end_time)}%`,
-                                        backgroundColor: '#3b82f633',
-                                        borderLeftColor: '#3b82f6',
+                                        backgroundColor: `${subject?.color}33`,
+                                        borderLeftColor: `${subject?.color}`,
                                     }}
                                 >
                                     <div className="flex justify-between h-full">
