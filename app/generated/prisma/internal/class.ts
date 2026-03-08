@@ -17,8 +17,8 @@ import type * as Prisma from "./prismaNamespace"
 
 const config: runtime.GetPrismaClientConfig = {
   "previewFeatures": [],
-  "clientVersion": "7.4.1",
-  "engineVersion": "55ae170b1ced7fc6ed07a15f110549408c501bb3",
+  "clientVersion": "7.4.2",
+  "engineVersion": "94a226be1cf2967af2541cca5529f0f7ba866919",
   "activeProvider": "postgresql",
   "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../app/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id       String    @id @default(uuid())\n  email    String    @unique\n  name     String?\n  subjects Subject[]\n}\n\nmodel Subject {\n  id         String   @id @default(uuid())\n  name       String\n  color      String\n  userId     String\n  user       User     @relation(fields: [userId], references: [id])\n  created_at DateTime @default(now()) @db.Timestamptz(3)\n  topics     Topic[]\n}\n\nmodel Topic {\n  id        String      @id @default(uuid())\n  name      String\n  subjectId String\n  subject   Subject     @relation(fields: [subjectId], references: [id])\n  studyLogs StudyLogs[]\n}\n\nmodel StudyLogs {\n  id               String   @id @default(uuid())\n  study_date       DateTime @db.Date\n  topicId          String\n  topic            Topic    @relation(fields: [topicId], references: [id])\n  start_time       DateTime @db.Timestamptz(3)\n  end_time         DateTime @db.Timestamptz(3)\n  duration_minutes Int\n  notes            String?\n  created_at       DateTime @default(now()) @db.Timestamptz(3)\n  updated_at       DateTime @updatedAt @db.Timestamptz(3)\n}\n",
   "runtimeDataModel": {
@@ -67,7 +67,9 @@ export interface PrismaClientConstructor {
    * Type-safe database client for TypeScript
    * @example
    * ```
-   * const prisma = new PrismaClient()
+   * const prisma = new PrismaClient({
+   *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
+   * })
    * // Fetch zero or more Users
    * const users = await prisma.user.findMany()
    * ```
@@ -89,7 +91,9 @@ export interface PrismaClientConstructor {
  * Type-safe database client for TypeScript
  * @example
  * ```
- * const prisma = new PrismaClient()
+ * const prisma = new PrismaClient({
+ *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
+ * })
  * // Fetch zero or more Users
  * const users = await prisma.user.findMany()
  * ```
