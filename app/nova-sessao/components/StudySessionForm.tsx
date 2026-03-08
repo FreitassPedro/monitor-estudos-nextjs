@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Clock, Plus } from "lucide-react";
+import { Clock, ClockArrowUp, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,7 +25,6 @@ import { StudyLogInput } from "@/server/actions/studyLogs.action";
 import { NewTopicDialog } from "./NewTopicDialog";
 import useSessionFormStore from "@/store/useSessionFormStore";
 import { usePageTitleWithCronometer } from "@/hooks/usePageTitleWithCronometer";
-import { useTitlePage } from "@/hooks/useTitlePage";
 
 // --- Helpers ---
 
@@ -52,6 +51,20 @@ const calcDurationMinutes = (start?: Date, end?: Date): number => {
     return Math.max(0, Math.floor((end.getTime() - start.getTime()) / 60000));
 };
 
+const getFormSubmitError = (form: FormData): string | null => {
+    if (!form.subjectId) return "Selecione uma matéria.";
+    if (!form.topicId) return "Selecione um tópico.";
+    if (!form.study_date) return "Informe a data de estudo.";
+    if (!form.start_time || !form.end_time) return "Informe o horário de início e fim.";
+
+    const durationMinutes = calcDurationMinutes(form.start_time, form.end_time);
+    if (durationMinutes <= 0) {
+        return "A hora de fim deve ser maior que a hora de início.";
+    }
+
+    return null;
+};
+
 // --- Form State ---
 
 interface FormData {
@@ -64,21 +77,21 @@ interface FormData {
     notes: string;
 }
 
-const emptyForm = (): FormData => ({
+const emptyForm: FormData = {
     subjectId: "",
     topicId: "",
     material_type: "",
-    study_date: undefined,
+    study_date: new Date(),
     start_time: undefined,
     end_time: undefined,
     notes: "",
-});
+};
 // --- Component ---
 
 export function StudySessionForm() {
     const router = useRouter();
 
-    const [form, setForm] = useState<FormData>(emptyForm());
+    const [form, setForm] = useState<FormData>(emptyForm);
     const {
         setSelectedSubject,
         setSelectedTopic,
@@ -195,36 +208,26 @@ export function StudySessionForm() {
         e.preventDefault();
         setEndTimeError(null);
 
-        if (!form.subjectId) {
-            toast.error("Selecione uma matéria.");
-            return;
-        }
-        if (!form.topicId) {
-            toast.error("Selecione um tópico.");
+        const submitError = getFormSubmitError(form);
+        if (submitError) {
+            if (submitError === "A hora de fim deve ser maior que a hora de início.") {
+                setEndTimeError(submitError);
+            }
+            toast.error(submitError);
             return;
         }
 
-        if (!form.study_date) {
-            toast.error("Informe a data de estudo.");
-            return;
-        }
-        if (!form.start_time || !form.end_time) {
-            toast.error("Informe o horário de início e fim.");
-            return;
-        }
+        const studyDate = form.study_date!;
+        const startTime = form.start_time!;
+        const endTime = form.end_time!;
 
         const durationMinutes = calcDurationMinutes(form.start_time, form.end_time);
-        if (durationMinutes <= 0) {
-            setEndTimeError("A hora de fim deve ser maior que a hora de início.");
-            toast.error("A hora de fim deve ser maior que a hora de início.");
-            return;
-        }
 
         const data: StudyLogInput = {
             topic_id: form.topicId,
-            study_date: form.study_date,
-            start_time: form.start_time,
-            end_time: form.end_time,
+            study_date: studyDate,
+            start_time: startTime,
+            end_time: endTime,
             duration_minutes: durationMinutes,
             notes: form.notes || undefined,
         };
@@ -232,7 +235,7 @@ export function StudySessionForm() {
         try {
             await createStudyLog.mutateAsync(data);
             toast.success("Sessão de estudo registrada!");
-            setForm(emptyForm());
+            setForm(emptyForm);
             resetCronometer();
             router.push("/");
         } catch {
@@ -241,6 +244,7 @@ export function StudySessionForm() {
     };
 
     const duration = calcDurationMinutes(form.start_time, form.end_time);
+    const isFormReadyToSubmit = !getFormSubmitError(form);
 
     return (
         <>
@@ -355,6 +359,8 @@ export function StudySessionForm() {
                                     type="button"
                                     variant={timeRegisterType === "manual" ? "default" : "outline"}
                                     onClick={() => setTimeRegisterType("manual")}
+                                    disabled={cronometer.isRunning}
+                                    title={cronometer.isRunning ? "Pare o cronômetro para registrar manualmente" : undefined}
                                 >
                                     Manualmente
                                 </Button>
@@ -418,6 +424,7 @@ export function StudySessionForm() {
                                 />
                             </div>
 
+                            {/* Horários de início e fim */}
                             <div className="flex-1 grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="start_time">Hora Início</Label>
@@ -429,22 +436,23 @@ export function StudySessionForm() {
                                             value={formatTime(form.start_time)}
                                             onChange={e => handleTimeInput("start_time", e.target.value)}
                                         />
+                                        {/* Definir hora atual */}
                                         <Button
                                             type="button"
-                                            variant="secondary"
+                                            variant="outline"
                                             size="icon"
                                             onClick={() => setCurrentTime("start_time")}
-                                            title="Hora atual"
+                                            title="Definir Hora atual"
                                             className="shrink-0"
                                         >
-                                            <Clock className="h-4 w-4" />
+                                            <ClockArrowUp className="h-4 w-4" />
                                         </Button>
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
                                     <Label htmlFor="end_time">Hora Fim</Label>
-                                    <div className="flex items-center">
+                                    <div className="flex items-center" aria-disabled={timeRegisterType === "cronometer"}>
                                         <Input
                                             id="end_time"
                                             type="time"
@@ -452,15 +460,16 @@ export function StudySessionForm() {
                                             value={formatTime(form.end_time)}
                                             onChange={e => handleTimeInput("end_time", e.target.value)}
                                         />
+                                        {/* Definir hora atual */}
                                         <Button
                                             type="button"
                                             variant="outline"
                                             size="icon"
                                             onClick={() => setCurrentTime("end_time")}
-                                            title="Hora atual"
+                                            title="Definir Hora atual"
                                             className="shrink-0"
                                         >
-                                            <Clock className="h-4 w-4" />
+                                            <ClockArrowUp className="h-4 w-4" />
                                         </Button>
                                     </div>
                                     {endTimeError && (
@@ -504,7 +513,7 @@ export function StudySessionForm() {
                             </Button>
                             <Button
                                 type="submit"
-                                disabled={createStudyLog.isPending}
+                                disabled={createStudyLog.isPending || !isFormReadyToSubmit}
                                 className="flex-1"
                             >
                                 {createStudyLog.isPending ? "Salvando..." : "Registrar Sessão"}
