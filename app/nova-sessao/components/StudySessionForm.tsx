@@ -24,6 +24,8 @@ import { useCreateStudyLog } from "@/hooks/useStudyLogs";
 import { StudyLogInput } from "@/server/actions/studyLogs.action";
 import { NewTopicDialog } from "./NewTopicDialog";
 import useSessionFormStore from "@/store/useSessionFormStore";
+import { usePageTitleWithCronometer } from "@/hooks/usePageTitleWithCronometer";
+import { useTitlePage } from "@/hooks/useTitlePage";
 
 // --- Helpers ---
 
@@ -99,6 +101,14 @@ export function StudySessionForm() {
     const { data: topics = [], isLoading: loadingTopics } = useTopicsBySubject(form?.subjectId);
 
     const createStudyLog = useCreateStudyLog();
+
+
+    usePageTitleWithCronometer
+        ({
+            isRunning: cronometer.isRunning,
+            seconds: cronometer.seconds,
+            baseTitle: "Nova Sessão de Estudo"
+        });
 
     // Warn on unsaved data
     useEffect(() => {
