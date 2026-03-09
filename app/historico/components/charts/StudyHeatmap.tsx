@@ -266,7 +266,7 @@ export function StudyHeatmap() {
         </div>
 
         {/* Week grid */}
-        <div className="grid grid-cols-7 gap-1.5 max-h-105 overflow-y-auto pr-2">
+        <div className="grid grid-cols-5 gap-1.5 max-h-105 overflow-y-auto pr-2">
           {weeks.map((week) => {
             const minutes = getMinutesForPeriod(week.start, week.end);
             const inRange = isPeriodInRange(week.start, week.end);
