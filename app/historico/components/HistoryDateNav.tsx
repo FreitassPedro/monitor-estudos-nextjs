@@ -16,12 +16,11 @@ export type RangeType = 'day' | 'week' | 'month' | 'custom';
 
 export function HistoryDateNav() {
 
-    const { startDate, endDate, setRange } = useSearchRangeStore();
+    const { startDate, endDate, setRange, setRangeType, rangeType } = useSearchRangeStore();
     const range = { startDate, endDate };
 
     const [isOpenPicker, setIsOpenPicker] = useState(false);
     const [pickingRange, setPickingRange] = useState<CalendarDateRange>({ from: range.startDate, to: range.endDate });
-    const [rangeType, setRangeType] = useState<RangeType>('day');
 
     const handleRangeTypeChange = (type: string) => {
         const newType = type as RangeType;
@@ -33,19 +32,23 @@ export function HistoryDateNav() {
         switch (type) {
             case 'day':
                 setRange({ startDate: today, endDate: today });
+                setRangeType('day');
                 break;
             case 'week':
                 const mondayStart = startOfWeek(today, { weekStartsOn: 1 });
+                const endOfWeekDate = endOfWeek(today, { weekStartsOn: 1 });
                 setRange({
                     startDate: mondayStart,
-                    endDate: today,
+                    endDate: endOfWeekDate,
                 });
+                setRangeType('week');
                 break;
             case 'month':
                 setRange({
                     startDate: startOfMonth(today),
                     endDate: endOfMonth(today),
                 });
+                setRangeType('month');
                 break;
             case 'custom':
                 setIsOpenPicker(true);
