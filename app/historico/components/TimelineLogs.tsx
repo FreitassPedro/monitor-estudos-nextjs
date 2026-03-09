@@ -51,13 +51,13 @@ const TimelineCardProps = {
 }
 
 export function TimelineLogs() {
-    const { startDate, endDate } = useSearchRangeStore();
+    const { startDate, endDate, rangeType } = useSearchRangeStore();
     const range = { startDate, endDate };
     const isSingleDay = range && isSameDay(range.startDate, range.endDate);
 
     const { data: logs, isLoading } = useStudyLogsRange(range.startDate, range.endDate);
 
-    if (!isSingleDay) return null;
+    if (!isSingleDay || rangeType !== "day") return null;
 
     if (isLoading) {
         return (
