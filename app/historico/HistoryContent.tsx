@@ -5,6 +5,7 @@ import { TimelineLogs } from "./components/TimelineLogs";
 import { LogsHistory } from "./components/LogsHistory";
 import { SummaryCards } from "./components/SummaryCards";
 import { HistoryCharts } from "./components/HistoryCharts";
+import { StudyBarChart } from "./components/charts/StudyBarChart";
 
 
 export function HistoryContent() {

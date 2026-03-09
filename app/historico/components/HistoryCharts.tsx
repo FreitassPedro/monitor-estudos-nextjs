@@ -6,10 +6,11 @@ import { StudyPieChart } from "./charts/StudyPieChart";
 import { Suspense } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChartIcon } from "lucide-react";
+import { StudyBarChart } from "./charts/StudyBarChart";
 
 const ChartSkeleton = () => {
     return (
-       <Card>
+        <Card>
             <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
                     <PieChartIcon className="h-4 w-4 text-cyan-500" />
@@ -32,15 +33,20 @@ export const HistoryCharts = () => {
         <>
             <div className="grid gap-4 md:grid-cols-2">
                 <Suspense fallback={<ChartSkeleton />}>
-                    <StudyAreaChart />
+                    <StudyBarChart />
                 </Suspense>
+
                 <Suspense fallback={<ChartSkeleton />}>
                     <StudyPieChart />
                 </Suspense>
+                <Suspense fallback={<ChartSkeleton />}>
+                    <StudyAreaChart />
+                </Suspense>
+
             </div>
             <div className="grid gap-4 md:grid-cols-2">
                 {/* <ProductivityByPeriod logs={logs} /> */}
-                  <StudyHeatmap onSelectDate={() => { }} />
+                <StudyHeatmap onSelectDate={() => { }} />
             </div>
         </>
     );

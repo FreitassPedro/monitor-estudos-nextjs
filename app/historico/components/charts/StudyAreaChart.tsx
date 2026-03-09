@@ -97,9 +97,6 @@ export const StudyAreaChart = () => {
         staleTime: 1000 * 60 * 5, // 5 minutos
     });
 
-
-    console.log("Fetched Area Chart Data:", rawData, { startDate, endDate });
-
     const chartData: ChartDataPoint[] = Object.entries(rawData || {}).map(([date, info]) => ({
         date,
         minutes: info.totalMinutes,
@@ -125,8 +122,6 @@ export const StudyAreaChart = () => {
     }
 
     const hasData = chartData && chartData.length > 0;
-
-    console.log("Area Chart Data:", chartData);
 
     return (
         <Card>
