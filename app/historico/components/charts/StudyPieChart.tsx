@@ -1,6 +1,6 @@
 "use client";
 
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { Label, LabelList, LabelProps, Pie, PieChart, PieSectorShapeProps, ResponsiveContainer, Sector, Tooltip } from "recharts";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart as PieChartIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -33,6 +33,14 @@ const CustomTooltip = ({ active, payload }: any) => {
     }
     return null;
 };
+
+const MyCustomPie = (props: PieSectorShapeProps) => <Sector {...props} fill={props.fill} />;
+
+const MyCustomLabel = (props: LabelProps) => (
+    <>
+        <Label {...props} fontSize={11} fontWeight={500} fill="#000" position="outside" offset={20} />
+    </>
+);
 
 const RADIAN = Math.PI / 180;
 const renderCustomLabel = ({
@@ -68,7 +76,11 @@ export const StudyPieChart = () => {
         staleTime: 1000 * 60 * 5, // 5 minutos
     });
 
-    const data = chartData?.data ?? [];
+    // Map data to include 'fill' property for Recharts (modern approach without Cell)
+    const data = (chartData?.data ?? []).map(item => ({
+        ...item,
+        fill: item.color || '#8884d8'
+    }));
     const totalMinutes = chartData?.totalMinutes ?? 0;
     const hasData = chartData?.hasData ?? false;
 
@@ -83,27 +95,26 @@ export const StudyPieChart = () => {
             </CardHeader>
             <CardContent>
                 {!hasData ? (
-                    <div className="flex items-center justify-center h-[200px] text-sm text-muted-foreground">
+                    <div className="flex items-center justify-center h-50 text-sm text-muted-foreground">
                         Sem dados para exibir neste período
                     </div>
                 ) : (
                     <>
-                        <ResponsiveContainer width="100%" height={200}>
+                        <ResponsiveContainer width="100%" height={250}>
                             <PieChart>
                                 <Pie
                                     data={data}
                                     cx="50%"
                                     cy="50%"
-                                    labelLine={false}
+                                    labelLine={true}
                                     label={renderCustomLabel}
                                     innerRadius={50}
                                     outerRadius={85}
                                     paddingAngle={2}
                                     dataKey="value"
+                                    shape={MyCustomPie}
                                 >
-                                    {data.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color || '#8884d8'} />
-                                    ))}
+                                    <LabelList dataKey="name"  content={MyCustomLabel} />
                                 </Pie>
                                 <Tooltip content={<CustomTooltip />} />
                             </PieChart>
