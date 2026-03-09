@@ -1,4 +1,4 @@
-import { createStudyLogAction, getStudyLogsByDateAction, getTodayStudyLogsAction, StudyLogInput } from "@/server/actions/studyLogs.action";
+import { createStudyLogAction, getStudyLogsByDateAction, getSummaryStatsAction, getTodayStudyLogsAction, StudyLogInput } from "@/server/actions/studyLogs.action";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getDay } from "date-fns";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -10,6 +10,13 @@ export const studyLogsByDateQUeryOptions = (startDate: Date, endDate: Date, user
     staleTime: 1000 * 60 * 5, // 5 minutos
 });
 
+export const summaryStatsQueryOptions = (startDate: Date, endDate: Date, userId?: string) => ({
+    queryKey: ["summaryStats", "range", getDay(startDate), getDay(endDate), userId],
+    queryFn: () => getSummaryStatsAction(startDate, endDate, userId!),
+    enabled: !!startDate && !!endDate && !!userId,
+    staleTime: 1000 * 60 * 5, // 5 minutos
+});
+
 export function useCreateStudyLog() {
     const queryClient = useQueryClient();
 
@@ -17,6 +24,8 @@ export function useCreateStudyLog() {
         mutationFn: (data: StudyLogInput) => createStudyLogAction(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["studyLogs"] });
+            queryClient.invalidateQueries({ queryKey: ["summaryStats"] });
+            queryClient.invalidateQueries({ queryKey: ["charts"] });
         },
     });
 }
@@ -45,6 +54,14 @@ export function useStudyLogsRange(startDate: Date, endDate: Date) {
     const userId = useAuthStore((state) => state.user?.id);
     return useQuery({
         ...studyLogsByDateQUeryOptions(startDate, endDate, userId),
+        enabled: !!userId,
+    });
+}
+
+export function useSummaryStats(startDate: Date, endDate: Date) {
+    const userId = useAuthStore((state) => state.user?.id);
+    return useQuery({
+        ...summaryStatsQueryOptions(startDate, endDate, userId),
         enabled: !!userId,
     });
 }

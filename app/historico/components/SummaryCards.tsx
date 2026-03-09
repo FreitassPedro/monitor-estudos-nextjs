@@ -1,9 +1,6 @@
-import { useStudyLogsHistory } from "@/hooks/useStudyLogs";
-import { useMemo } from "react";
+import { useSummaryStats } from "@/hooks/useStudyLogs";
 import { BookOpen, Clock, Timer, TrendingUp, Trophy } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { useSubjectsMap } from "@/hooks/useSubjects";
-import { useTopicsMap } from "@/hooks/useTopics";
 import useSearchRangeStore from "@/store/useSearchRangeStore";
 
 
@@ -60,55 +57,7 @@ export function SummaryCards() {
 
     const { startDate, endDate } = useSearchRangeStore();
 
-    const { data, error, isLoading } = useStudyLogsHistory(startDate, endDate);
-
-    const { data: subjectsMap } = useSubjectsMap();
-    const { data: topicsMap } = useTopicsMap();
-
-    const stats = useMemo(() => {
-        const logs = data ?? [];
-        if (logs.length === 0) {
-            return { totalMinutes: 0, totalSessions: 0, avgSession: 0, longestSession: 0, topSubject: null, topSubjectMinutes: 0 };
-        }
-
-        let totalMinutes = 0;
-        let longestSession = 0;
-
-        const subjectMinutes: Record<string, number> = {};
-
-        logs.forEach(log => {
-            totalMinutes += log.duration_minutes;
-
-            if (log.duration_minutes > longestSession) {
-                longestSession = log.duration_minutes;
-            }
-
-            const topic = topicsMap?.[log.topicId as string];
-
-            if (topic) {
-                const subjectId = topic.subjectId;
-                subjectMinutes[subjectId] = (subjectMinutes[subjectId] || 0) + log.duration_minutes;
-            }
-        });
-
-
-        const totalSessions = logs.length;
-        const avgSession = totalSessions > 0 ? Math.round(totalMinutes / totalSessions) : 0;
-
-
-        let topSubjectId: string | null = null;
-        let topSubjectMinutes = 0;
-        Object.entries(subjectMinutes).forEach(([id, mins]) => {
-            if (mins > topSubjectMinutes) {
-                topSubjectId = id;
-                topSubjectMinutes = mins;
-            }
-        });
-
-        const topSubject = topSubjectId && subjectsMap ? subjectsMap?.[topSubjectId] : null;
-
-        return { totalMinutes, totalSessions, avgSession, longestSession, topSubject, topSubjectMinutes };
-    }, [data, subjectsMap, topicsMap]);
+    const { data: stats, error, isLoading } = useSummaryStats(startDate, endDate);
 
     if (isLoading) {
         return (
@@ -131,6 +80,18 @@ export function SummaryCards() {
             </div>
         );
     };
+
+    if (error) {
+        return (
+            <div className="text-red-500">
+                Erro ao carregar os dados: {(error as Error).message}
+            </div>
+        );
+    }
+
+    if (!stats) {
+        return null;
+    }
 
     const cards = [
         {
@@ -171,14 +132,6 @@ export function SummaryCards() {
             dotColor: stats.topSubject?.color,
         },
     ];
-
-    if (error) {
-        return (
-            <div className="text-red-500">
-                Erro ao carregar os dados: {(error as Error).message}
-            </div>
-        );
-    }
 
     return (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
