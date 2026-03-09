@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { isSameDay } from "date-fns";
 import { useStudyLogsRange } from "@/hooks/useStudyLogs";
 import useSearchRangeStore from "@/store/useSearchRangeStore";
+import { useEffect, useRef } from "react";
 
 
 const formatTimeFromTimestamp = (time: Date | string) => {
@@ -56,6 +57,9 @@ export function TimelineLogs() {
     const isSingleDay = range && isSameDay(range.startDate, range.endDate);
 
     const { data: logs, isLoading } = useStudyLogsRange(range.startDate, range.endDate);
+    const latestLogRef = useRef<HTMLDivElement>(null);
+
+    // Scroll to the log with latest end_time when logs are loaded
 
     if (!isSingleDay || rangeType !== "day") return null;
 
@@ -118,6 +122,7 @@ export function TimelineLogs() {
                                 const finalHeight = Math.min(height, 100 - top);
 
                                 const subject = dayLog.topic?.subject ?? null;
+
 
                                 return (
                                     <div

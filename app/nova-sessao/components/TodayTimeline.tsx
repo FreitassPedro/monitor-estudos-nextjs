@@ -5,6 +5,7 @@ import { useSubjectsMap } from "@/hooks/useSubjects";
 import { useTopicsMap } from "@/hooks/useTopics";
 import useSessionFormStore from "@/store/useSessionFormStore";
 import { Clock } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 
 const TimelineCardProps = {
@@ -85,7 +86,36 @@ export function TodayTimeline() {
     const { cronometer, selectedSubject, selectedTopic } = useSessionFormStore();
 
     const { data: subjectsMap } = useSubjectsMap();
-    const { data: topicsMap } = useTopicsMap();
+
+    const latestLogRef = useRef<HTMLDivElement>(null);
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    // Update current time every minute
+    useEffect(() => {
+        const updateCurrentTime = () => {
+            setCurrentTime(new Date());
+        };
+
+        // Update immediately
+        updateCurrentTime();
+
+        // Update every minute (60000ms)
+        const intervalId = setInterval(updateCurrentTime, 60000);
+
+        return () => clearInterval(intervalId);
+    }, []);
+
+    useEffect(() => {
+        if (logs && logs.length > 0 && latestLogRef.current) {
+            latestLogRef.current.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+        console.log(latestLogRef.current);
+
+        console.log('Logs updated:', logs);
+    }, [logs, latestLogRef]);
 
     return (
         <Card>
@@ -122,9 +152,16 @@ export function TodayTimeline() {
 
                         {logs?.map(log => {
                             const subject = subjectsMap?.[log.topic.subjectId];
+                            // Find the log with latest end_time
+                            const latestLog = logs.reduce((latest, current) => {
+                                return new Date(current.end_time) > new Date(latest.end_time) ? current : latest;
+                            });
+
+
                             return (
                                 <div
                                     key={log.id}
+                                    ref={log.id === latestLog.id ? latestLogRef : null}
                                     className="absolute z-0 left-2 right-2 rounded-lg p-2 border-l-4 overflow-hidden cursor-pointer hover:scale-[1.01] hover:z-20 transition-all
                                     border-blue-500"
                                     style={{
@@ -153,6 +190,21 @@ export function TodayTimeline() {
                                 </div>
                             );
                         })}
+
+
+                        {/* Now hour line */}
+                        <div
+                            className="absolute left-0 right-0 h-0.5 bg-red-500 z-20 flex items-center transition-all animate-pulse duration-400 "
+                            style={{
+                                top: `${timeToPosition(formatTimeFromTimestamp(currentTime))}%`
+                            }}
+                        >
+                            <div className="absolute -left-1 w-2 h-2 bg-red-500 rounded-full"></div>
+                            <div className="absolute -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
+                            <span className="absolute -top-5 left-2 text-xs font-semibold text-red-500 bg-white px-1 rounded">
+                                {formatTimeFromTimestamp(currentTime)}
+                            </span>
+                        </div>
 
 
                         {
