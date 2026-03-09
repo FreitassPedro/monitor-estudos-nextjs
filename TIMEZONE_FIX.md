@@ -45,24 +45,6 @@ export function formatDateKey(date: Date): string {
 }
 ```
 
-### 2. Arquivos Atualizados
-
-#### `server/actions/charts.action.ts`
-- Importou `formatDateKey` e `parseDateAsLocal` de `@/lib/utils`
-- Removeu função `formatDateKey` local (duplicada)
-- Substituiu `agg.study_date.toDateString()` por `formatDateKey(parseDateAsLocal(agg.study_date))`
-
-#### `app/historico/components/LogsHistory.tsx`
-- Importou `parseDateAsLocal` de `@/lib/utils`
-- Substituiu `new Date(log.study_date)` por `parseDateAsLocal(log.study_date)`
-- Substituiu `new Date(dateKey)` por `parseDateAsLocal(dateKey)`
-- Substituiu `new Date(logDetails.study_date)` por `parseDateAsLocal(logDetails.study_date)`
-
-#### `app/nova-sessao/components/SidebarLogs.tsx`
-- Importou `parseDateAsLocal` de `@/lib/utils`
-- Criou `const localDate = parseDateAsLocal(date)` dentro do componente
-- Substituiu `new Date(date)` por `localDate`
-
 #### `app/nova-sessao/components/StudySessionForm.tsx`
 - Mudou a criação da data do input de:
   ```tsx

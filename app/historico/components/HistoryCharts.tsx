@@ -31,6 +31,7 @@ export const HistoryCharts = () => {
 
     return (
         <>
+            
             <div className="grid gap-4 md:grid-cols-2">
                 <Suspense fallback={<ChartSkeleton />}>
                     <StudyBarChart />
@@ -42,12 +43,8 @@ export const HistoryCharts = () => {
                 <Suspense fallback={<ChartSkeleton />}>
                     <StudyAreaChart />
                 </Suspense>
+            </div>
 
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-                {/* <ProductivityByPeriod logs={logs} /> */}
-                <StudyHeatmap onSelectDate={() => { }} />
-            </div>
         </>
     );
 }

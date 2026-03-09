@@ -166,3 +166,42 @@ export async function getHeatmapMonthDataAction(monthDate: Date, userId: string)
         minutesByDate,
     };
 }
+
+export async function getHeatmapYearDataAction(year: number, userId: string): Promise<HeatmapMonthResponse> {
+    const startDate = new Date(year, 0, 1, 0, 0, 0, 0);
+    const endDate = new Date(year, 11, 31, 23, 59, 59, 999);
+
+    const aggregated = await prisma.studyLogs.groupBy({
+        by: ['study_date'],
+        where: {
+            study_date: {
+                gte: startDate,
+                lte: endDate,
+            },
+            topic: {
+                subject: {
+                    userId,
+                },
+            },
+        },
+        _sum: {
+            duration_minutes: true,
+        },
+    });
+
+    const minutesByDate: Record<string, number> = {};
+    let yearTotalMinutes = 0;
+
+    aggregated.forEach((agg) => {
+        const key = formatDateKey(agg.study_date);
+        const minutes = agg._sum.duration_minutes || 0;
+        minutesByDate[key] = minutes;
+        yearTotalMinutes += minutes;
+    });
+
+    return {
+        monthLabel: `${year}`,
+        monthTotalMinutes: yearTotalMinutes,
+        minutesByDate,
+    };
+}
