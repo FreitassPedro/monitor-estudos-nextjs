@@ -5,6 +5,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { getUsersAction } from "@/server/actions/user.actions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Separator } from "./ui/separator";
 
 interface User {
     id: string;
@@ -65,6 +66,21 @@ export function UserSelector() {
                             {u.name || u.email}
                         </Button>
                     ))}
+                    <Separator className="my-4" />
+                    <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                            setUser({
+                                id: "guest",
+                                name: "Visitante",
+                                email: "",
+                            });
+                        }}
+                        className="w-full"
+                    >
+                        Continuar como visitante
+                    </Button>
                 </CardContent>
             </Card>
         </div>

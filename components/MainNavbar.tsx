@@ -92,9 +92,9 @@ export default function MainNavbar() {
                             })}
                         </div>
 
-                        
+
                         {user && (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 rounded-full border border-border bg-secondary px-3 py-1">
                                 <span className="text-sm text-muted-foreground hidden sm:inline">
                                     {user.name || user.email}
                                 </span>
