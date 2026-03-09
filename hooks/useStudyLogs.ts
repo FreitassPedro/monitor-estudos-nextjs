@@ -1,4 +1,4 @@
-import { createStudyLogAction, getStudyLogsByDateAction, getSummaryStatsAction, getTodayStudyLogsAction, StudyLogInput } from "@/server/actions/studyLogs.action";
+import { createStudyLogAction, deleteStudyLogAction, getStudyLogsByDateAction, getSummaryStatsAction, getTodayStudyLogsAction, StudyLogInput, updateStudyLogAction, UpdateStudyLogInput } from "@/server/actions/studyLogs.action";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getDay } from "date-fns";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -22,6 +22,32 @@ export function useCreateStudyLog() {
 
     return useMutation({
         mutationFn: (data: StudyLogInput) => createStudyLogAction(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["studyLogs"] });
+            queryClient.invalidateQueries({ queryKey: ["summaryStats"] });
+            queryClient.invalidateQueries({ queryKey: ["charts"] });
+        },
+    });
+}
+
+export function useUpdateStudyLog() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (data: UpdateStudyLogInput) => updateStudyLogAction(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["studyLogs"] });
+            queryClient.invalidateQueries({ queryKey: ["summaryStats"] });
+            queryClient.invalidateQueries({ queryKey: ["charts"] });
+        },
+    });
+}
+
+export function useDeleteStudyLog() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (id: string) => deleteStudyLogAction(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["studyLogs"] });
             queryClient.invalidateQueries({ queryKey: ["summaryStats"] });

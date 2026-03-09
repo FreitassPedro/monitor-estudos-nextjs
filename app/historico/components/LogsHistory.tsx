@@ -3,9 +3,14 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useStudyLogsHistory } from "@/hooks/useStudyLogs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useStudyLogsHistory, useUpdateStudyLog, useDeleteStudyLog } from "@/hooks/useStudyLogs";
+import { useTopicsBySubject } from "@/hooks/useTopics";
 import { getStudyLogDetailsAction, getStudyLogsByDateAction } from "@/server/actions/studyLogs.action";
 import { useQuery } from "@tanstack/react-query";
 import { addWeeks, endOfWeek, format, isSameWeek, subWeeks } from "date-fns";
@@ -14,11 +19,12 @@ import {
     BookOpen,
     ChevronRight,
     Clock,
+    Edit2,
     FileText,
     Loader2,
     Trash2,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import useSearchRangeStore from "@/store/useSearchRangeStore";
 import { parseDateAsLocal } from "@/lib/utils";
 
@@ -32,6 +38,166 @@ const formatMinutes = (minutes: number) => {
     return `${hours}h ${mins}m`;
 };
 
+const EditLogDialog = ({ 
+    logId, 
+    isOpen, 
+    onOpenChange 
+}: { 
+    logId: string; 
+    isOpen: boolean; 
+    onOpenChange: (isOpen: boolean) => void;
+}) => {
+    const [startTime, setStartTime] = useState("");
+    const [endTime, setEndTime] = useState("");
+    const [notes, setNotes] = useState("");
+    const [topicId, setTopicId] = useState("");
+
+    const { data: logDetails, isLoading } = useQuery({
+        queryKey: ["studyLogs", "details", logId],
+        queryFn: () => getStudyLogDetailsAction(logId),
+        enabled: !!logId && isOpen,
+    });
+
+    const { data: topics } = useTopicsBySubject(logDetails?.topic.subjectId ?? "");
+    const updateMutation = useUpdateStudyLog();
+
+    // Preencher formulário quando os dados carregarem
+    useEffect(() => {
+        if (logDetails) {
+            const start = new Date(logDetails.start_time);
+            const end = new Date(logDetails.end_time);
+            setStartTime(`${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`);
+            setEndTime(`${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`);
+            setNotes(logDetails.notes || "");
+            setTopicId(logDetails.topicId);
+        }
+    }, [logDetails]);
+
+    const handleSave = async () => {
+        if (!logDetails) return;
+
+        const [startHour, startMin] = startTime.split(':').map(Number);
+        const [endHour, endMin] = endTime.split(':').map(Number);
+
+        const studyDate = new Date(logDetails.study_date);
+        const newStartTime = new Date(studyDate);
+        newStartTime.setHours(startHour, startMin, 0, 0);
+        
+        const newEndTime = new Date(studyDate);
+        newEndTime.setHours(endHour, endMin, 0, 0);
+
+        const duration = Math.round((newEndTime.getTime() - newStartTime.getTime()) / 60000);
+
+        try {
+            await updateMutation.mutateAsync({
+                id: logId,
+                topic_id: topicId,
+                start_time: newStartTime,
+                end_time: newEndTime,
+                duration_minutes: duration,
+                notes: notes,
+            });
+            onOpenChange(false);
+        } catch (error) {
+            console.error("Erro ao atualizar log:", error);
+        }
+    };
+
+    if (!logId) return null;
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-md">
+                <DialogHeader>
+                    <DialogTitle>Editar Sessão de Estudo</DialogTitle>
+                    <DialogDescription>
+                        Faça alterações nos horários, tópico ou anotações desta sessão.
+                    </DialogDescription>
+                </DialogHeader>
+
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                    </div>
+                ) : logDetails ? (
+                    <div className="space-y-4 py-4">
+                        {/* Tópico */}
+                        <div className="space-y-2">
+                            <Label htmlFor="topic">Tópico</Label>
+                            <Select value={topicId} onValueChange={setTopicId}>
+                                <SelectTrigger id="topic">
+                                    <SelectValue placeholder="Selecione um tópico" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {topics?.map((topic) => (
+                                        <SelectItem key={topic.id} value={topic.id}>
+                                            {topic.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {/* Horário de Início */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="startTime">Início</Label>
+                                <Input
+                                    id="startTime"
+                                    type="time"
+                                    value={startTime}
+                                    onChange={(e) => setStartTime(e.target.value)}
+                                />
+                            </div>
+
+                            {/* Horário de Término */}
+                            <div className="space-y-2">
+                                <Label htmlFor="endTime">Término</Label>
+                                <Input
+                                    id="endTime"
+                                    type="time"
+                                    value={endTime}
+                                    onChange={(e) => setEndTime(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Anotações */}
+                        <div className="space-y-2">
+                            <Label htmlFor="notes">Anotações</Label>
+                            <Textarea
+                                id="notes"
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                placeholder="Adicione suas anotações aqui..."
+                                className="min-h-25"
+                            />
+                        </div>
+                    </div>
+                ) : null}
+
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>
+                        Cancelar
+                    </Button>
+                    <Button 
+                        onClick={handleSave} 
+                        disabled={updateMutation.isPending || isLoading}
+                    >
+                        {updateMutation.isPending ? (
+                            <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Salvando...
+                            </>
+                        ) : (
+                            "Salvar"
+                        )}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};
 
 
 const LogDetailsDialog = ({ logId, isOpen, isOpenChange }: { logId: string; isOpen: boolean; isOpenChange: (isOpen: boolean) => void }) => {
@@ -52,11 +218,11 @@ const LogDetailsDialog = ({ logId, isOpen, isOpenChange }: { logId: string; isOp
                 <DialogHeader>
                     <DialogTitle>Detalhes da Sessão</DialogTitle>
                 </DialogHeader>
-                { isLoading ? (
+                {isLoading ? (
                     <div className="flex items-center justify-center py-3 text-muted-foreground">
                         <Loader2 className="w-4 h-4 animate-spin" />
                     </div>
-                ) : null }
+                ) : null}
 
                 {logDetails ? (
                     <>
@@ -98,12 +264,25 @@ export function LogCard({ log }: { log: StudyLogFeedItem }) {
     const topic = log.topic;
 
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+    const deleteMutation = useDeleteStudyLog();
+
+    const handleDelete = async () => {
+        try {
+            await deleteMutation.mutateAsync(log.id);
+            setIsDeleteOpen(false);
+        } catch (error) {
+            console.error("Erro ao excluir log:", error);
+        }
+    };
 
     return (
         <>
             <div className="group flex items-start gap-4 p-4 bg-card border border-border/40 hover:border-border rounded-lg transition-all hover:shadow-sm">
                 <div
-                    className="w-1.5 h-full min-h-[3rem] rounded-full shrink-0"
+                    className="w-1.5 h-full min-h-12 rounded-full shrink-0"
                     style={{ backgroundColor: subject?.color || "#ccc" }}
                 />
 
@@ -146,17 +325,53 @@ export function LogCard({ log }: { log: StudyLogFeedItem }) {
                 </div>
 
                 <div className="flex gap-1 opacity-100 sm:opacity-30 sm:group-hover:opacity-100 transition-opacity">
-                    {log.notes && (
-                        <Button size="icon" variant="ghost" onClick={() => setIsDetailsOpen(true)} title="Ver anotações">
-                            <FileText className="w-4 h-4 text-blue-500" />
-                        </Button>
-                    )}
-                    <Button size="icon" variant="ghost" title="Excluir">
+                    <Button size="icon" variant="ghost" onClick={() => setIsDetailsOpen(true)} title="Ver detalhes">
+                        <FileText className="w-4 h-4 text-blue-500" />
+                    </Button>
+
+                    <Button size="icon" variant="ghost" onClick={() => setIsEditOpen(true)} title="Editar">
+                        <Edit2 className="w-4 h-4 text-amber-500" />
+                    </Button>
+
+                    <Button size="icon" variant="ghost" onClick={() => setIsDeleteOpen(true)} title="Excluir">
                         <Trash2 className="w-4 h-4 text-red-500" />
                     </Button>
                 </div>
             </div>
+            
             <LogDetailsDialog logId={log.id} isOpen={isDetailsOpen} isOpenChange={setIsDetailsOpen} />
+            <EditLogDialog logId={log.id} isOpen={isEditOpen} onOpenChange={setIsEditOpen} />
+            
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Confirmar Exclusão</DialogTitle>
+                        <DialogDescription>
+                            Tem certeza que deseja excluir esta sessão de estudo? Esta ação não pode ser desfeita.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>
+                            Cancelar
+                        </Button>
+                        <Button 
+                            variant="destructive" 
+                            onClick={handleDelete}
+                            disabled={deleteMutation.isPending}
+                        >
+                            {deleteMutation.isPending ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    Excluindo...
+                                </>
+                            ) : (
+                                "Excluir"
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

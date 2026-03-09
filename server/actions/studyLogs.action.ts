@@ -174,6 +174,37 @@ export async function createStudyLogAction(data: StudyLogInput) {
     });
 }
 
+export interface UpdateStudyLogInput {
+    id: string;
+    topic_id?: string;
+    start_time?: Date;
+    end_time?: Date;
+    duration_minutes?: number;
+    notes?: string;
+}
+
+export async function updateStudyLogAction(data: UpdateStudyLogInput) {
+    const updateData: any = {};
+    
+    if (data.topic_id !== undefined) updateData.topicId = data.topic_id;
+    if (data.start_time !== undefined) updateData.start_time = data.start_time;
+    if (data.end_time !== undefined) updateData.end_time = data.end_time;
+    if (data.duration_minutes !== undefined) updateData.duration_minutes = data.duration_minutes;
+    if (data.notes !== undefined) updateData.notes = data.notes;
+    
+    return prisma.studyLogs.update({
+        where: { id: data.id },
+        data: updateData,
+        include,
+    });
+}
+
+export async function deleteStudyLogAction(id: string) {
+    return prisma.studyLogs.delete({
+        where: { id },
+    });
+}
+
 export async function getTodayStudyLogsAction(userId: string) {
     "use server";
     // 1. Dizemos ao Next.js: "Aguarde a requisição chegar. Isso não é estático."
