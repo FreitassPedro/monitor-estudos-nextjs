@@ -12,76 +12,51 @@ export type PieChartData = {
     color?: string;
 }
 
-export type PieChartResponse = {
-    data: PieChartData[];
-    totalMinutes: number;
-    hasData: boolean;
-}
-
 export type HeatmapMonthResponse = {
     monthLabel: string;
     monthTotalMinutes: number;
     minutesByDate: Record<string, number>;
 };
 
-export async function getPieChartDataAction(startDate: Date, endDate: Date, userId: string): Promise<PieChartResponse> {
-    // Normalizar datas para evitar problemas de timezone
-    const normalizedStart = new Date(startDate);
-    normalizedStart.setHours(0, 0, 0, 0);
-    
-    const normalizedEnd = new Date(endDate);
-    normalizedEnd.setHours(23, 59, 59, 999);
-
-    const aggregated = await prisma.studyLogs.groupBy({
-        by: ['topicId'],
-        where: {
-            study_date: {
-                gte: normalizedStart,
-                lte: normalizedEnd,
-            },
-            topic: {
-                subject: {
-                    userId: userId,
-                },
-            },
-        },
-        _sum: {
-            duration_minutes: true,
-        },
-        _count: true,
-    });
-
-    // Fetch subject info for each topic
-    const topicIds = aggregated.map(agg => agg.topicId);
-    const topics = await prisma.topic.findMany({
-        where: { id: { in: topicIds } },
-        include: { subject: true },
-    });
-
-    const topicMap = new Map(topics.map(t => [t.id, t]));
-
-    const data = aggregated
-        .map(agg => {
-            const topic = topicMap.get(agg.topicId);
-            const subject = topic?.subject;
-            return {
-                name: subject?.name || 'Desconhecido',
-                value: agg._sum.duration_minutes || 0,
-                sessions: agg._count,
-                color: subject?.color || '#888888',
-            };
-        })
-        .sort((a, b) => b.value - a.value);
-
-    const totalMinutes = data.reduce((sum, item) => sum + item.value, 0);
-    const hasData = data.length > 0 && data.some(d => d.value > 0);
-
-    return {
-        data,
-        totalMinutes,
-        hasData,
+export async function getPieChartDataActionRaw(startDate: Date, endDate: Date, userId: string): Promise<PieChartData[]> {
+    type RawSubjectAggregate = {
+        id: string;
+        name: string;
+        color: string;
+        totalMinutes: number | bigint;
+        totalSessions: number | bigint;
     };
-}
+
+    const rawData = await prisma.$queryRaw<RawSubjectAggregate[]>`
+        SELECT
+            s.id,
+            s.name,
+            s.color,
+            COALESCE(SUM(sl."duration_minutes"), 0) AS "totalMinutes",
+            COUNT(sl.id) AS "totalSessions"
+        FROM
+            "Subject" "s"
+        INNER JOIN "Topic" "t" ON t."subjectId" = s.id
+        INNER JOIN "StudyLogs" "sl" ON sl."topicId" = t.id
+            AND sl."study_date" >= ${startDate}
+            AND sl."study_date" <= ${endDate}
+        WHERE
+            s."userId" = ${userId}
+        GROUP BY
+            s.id, s.name, s.color
+        ORDER BY
+            "totalMinutes" DESC;
+    `;
+
+    const data = rawData.map(item => ({
+        name: item.name,
+        value: Number(item.totalMinutes),
+        sessions: Number(item.totalSessions),
+        color: item.color,
+    }));
+
+    return data;
+};
 
 
 export async function getAreaChartACtion(startDate: Date, endDate: Date, userId: string) {
@@ -89,11 +64,9 @@ export async function getAreaChartACtion(startDate: Date, endDate: Date, userId:
     // Quando comparamos com @db.Date, precisamos garantir que estamos comparando apenas a data
     const normalizedStart = new Date(startDate);
     normalizedStart.setHours(0, 0, 0, 0);
-    
+
     const normalizedEnd = new Date(endDate);
     normalizedEnd.setHours(23, 59, 59, 999);
-
-    console.log("Fetching Area Chart Data with:", { normalizedStart, normalizedEnd, userId });
 
     // Aggregate by study_date and topic with subject relationship
     const aggregated = await prisma.studyLogs.groupBy({

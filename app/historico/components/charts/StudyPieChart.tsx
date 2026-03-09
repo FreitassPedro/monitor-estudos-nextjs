@@ -4,9 +4,11 @@ import { Label, LabelList, LabelProps, Pie, PieChart, PieSectorShapeProps, Respo
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart as PieChartIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { getPieChartDataAction } from "@/server/actions/charts.action";
+import { getPieChartDataActionRaw } from "@/server/actions/charts.action";
 import useSearchRangeStore from "@/store/useSearchRangeStore";
 import { useAuthStore } from "@/store/useAuthStore";
+
+const toNumber = (value: number | bigint) => (typeof value === "bigint" ? Number(value) : value);
 
 const formatTime = (minutes: number) => {
     if (minutes === 0) return '0min';
@@ -33,6 +35,34 @@ const CustomTooltip = ({ active, payload }: any) => {
     }
     return null;
 };
+
+const CustomLegend = ({ data, totalMinutes }: { data: any[], totalMinutes: number }) => {
+    return (
+        <div className="space-y-2 mt-3">
+            {data.map((subject, index) => {
+                const subjectMinutes = toNumber(subject.value);
+                const percentage = totalMinutes > 0
+                    ? ((subjectMinutes / totalMinutes) * 100).toFixed(0)
+                    : '0';
+                return (
+                    <div key={index} className="flex items-center gap-2 text-sm">
+                        <span
+                            className="w-3 h-3 rounded-sm shrink-0"
+                            style={{ backgroundColor: subject.color }}
+                        />
+                        <span className="flex-1 truncate font-medium">{subject.name}</span>
+                        <span className="text-muted-foreground tabular-nums text-xs">
+                            {formatTime(subjectMinutes)}
+                        </span>
+                        <span className="text-muted-foreground tabular-nums text-xs w-8 text-right">
+                            {percentage}%
+                        </span>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
 
 const MyCustomPie = (props: PieSectorShapeProps) => <Sector {...props} fill={props.fill} />;
 
@@ -71,18 +101,22 @@ export const StudyPieChart = () => {
 
     const { data: chartData } = useQuery({
         queryKey: ['charts', 'pie', startDate, endDate, userId],
-        queryFn: () => getPieChartDataAction(startDate, endDate, userId!),
+        queryFn: () => getPieChartDataActionRaw(startDate, endDate, userId!),
         enabled: !!userId,
         staleTime: 1000 * 60 * 5, // 5 minutos
     });
 
+    if (!chartData) return null;
+
     // Map data to include 'fill' property for Recharts (modern approach without Cell)
-    const data = (chartData?.data ?? []).map(item => ({
+    const data = chartData.map((item) => ({
         ...item,
-        fill: item.color || '#8884d8'
+        value: toNumber(item.value),
+        fill: item.color || '#8884d8', // fallback color
     }));
-    const totalMinutes = chartData?.totalMinutes ?? 0;
-    const hasData = chartData?.hasData ?? false;
+    const totalMinutes = data.reduce((acc, item) => acc + item.value, 0);
+
+    console.log("Dados para o gráfico de pizza:", data);
 
     return (
         <Card>
@@ -94,7 +128,7 @@ export const StudyPieChart = () => {
                 <CardDescription>Tempo dedicado a cada área</CardDescription>
             </CardHeader>
             <CardContent>
-                {!hasData ? (
+                {chartData.length === 0 ? (
                     <div className="flex items-center justify-center h-50 text-sm text-muted-foreground">
                         Sem dados para exibir neste período
                     </div>
@@ -114,34 +148,13 @@ export const StudyPieChart = () => {
                                     dataKey="value"
                                     shape={MyCustomPie}
                                 >
-                                    <LabelList dataKey="name"  content={MyCustomLabel} />
+                                    <LabelList dataKey="name" content={MyCustomLabel} />
                                 </Pie>
                                 <Tooltip content={<CustomTooltip />} />
                             </PieChart>
                         </ResponsiveContainer>
 
-                        <div className="space-y-2 mt-3">
-                            {data.map((subject, index) => {
-                                const percentage = totalMinutes > 0
-                                    ? ((subject.value / totalMinutes) * 100).toFixed(0)
-                                    : '0';
-                                return (
-                                    <div key={index} className="flex items-center gap-2 text-sm">
-                                        <span
-                                            className="w-3 h-3 rounded-sm shrink-0"
-                                            style={{ backgroundColor: subject.color }}
-                                        />
-                                        <span className="flex-1 truncate font-medium">{subject.name}</span>
-                                        <span className="text-muted-foreground tabular-nums text-xs">
-                                            {formatTime(subject.value)}
-                                        </span>
-                                        <span className="text-muted-foreground tabular-nums text-xs w-8 text-right">
-                                            {percentage}%
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                        <CustomLegend data={data} totalMinutes={totalMinutes} />
                     </>
                 )}
             </CardContent>
