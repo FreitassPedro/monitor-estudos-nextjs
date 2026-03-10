@@ -28,18 +28,21 @@ export type UserMinAggregateOutputType = {
   id: string | null
   email: string | null
   name: string | null
+  studyGoal: string | null
 }
 
 export type UserMaxAggregateOutputType = {
   id: string | null
   email: string | null
   name: string | null
+  studyGoal: string | null
 }
 
 export type UserCountAggregateOutputType = {
   id: number
   email: number
   name: number
+  studyGoal: number
   _all: number
 }
 
@@ -48,18 +51,21 @@ export type UserMinAggregateInputType = {
   id?: true
   email?: true
   name?: true
+  studyGoal?: true
 }
 
 export type UserMaxAggregateInputType = {
   id?: true
   email?: true
   name?: true
+  studyGoal?: true
 }
 
 export type UserCountAggregateInputType = {
   id?: true
   email?: true
   name?: true
+  studyGoal?: true
   _all?: true
 }
 
@@ -139,6 +145,7 @@ export type UserGroupByOutputType = {
   id: string
   email: string
   name: string | null
+  studyGoal: string | null
   _count: UserCountAggregateOutputType | null
   _min: UserMinAggregateOutputType | null
   _max: UserMaxAggregateOutputType | null
@@ -166,6 +173,7 @@ export type UserWhereInput = {
   id?: Prisma.StringFilter<"User"> | string
   email?: Prisma.StringFilter<"User"> | string
   name?: Prisma.StringNullableFilter<"User"> | string | null
+  studyGoal?: Prisma.StringNullableFilter<"User"> | string | null
   subjects?: Prisma.SubjectListRelationFilter
 }
 
@@ -173,6 +181,7 @@ export type UserOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
   name?: Prisma.SortOrderInput | Prisma.SortOrder
+  studyGoal?: Prisma.SortOrderInput | Prisma.SortOrder
   subjects?: Prisma.SubjectOrderByRelationAggregateInput
 }
 
@@ -183,6 +192,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.UserWhereInput[]
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   name?: Prisma.StringNullableFilter<"User"> | string | null
+  studyGoal?: Prisma.StringNullableFilter<"User"> | string | null
   subjects?: Prisma.SubjectListRelationFilter
 }, "id" | "email">
 
@@ -190,6 +200,7 @@ export type UserOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
   name?: Prisma.SortOrderInput | Prisma.SortOrder
+  studyGoal?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
   _min?: Prisma.UserMinOrderByAggregateInput
@@ -202,12 +213,14 @@ export type UserScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"User"> | string
   email?: Prisma.StringWithAggregatesFilter<"User"> | string
   name?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  studyGoal?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
 }
 
 export type UserCreateInput = {
   id?: string
   email: string
   name?: string | null
+  studyGoal?: string | null
   subjects?: Prisma.SubjectCreateNestedManyWithoutUserInput
 }
 
@@ -215,6 +228,7 @@ export type UserUncheckedCreateInput = {
   id?: string
   email: string
   name?: string | null
+  studyGoal?: string | null
   subjects?: Prisma.SubjectUncheckedCreateNestedManyWithoutUserInput
 }
 
@@ -222,6 +236,7 @@ export type UserUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studyGoal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subjects?: Prisma.SubjectUpdateManyWithoutUserNestedInput
 }
 
@@ -229,6 +244,7 @@ export type UserUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studyGoal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   subjects?: Prisma.SubjectUncheckedUpdateManyWithoutUserNestedInput
 }
 
@@ -236,36 +252,42 @@ export type UserCreateManyInput = {
   id?: string
   email: string
   name?: string | null
+  studyGoal?: string | null
 }
 
 export type UserUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studyGoal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studyGoal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  studyGoal?: Prisma.SortOrder
 }
 
 export type UserMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  studyGoal?: Prisma.SortOrder
 }
 
 export type UserMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  studyGoal?: Prisma.SortOrder
 }
 
 export type UserScalarRelationFilter = {
@@ -299,12 +321,14 @@ export type UserCreateWithoutSubjectsInput = {
   id?: string
   email: string
   name?: string | null
+  studyGoal?: string | null
 }
 
 export type UserUncheckedCreateWithoutSubjectsInput = {
   id?: string
   email: string
   name?: string | null
+  studyGoal?: string | null
 }
 
 export type UserCreateOrConnectWithoutSubjectsInput = {
@@ -327,12 +351,14 @@ export type UserUpdateWithoutSubjectsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studyGoal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserUncheckedUpdateWithoutSubjectsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studyGoal?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -370,6 +396,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   id?: boolean
   email?: boolean
   name?: boolean
+  studyGoal?: boolean
   subjects?: boolean | Prisma.User$subjectsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
@@ -378,21 +405,24 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   id?: boolean
   email?: boolean
   name?: boolean
+  studyGoal?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   email?: boolean
   name?: boolean
+  studyGoal?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectScalar = {
   id?: boolean
   email?: boolean
   name?: boolean
+  studyGoal?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "name", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "name" | "studyGoal", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   subjects?: boolean | Prisma.User$subjectsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -409,6 +439,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     id: string
     email: string
     name: string | null
+    studyGoal: string | null
   }, ExtArgs["result"]["user"]>
   composites: {}
 }
@@ -836,6 +867,7 @@ export interface UserFieldRefs {
   readonly id: Prisma.FieldRef<"User", 'String'>
   readonly email: Prisma.FieldRef<"User", 'String'>
   readonly name: Prisma.FieldRef<"User", 'String'>
+  readonly studyGoal: Prisma.FieldRef<"User", 'String'>
 }
     
 
