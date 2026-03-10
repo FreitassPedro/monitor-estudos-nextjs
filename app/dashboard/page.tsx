@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { RecentSessions } from "./components/RecentSessions";
 import { TodaySummary } from "./components/TodaySummary";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { TodayTimeline } from "../nova-sessao/components/TodayTimeline";
 
 function SkeletonBox({ className }: { className?: string }) {
     return <div className={`animate-pulse rounded bg-muted ${className}`} />;
@@ -65,9 +66,18 @@ export default function DashboardPage() {
             <Suspense fallback={<TodaySummarySkeleton />}>
                 <TodaySummary />
             </Suspense>
-            <Suspense fallback={<RecentSessionsSkeleton />}>
-                <RecentSessions />
-            </Suspense>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div className="h-max">
+                    <Suspense fallback={<RecentSessionsSkeleton />}>
+                        <RecentSessions />
+                    </Suspense>
+                </div>
+                <Suspense fallback={<TodaySummarySkeleton />}>
+                    <TodayTimeline />
+                </Suspense>
+
+
+            </div>
         </div>
     );
 }

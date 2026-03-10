@@ -6,14 +6,15 @@ import { BookOpen, Clock, Target } from "lucide-react";
 
 export function TodaySummary() {
     const { data: logs = [] } = useTodayStudyLogs();
+    const today = new Date();
     const totalMinutes = logs.reduce((sum, log) => sum + log.duration_minutes, 0);
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
 
     return (
         <Card>
-            <CardHeader className="pb-2">
-                <CardTitle className="text-lg font-medium">Resumo de Hoje</CardTitle>
+            <CardHeader className="">
+                <CardTitle className="text-lg font-medium">Resumo de Hoje - {today.toLocaleDateString('pt-BR')}</CardTitle>
             </CardHeader>
             <CardContent>
                 <div className="grid gap-4 md:grid-cols-3">

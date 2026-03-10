@@ -30,30 +30,30 @@ export const StudyLogItemResume = ({
     const topic = log.topic;
 
     return (
-        <div className="group flex items-start gap-4 p-4 bg-card border border-border/40 hover:border-border rounded-lg transition-all hover:shadow-sm">
+        <div className="group flex flex-row items-start gap-4 p-4 bg-card border border-border/40 hover:border-border rounded-lg transition-all hover:shadow-sm">
             {/* Indicador de Cor do Assunto */}
             <div
                 className="w-1.5 h-full min-h-12 rounded-full shrink-0"
                 style={{ backgroundColor: subject?.color || '#ccc' }}
             />
 
-            <div className="flex-1">
-                <div className="flex justify-between items-start">
-                    <h4 className="font-semibold text-foreground truncate">
+            <div className="flex-1 min-w-0">
+                <div className="flex flex-col md:flex-row sm:justify-between gap-2 items-center justify-center">
+                    <h4 className="font-semibold flex flex-col text-foreground ">
                         {subject?.name}
-                        <span className="mx-2 text-muted-foreground font-normal" aria-hidden="true">—</span>
+                        <span className="mx-2 text-muted-foreground font-normal hidden" aria-hidden="true">—</span>
                         <span className="inline-flex items-center gap-1.5 text-sm text-muted-foreground font-normal">
                             <BookOpen className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
                             {topic?.name}
                         </span>
                     </h4>
-                    <span className="text-xs font-mono text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded">
+                    <span className="text-xs font-mono text-muted-foreground bg-secondary/50 px-2 py-0.5 rounded shrink-0">
                         {new Date(log.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(log.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                 </div>
 
 
-                <p className="text-sm text-muted-foreground whitespace-pre-line">
+                <p className="text-sm text-muted-foreground whitespace-pre-line mt-2">
                     <span className="font-medium">Notas:</span> {log?.notes ?? "Sem anotações para esta sessão."}
                 </p>
 
@@ -66,7 +66,7 @@ export const StudyLogItemResume = ({
             </div>
 
             {/* Ações (Só aparecem no hover em desktop, ou sempre visíveis em mobile) */}
-            <div className="flex gap-1 opacity-100  sm:opacity-30 sm:group-hover:opacity-100 transition-opacity">
+            <div className="flex gap-1 opacity-100 sm:opacity-30 sm:group-hover:opacity-100 transition-opacity shrink-0 self-start sm:self-auto">
                 {log?.notes && (
                     <Button size="icon" variant="ghost" title="Ver anotações">
                         <FileText className="w-4 h-4 text-blue-500" />
