@@ -134,7 +134,7 @@ export function SummaryCards() {
     ];
 
     return (
-        <div className="grid lg:grid-cols-2 gap-3">
+        <div className="grid sm:grid-cols-2  gap-3">
             {cards.map((card) =>
                 <SummaryCard key={card.label} card={card} />
             )}
