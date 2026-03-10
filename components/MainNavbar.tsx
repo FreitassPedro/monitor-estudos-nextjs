@@ -1,11 +1,12 @@
 "use client";
 
+import { useEffect, useState } from 'react';
 import { BookOpen, Plus, History, FolderOpen, CheckSquare, CalendarClock, User, LibraryBig } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useAuthStore } from '@/store/useAuthStore';
-import { usePathname } from 'next/navigation';
+import ThemeSwitch from './ThemeSwtich';
 
 const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: LibraryBig, isEnabled: true },
@@ -18,8 +19,19 @@ const navItems = [
 ];
 
 export default function MainNavbar() {
-    const pathname = usePathname();
+    const [currentPath, setCurrentPath] = useState('');
     const { user, clearUser } = useAuthStore();
+
+    useEffect(() => {
+        setCurrentPath(window.location.pathname);
+
+        const handlePopState = () => {
+            setCurrentPath(window.location.pathname);
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
 
     const enabledItems = navItems.filter(item => item.isEnabled);
 
@@ -40,7 +52,7 @@ export default function MainNavbar() {
                         <div className="hidden md:flex items-center gap-1 flex-1 justify-center max-w-2xl mx-auto overflow-x-auto">
                             {enabledItems.map((item) => {
                                 const Icon = item.icon;
-                                const isActive = pathname === item.href;
+                                const isActive = currentPath === item.href;
 
                                 return (
                                     <Button
@@ -50,12 +62,16 @@ export default function MainNavbar() {
                                         asChild
                                         className={cn(
                                             "shrink-0",
-                                            isActive 
-                                                ? "bg-primary text-primary-foreground hover:bg-primary/60" 
+                                            isActive
+                                                ? "bg-primary text-primary-foreground hover:bg-primary/60"
                                                 : "text-muted-foreground hover:bg-accent hover:text-foreground"
                                         )}
                                     >
-                                        <Link href={item.href} className="flex items-center gap-1.5">
+                                        <Link
+                                            href={item.href}
+                                            className="flex items-center gap-1.5"
+                                            onClick={() => setCurrentPath(item.href)}
+                                        >
                                             <Icon className="h-4 w-4" />
                                             <span className="hidden lg:inline">{item.label}</span>
                                         </Link>
@@ -68,7 +84,7 @@ export default function MainNavbar() {
                         <div className="flex md:hidden items-center gap-0.5 flex-1 justify-center overflow-x-auto">
                             {enabledItems.slice(0, 4).map((item) => {
                                 const Icon = item.icon;
-                                const isActive = pathname === item.href;
+                                const isActive = currentPath === item.href;
 
                                 return (
                                     <Link
@@ -81,6 +97,7 @@ export default function MainNavbar() {
                                                 : "text-muted-foreground hover:bg-accent hover:text-foreground"
                                         )}
                                         title={item.label}
+                                        onClick={() => setCurrentPath(item.href)}
                                     >
                                         <Icon className="h-5 w-5" />
                                     </Link>
@@ -105,6 +122,7 @@ export default function MainNavbar() {
                                 </Button>
                             </div>
                         )}
+                        <ThemeSwitch />
                     </div>
                 </div>
             </nav>

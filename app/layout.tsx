@@ -6,6 +6,7 @@ import QueryProvider from "./providers/QueryProvider";
 import { UserSelector } from "@/components/UserSelector";
 
 import MainNavbar from "@/components/MainNavbar";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -33,17 +34,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} antialiased`}
       >
-        <QueryProvider>
-          <UserSelector />
-          <MainNavbar />
-          {children}
-          <Toaster position="top-right" />
+        <ThemeProvider attribute={"class"}
+          defaultTheme="system"
+          enableSystem
+        >
+          <QueryProvider>
+            <UserSelector />
+            <MainNavbar />
+            {children}
+            <Toaster position="top-right" />
 
-        </QueryProvider>
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
