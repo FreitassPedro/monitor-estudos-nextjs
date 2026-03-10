@@ -226,6 +226,9 @@ export async function getTodayStudyLogsAction(userId: string) {
             },
         },
         include,
+        orderBy: {
+            start_time: "asc",
+        },
     });
 }
 
