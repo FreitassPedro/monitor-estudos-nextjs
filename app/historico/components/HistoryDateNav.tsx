@@ -69,19 +69,20 @@ export function HistoryDateNav() {
                     startDate: subDays(today, 6),
                     endDate: today,
                 });
+                setRangeType('custom');
                 break;
             case 'last30days':
                 setRange({
                     startDate: subDays(today, 29),
                     endDate: today,
                 });
+                setRangeType('custom');
                 break;
             case 'calendar':
+                setRangeType('custom');
                 setIsOpenPicker(true);
                 break;
             default:
-
-
                 break;
         }
     };
@@ -123,17 +124,22 @@ export function HistoryDateNav() {
     };
 
     const getDisplayLabel = () => {
+        if (customOptions === 'last7days') {
+            return `Últimos 7 dias`;
+        }
+        if (customOptions === 'last30days') {
+            return `Últimos 30 dias`;
+        }
 
         switch (rangeType) {
             case 'day':
                 return format(startDate, "d 'de' MMMM, yyyy", { locale: ptBR });
             case 'week':
-                if (customOptions === 'last7days') {
-                    return `Últimos 7 dias: ${format(startDate, 'd MMM', { locale: ptBR })} – ${format(endDate, "d MMM, yyyy", { locale: ptBR })}`;
-                }
                 return `${format(startDate, 'd MMM', { locale: ptBR })} – ${format(endDate, "d MMM, yyyy", { locale: ptBR })}`;
             case 'month':
                 return format(startDate, "MMMM 'de' yyyy", { locale: ptBR });
+            case 'custom':
+                return `${format(startDate, 'd MMM', { locale: ptBR })} – ${format(endDate, 'd MMM yyyy', { locale: ptBR })}`;
             default:
                 return `${format(startDate, 'd MMM yyyy', { locale: ptBR })} – ${format(endDate, 'd MMM yyyy', { locale: ptBR })}`;
         }
@@ -217,74 +223,114 @@ export function HistoryDateNav() {
 
     return (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-card border rounded-lg">
-            <Tabs value={rangeType} onValueChange={handleRangeTypeChange}>
-                <TabsList >
-                    <TabsTrigger className='cursor-pointer' value="day">Dia</TabsTrigger>
-                    <TabsTrigger className='cursor-pointer' value="week">Semana</TabsTrigger>
-                    <TabsTrigger className='cursor-pointer' value="month">Mês</TabsTrigger>
-
-                    <Select value={customOptions} onValueChange={handleRangeTypeChange}>
-                        <SelectTrigger className="w-40">
-                            <SelectValue placeholder="Selecione..." />
+            {/* Mobile: Select Dropdown */}
+            <div className="w-full">
+                <div className="flex sm:hidden w-full gap-2 relative items-center ">
+                    <Select value={rangeType ?? customOptions} onValueChange={handleRangeTypeChange}>
+                        <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Selecione uma opção" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value='last7days'>Últimos 7 dias</SelectItem>
-                            <SelectItem value='last30days'>Últimos 30 dias</SelectItem>
+                            <SelectItem value="day">Dia</SelectItem>
+                            <SelectItem value="week">Semana</SelectItem>
+                            <SelectItem value="month">Mês</SelectItem>
+                            <SelectItem value="last7days">Últimos 7 dias</SelectItem>
+                            <SelectItem value="last30days">Últimos 30 dias</SelectItem>
+                            <SelectItem value="calendar">Personalizado</SelectItem>
                         </SelectContent>
                     </Select>
 
+                    {isOpenPicker && (
+                        <div ref={calendarRef} className="absolute left-0 top-full z-50 mt-2">
+                            <Card className="w-fit p-0">
+                                <CardContent className="p-0">
+                                    <Calendar
+                                        mode="range"
+                                        defaultMonth={startDate}
+                                        selected={pickingRange}
+                                        onSelect={setPickingRange}
+                                        required
+                                    />
+                                </CardContent>
+                                <Button variant="secondary" size="sm" className="m-2"
+                                    onClick={() => handleCalendarSearch()}>
+                                    Buscar
+                                    <Search className="h-4 w-4" />
+                                </Button>
+                            </Card>
+                        </div>
+                    )}
+                </div>
 
-                    <div  className="relative">
-                        <TabsTrigger className='cursor-pointer bg-primary/80 text-secondary' value="custom" onClick={handleOpenCalendarPicker}>
-                            Personalizado
-                        </TabsTrigger>
+                {/* Desktop: Tabs */}
+                <Tabs value={rangeType} onValueChange={handleRangeTypeChange} className="hidden sm:block">
+                    <TabsList>
+                        <TabsTrigger className=' cursor-pointer items-center px-3' value="day">Dia</TabsTrigger>
+                        <TabsTrigger className=' cursor-pointer items-center px-3' value="week">Semana</TabsTrigger>
+                        <TabsTrigger className=' cursor-pointer items-center px-3' value="month">Mês</TabsTrigger>
 
-                        {isOpenPicker && (
-                            <div ref={calendarRef} className="absolute left-0 top-full z-10 mt-2">
-                                <Card className="w-fit p-0">
-                                    <CardContent className="p-0">
-                                        <Calendar
-                                            mode="range"
-                                            defaultMonth={startDate}
-                                            selected={pickingRange}
-                                            onSelect={setPickingRange}
-                                            required
-                                        />
-                                    </CardContent>
-                                    {/* Search Button */}
-                                    <Button variant="secondary" size="sm" className="m-2"
-                                        onClick={() => handleCalendarSearch()}>
-                                        Buscar
-                                        <Search className="h-4 w-4" />
-                                    </Button>
-                                </Card>
-                            </div>
-                        )}
-                    </div>
-                </TabsList>
-            </Tabs>
+                        <Select value={customOptions} onValueChange={handleRangeTypeChange}>
+                            <SelectTrigger className="h-9 w-40 self-center">
+                                <SelectValue placeholder="Mais opções..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value='last7days'>Últimos 7 dias</SelectItem>
+                                <SelectItem value='last30days'>Últimos 30 dias</SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                        <div className="relative flex items-center">
+                            <TabsTrigger className='cursor-pointer bg-primary/80 text-secondary' value="custom" onClick={handleOpenCalendarPicker}>
+                                <CalendarIcon className="h-4 w-4 mr-1" />
+                                Personalizado
+                            </TabsTrigger>
+
+                            {isOpenPicker && (
+                                <div ref={calendarRef} className="absolute left-0 top-full z-50 mt-2">
+                                    <Card className="w-fit p-0">
+                                        <CardContent className="p-0">
+                                            <Calendar
+                                                mode="range"
+                                                defaultMonth={startDate}
+                                                selected={pickingRange}
+                                                onSelect={setPickingRange}
+                                                required
+                                            />
+                                        </CardContent>
+                                        <Button variant="secondary" size="sm" className="m-2"
+                                            onClick={() => handleCalendarSearch()}>
+                                            Buscar
+                                            <Search className="h-4 w-4" />
+                                        </Button>
+                                    </Card>
+                                </div>
+                            )}
+                        </div>
+                    </TabsList>
+                </Tabs>
+            </div>
 
             {/* Navigate by Buttons */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 w-full sm:w-auto justify-between sm:justify-end">
                 <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => navigate(-1)}
-                    className="h-8 w-8"
+                    className="h-8 w-8 shrink-0"
                 >
                     <ChevronLeft className="h-4 w-4" />
                 </Button>
 
-                <div className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium  justify-center">
-                    <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="capitalize">{getDisplayLabel()}</span>
+                <div className="flex items-center gap-2 px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium justify-center flex-1 sm:flex-initial min-w-0">
+                    <CalendarIcon className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <span className="capitalize truncate">{getDisplayLabel()}</span>
                 </div>
 
                 <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => navigate(1)}
-                    className="h-8 w-8"
+                    className="h-8 w-8 shrink-0"
                 >
                     <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -293,14 +339,15 @@ export function HistoryDateNav() {
                     <Button
                         variant="outline"
                         size="sm"
-                        className="ml-1 h-7 text-xs"
+                        className="ml-1 h-7 text-xs shrink-0"
                         onClick={() => {
                             const today = new Date();
                             today.setHours(0, 0, 0, 0);
                             setRange({ startDate: today, endDate: today });
+                            setRangeType('day');
                         }}
                     >
-                        Retornar Hoje
+                        <span className="hidden sm:inline">Retornar</span> Hoje
                     </Button>
                 )}
             </div>
