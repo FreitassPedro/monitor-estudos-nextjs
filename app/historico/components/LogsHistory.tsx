@@ -425,7 +425,7 @@ export function DateGroup({
             </Card>
 
             {isExpanded && (
-                <div className="mt-2 space-y-3">
+                <div className="mt-2 space-y-3 px-4">
                     {logs.map((log) => (
                         <LogCard key={log.id} log={log} />
                     ))}
