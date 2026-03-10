@@ -2,13 +2,21 @@ import { createTopic, getTopicsAction, getTopicsBySubjectAction, deleteTopicActi
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/useAuthStore";
 
+/*
+keyss
+*/
+export const topicsKeys = {
+    all: ['topics'] as const,
+    bySubject: (subjectId?: string) => ['topics', 'by-subject', subjectId] as const,
+};
+
 /// ********************
 //
 // Options
 //
 // ********************
 export const topicsBySubjectQueryOptions = (subjectId?: string) => ({
-    queryKey: ['topics', 'by-subject', subjectId],
+    queryKey: topicsKeys.bySubject(subjectId),
     queryFn: () => getTopicsBySubjectAction(subjectId!),
     enabled: !!subjectId,
 });
@@ -16,7 +24,7 @@ export const topicsBySubjectQueryOptions = (subjectId?: string) => ({
 export function useTopics() {
     const userId = useAuthStore((state) => state.user?.id);
     return useQuery({
-        queryKey: ['topics', userId],
+        queryKey: topicsKeys.all,
         queryFn: () => getTopicsAction(userId!),
         enabled: !!userId,
         select: (topics) => {
@@ -44,8 +52,18 @@ export function useCreateTopic() {
     return useMutation({
         mutationFn: ({ name, subjectId }: { name: string; subjectId: string }) =>
             createTopic(name, subjectId),
-        onSuccess: (_data, variables) => {
-            queryClient.invalidateQueries({ queryKey: ['topics', 'subject', variables.subjectId] });
+        onSuccess: (topic, variables) => {
+            queryClient.setQueryData(
+                topicsKeys.bySubject(variables.subjectId),
+                (currentTopics: typeof topic[] | undefined) => {
+                    if (!currentTopics) return [topic];
+                    if (currentTopics.some((t) => t.id === topic.id)) return currentTopics;
+                    return [...currentTopics, topic];
+                }
+            );
+
+            queryClient.invalidateQueries({ queryKey: topicsKeys.bySubject(variables.subjectId) });
+            queryClient.invalidateQueries({ queryKey: topicsKeys.all });
         },
     });
 }
@@ -56,7 +74,7 @@ export function useDeleteTopic() {
     return useMutation({
         mutationFn: (topicId: string) => deleteTopicAction(topicId),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['topics'] });
+            queryClient.invalidateQueries({ queryKey: topicsKeys.all });
         },
     });
 }
@@ -68,7 +86,7 @@ export function useUpdateTopic() {
         mutationFn: ({ topicId, name }: { topicId: string; name: string }) =>
             updateTopicAction(topicId, name),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['topics'] });
+            queryClient.invalidateQueries({ queryKey: topicsKeys.all });
         },
     });
 }

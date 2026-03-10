@@ -1,18 +1,11 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAuthStore } from "@/store/useAuthStore";
-import { useQuery } from "@tanstack/react-query";
-import { getSubjectsWithTopicsAction } from "@/server/actions/subject.actions";
+import { useSubjectsWithTopics } from "@/hooks/useSubjects";
 import { SubjectCard } from "./components/SubjectCard";
 
 export default function SubjectList() {
-    const userId = useAuthStore((state) => state.user?.id);
-    const { data: subjects = [] } = useQuery({
-        queryKey: ["subjects", "with-topics", userId],
-        queryFn: () => getSubjectsWithTopicsAction(userId!),
-        enabled: !!userId,
-    });
+    const { data: subjects = [] } = useSubjectsWithTopics();
 
     if (!subjects || subjects.length === 0) {
         return (

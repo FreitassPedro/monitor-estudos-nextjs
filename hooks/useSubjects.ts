@@ -1,4 +1,4 @@
-import { createSubjectAction, getSubjectsAction, updateSubjectAction } from "@/server/actions/subject.actions";
+import { createSubjectAction, getSubjectsAction, getSubjectsWithTopicsAction, updateSubjectAction } from "@/server/actions/subject.actions";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { indexSubjectById } from "@/server/normalizers/indexSubject";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -6,9 +6,21 @@ import { useAuthStore } from "@/store/useAuthStore";
  * Options
  * 
 ***/
+export const subjectsKeys = {
+    all: ["subjects"] as const,
+    byUser: (userId?: string) => ["subjects", userId] as const,
+    withTopicsByUser: (userId?: string) => ["subjects", "with-topics", userId] as const,
+};
+
 export const useSubjectsOptions = (userId?: string) => queryOptions({
-    queryKey: ["subjects", userId],
+    queryKey: subjectsKeys.byUser(userId),
     queryFn: () => getSubjectsAction(userId!),
+    enabled: !!userId,
+});
+
+export const useSubjectsWithTopicsOptions = (userId?: string) => queryOptions({
+    queryKey: subjectsKeys.withTopicsByUser(userId),
+    queryFn: () => getSubjectsWithTopicsAction(userId!),
     enabled: !!userId,
 });
 
@@ -32,6 +44,11 @@ export function useSubjects() {
     );
 }
 
+export function useSubjectsWithTopics() {
+    const userId = useAuthStore((state) => state.user?.id);
+    return useQuery(useSubjectsWithTopicsOptions(userId));
+}
+
 
 export function useCreateSubject() {
     const queryClient = useQueryClient();
@@ -45,7 +62,8 @@ export function useCreateSubject() {
             return createSubjectAction({ ...newSubject, userId });
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["subjects", userId] });
+            queryClient.invalidateQueries({ queryKey: subjectsKeys.byUser(userId) });
+            queryClient.invalidateQueries({ queryKey: subjectsKeys.withTopicsByUser(userId) });
         },
     });
 }
@@ -63,7 +81,8 @@ export function useUpdateSubject() {
             return updateSubjectAction({ ...updatedSubject, userId });
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["subjects", userId] });
+            queryClient.invalidateQueries({ queryKey: subjectsKeys.byUser(userId) });
+            queryClient.invalidateQueries({ queryKey: subjectsKeys.withTopicsByUser(userId) });
         },
     });
 }
