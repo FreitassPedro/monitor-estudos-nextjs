@@ -13,7 +13,7 @@ export function TodaySummary() {
 
     return (
         <Card>
-            <CardHeader className="">
+            <CardHeader>
                 <CardTitle className="text-lg font-medium">Resumo de Hoje - {today.toLocaleDateString('pt-BR')}</CardTitle>
             </CardHeader>
             <CardContent>
@@ -31,8 +31,8 @@ export function TodaySummary() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-secondary/10 rounded">
-                            <BookOpen className="h-5 w-5 text-secondary" />
+                        <div className="p-2 bg-primary/10 rounded">
+                            <BookOpen className="h-5 w-5 text-primary" />
                         </div>
                         <div>
                             <p className="text-2xl font-bold text-foreground">{logs.length}</p>
@@ -41,8 +41,8 @@ export function TodaySummary() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-muted/30 rounded">
-                            <Target className="h-5 w-5 text-muted-foreground" />
+                        <div className="p-2 bg-primary/10 rounded">
+                            <Target className="h-5 w-5 text-primary" />
                         </div>
                         <div>
                             <p className="text-2xl font-bold text-foreground">

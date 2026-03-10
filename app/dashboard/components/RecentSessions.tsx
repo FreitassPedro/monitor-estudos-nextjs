@@ -79,8 +79,28 @@ export const StudyLogItemResume = ({
         </div>
     );
 };
+function RecentSessionsSkeleton() {
+    return (
+        <div className="space-y-3">
+            {[0, 1, 2].map((i) => (
+                <div key={i} className="flex items-start gap-4 p-4 border border-border/40 rounded-lg animate-pulse">
+                    <div className="w-1.5 h-12 rounded-full bg-muted shrink-0" />
+                    <div className="flex-1 space-y-2">
+                        <div className="flex justify-between gap-2">
+                            <div className="h-4 bg-muted rounded w-1/3" />
+                            <div className="h-4 bg-muted rounded w-1/4" />
+                        </div>
+                        <div className="h-3 bg-muted rounded w-full" />
+                        <div className="h-3 bg-muted rounded w-1/4" />
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
 export function RecentSessions() {
-    const { data: todayLogs = [] } = useTodayStudyLogs();
+    const { data: todayLogs = [], isLoading } = useTodayStudyLogs();
 
     return (
         <Card>
@@ -88,13 +108,15 @@ export function RecentSessions() {
                 <CardTitle className="text-lg font-medium">Sessões de Hoje</CardTitle>
             </CardHeader>
             <CardContent>
-                {todayLogs.length === 0 ? (
+                {isLoading ? (
+                    <RecentSessionsSkeleton />
+                ) : todayLogs.length === 0 ? (
                     <p className="text-muted-foreground text-sm py-4 text-center">
                         Nenhuma sessão registrada hoje
                     </p>
                 ) : (
                     <div className="space-y-3">
-                        {todayLogs.slice(0, 4).map((log) => (
+                        {todayLogs.map((log) => (
                             <StudyLogItemResume key={log.id} log={log} />
                         ))}
                     </div>
