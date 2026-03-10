@@ -13,9 +13,9 @@ export function SessionSidebar() {
             {/* Conteúdo do Sidebar */}
             <div className="flex-1 overflow-y-auto p-4 space-y-10">
                 {/* Últimos Logs */}
-                <LogSection type="subject" title="Matéria" />
+                <LogSection type="subject" />
 
-                <LogSection type="topic" title="Tópico" />
+                <LogSection type="topic" />
 
                 {/* Tasks da Matéria (Em desenvolvimento) 
                 <div className="space-y-3">

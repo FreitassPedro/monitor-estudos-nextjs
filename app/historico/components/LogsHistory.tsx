@@ -38,13 +38,13 @@ const formatMinutes = (minutes: number) => {
     return `${hours}h ${mins}m`;
 };
 
-const EditLogDialog = ({ 
-    logId, 
-    isOpen, 
-    onOpenChange 
-}: { 
-    logId: string; 
-    isOpen: boolean; 
+const EditLogDialog = ({
+    logId,
+    isOpen,
+    onOpenChange
+}: {
+    logId: string;
+    isOpen: boolean;
     onOpenChange: (isOpen: boolean) => void;
 }) => {
     const [startTime, setStartTime] = useState("");
@@ -82,7 +82,7 @@ const EditLogDialog = ({
         const studyDate = new Date(logDetails.study_date);
         const newStartTime = new Date(studyDate);
         newStartTime.setHours(startHour, startMin, 0, 0);
-        
+
         const newEndTime = new Date(studyDate);
         newEndTime.setHours(endHour, endMin, 0, 0);
 
@@ -180,8 +180,8 @@ const EditLogDialog = ({
                     <Button variant="outline" onClick={() => onOpenChange(false)}>
                         Cancelar
                     </Button>
-                    <Button 
-                        onClick={handleSave} 
+                    <Button
+                        onClick={handleSave}
                         disabled={updateMutation.isPending || isLoading}
                     >
                         {updateMutation.isPending ? (
@@ -338,10 +338,10 @@ export function LogCard({ log }: { log: StudyLogFeedItem }) {
                     </Button>
                 </div>
             </div>
-            
+
             <LogDetailsDialog logId={log.id} isOpen={isDetailsOpen} isOpenChange={setIsDetailsOpen} />
             <EditLogDialog logId={log.id} isOpen={isEditOpen} onOpenChange={setIsEditOpen} />
-            
+
             {/* Delete Confirmation Dialog */}
             <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
                 <DialogContent className="max-w-md">
@@ -355,8 +355,8 @@ export function LogCard({ log }: { log: StudyLogFeedItem }) {
                         <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>
                             Cancelar
                         </Button>
-                        <Button 
-                            variant="destructive" 
+                        <Button
+                            variant="destructive"
                             onClick={handleDelete}
                             disabled={deleteMutation.isPending}
                         >
