@@ -205,13 +205,18 @@ export async function deleteStudyLogAction(id: string) {
     });
 }
 
-export async function getTodayStudyLogsAction(userId: string) {
+export async function getTodayStudyLogsAction(userId: string, localDate?: string) {
     "use server";
     // 1. Dizemos ao Next.js: "Aguarde a requisição chegar. Isso não é estático."
     await connection();
-    const today = new Date();
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+    // Usar a data local do cliente (YYYY-MM-DD) para evitar problemas de fuso horário.
+    // O servidor roda em UTC+0, mas usuários brasileiros estão em UTC-3; sem a data
+    // local, consultas feitas após as 21h retornam o dia seguinte no servidor.
+    const base = localDate ? new Date(`${localDate}T00:00:00Z`) : new Date();
+    const startOfDay = new Date(base);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(base);
+    endOfDay.setHours(23, 59, 59, 999);
 
     return prisma.studyLogs.findMany({
         where: {

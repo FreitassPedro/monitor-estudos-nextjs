@@ -1,4 +1,5 @@
 import { createStudyLogAction, deleteStudyLogAction, getStudyLogsByDateAction, getSummaryStatsAction, getTodayStudyLogsAction, StudyLogInput, updateStudyLogAction, UpdateStudyLogInput } from "@/server/actions/studyLogs.action";
+import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getDay } from "date-fns";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -67,10 +68,18 @@ export function useStudyLogsHistory(startDate: Date, endDate: Date) {
 
 export function useTodayStudyLogs() {
     const userId = useAuthStore((state) => state.user?.id);
+    // Compute the local date string on the client to avoid UTC offset issues on the server.
+    // The server runs in UTC+0 but Brazilian users are UTC-3; without the local date,
+    // queries made after 21:00 local time would return the wrong day.
+    // Note: toISOString() returns UTC date and must NOT be used here.
+    const localDateStr = useMemo(() => {
+        const today = new Date();
+        return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    }, []);
 
     return useQuery({
         queryKey: ["studyLogs", "today", userId],
-        queryFn: () => getTodayStudyLogsAction(userId!),
+        queryFn: () => getTodayStudyLogsAction(userId!, localDateStr),
         enabled: !!userId,
         staleTime: 1000 * 60 * 5, // 5 minutos
     });
