@@ -26,10 +26,11 @@ export interface TopicNode {
 };
 
 
-export const mockJsonTopicTree: { id: string; name: string; topics: TopicNode[] }[] = [
+export const mockJsonTopicTree: { id: string; name: string; color: string, topics: TopicNode[] }[] = [
   {
     "id": "1",
     "name": "Computação",
+    "color": "#4F46E5",    
     "topics": [
       {
         "id": "1",
@@ -51,35 +52,45 @@ export const mockJsonTopicTree: { id: string; name: string; topics: TopicNode[] 
   {
     "id": "2",
     "name": "Biologia",
+    "color": "#16A34A",
     "topics": [
       {
         "id": "6",
         "name": "Citologia",
         "children": [
           { "id": "7", "name": "Célula Animal", "children": [] },
-          { "id": "8", "name": "Célula Vegetal", "children": [] },
+          { "id": "9", "name": "Célula Vegetal", "children": [] },
           {
-            "id": "8", "name": "Divisão Celular", "children": [
-              { "id": "9", "name": "Mitose", "children": [] },
-              { "id": "10", "name": "Meiose", "children": [] }
+            "id": "10", "name": "Divisão Celular", "children": [
+              { "id": "11", "name": "Mitose", "children": [] },
+              { "id": "12", "name": "Meiose", "children": [] }
             ]
           }
         ]
-      }]
+      },
+      {
+        "id": "7",
+        "name": "Genética",
+        "children": [
+          { "id": "13", "name": "Mendelismo", "children": [] },
+        ]
+      }
+    ]
   },
   {
     "id": "3",
     "name": "Física",
+    "color": "#DC2626",
     "topics": [
       {
-        "id": "11",
+        "id": "14",
         "name": "Física",
         "children": [
           {
             "id": "15", "name": "Cinemática", "children": []
           },
-          { "id": "13", "name": "Termodinâmica", "children": [] },
-          { "id": "14", "name": "Óptica", "children": [] }
+          { "id": "16", "name": "Termodinâmica", "children": [] },
+          { "id": "17", "name": "Óptica", "children": [] }
         ]
       }
     ]
