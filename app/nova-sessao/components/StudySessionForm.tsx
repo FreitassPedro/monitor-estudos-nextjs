@@ -25,6 +25,7 @@ import { StudyLogInput } from "@/server/actions/studyLogs.action";
 import { NewTopicDialog } from "./NewTopicDialog";
 import useSessionFormStore from "@/store/useSessionFormStore";
 import { usePageTitleWithCronometer } from "@/hooks/usePageTitleWithCronometer";
+import { getLocalDateForToday } from "@/lib/utils";
 
 // --- Helpers ---
 
@@ -81,7 +82,7 @@ const emptyForm: FormData = {
     subjectId: "",
     topicId: "",
     material_type: "",
-    study_date: new Date(),
+    study_date: getLocalDateForToday(),
     start_time: undefined,
     end_time: undefined,
     notes: "",

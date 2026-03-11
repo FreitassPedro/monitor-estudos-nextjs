@@ -17,7 +17,9 @@ export default function DashboardPage() {
 
                 {/* O Ditador (Coluna 1): Dita a altura matemática da linha inteira no desktop */}
                 <div className="h-full">
-                    <RecentSessions />
+                    <Suspense fallback={<RecentSessionsSkeleton />}>
+                        <RecentSessions />
+                    </Suspense>
                 </div>
 
                 {/* O Seguidor (Coluna 2): Um container invisível que apenas acompanha a altura da linha */}

@@ -2,6 +2,7 @@ import { createStudyLogAction, deleteStudyLogAction, getStudyLogsByDateAction, g
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getDay } from "date-fns";
 import { useAuthStore } from "@/store/useAuthStore";
+import { getLocalDateForToday } from "@/lib/utils";
 
 export const studyLogsByDateQUeryOptions = (startDate: Date, endDate: Date, userId?: string) => ({
     queryKey: ["studyLogs", "range", getDay(startDate), getDay(endDate), userId],
@@ -67,10 +68,14 @@ export function useStudyLogsHistory(startDate: Date, endDate: Date) {
 
 export function useTodayStudyLogs() {
     const userId = useAuthStore((state) => state.user?.id);
+    
+    // Obter a data local do cliente para passar ao servidor
+    // Isso garante que usuários em diferentes timezones recebam os dados corretos
+    const todayDate = getLocalDateForToday();
 
     return useQuery({
-        queryKey: ["studyLogs", "today", userId],
-        queryFn: () => getTodayStudyLogsAction(userId!),
+        queryKey: ["studyLogs", "today", userId, todayDate.toDateString()],
+        queryFn: () => getTodayStudyLogsAction(userId!, todayDate),
         enabled: !!userId,
         staleTime: 1000 * 60 * 5, // 5 minutos
     });

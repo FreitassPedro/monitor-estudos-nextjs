@@ -12,6 +12,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { addDays, addMonths, addWeeks, endOfMonth, endOfWeek, format, startOfMonth, startOfWeek, subDays, subMonths, subWeeks } from 'date-fns';
 import useSearchRangeStore from '@/store/useSearchRangeStore';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { getLocalDateForToday } from "@/lib/utils";
 
 export type RangeType = 'day' | 'week' | 'month' | 'custom';
 
@@ -26,8 +27,7 @@ export function HistoryDateNav() {
 
     // Definir rangeType para 'day' (hoje) quando o componente carregar
     useEffect(() => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const today = getLocalDateForToday();
         setRange({ startDate: today, endDate: today });
         setRangeType('day');
     }, []);
@@ -40,8 +40,7 @@ export function HistoryDateNav() {
             setCustomOptions('');
         }
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const today = getLocalDateForToday();
 
         switch (type) {
             case 'day':

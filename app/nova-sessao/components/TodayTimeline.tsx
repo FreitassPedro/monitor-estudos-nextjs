@@ -5,6 +5,7 @@ import { useSubjectsMap } from "@/hooks/useSubjects";
 import useSessionFormStore from "@/store/useSessionFormStore";
 import { Clock } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { getLocalDateForToday } from "@/lib/utils";
 
 
 const TimelineCardProps = {
@@ -88,7 +89,7 @@ const formatTimeFromTimestamp = (time: Date | string | undefined | null, include
 };
 export function TodayTimeline() {
 
-    const today = new Date();
+    const today = getLocalDateForToday();
     const { data: logs, isLoading } = useTodayStudyLogs();
     const { cronometer, selectedSubject, selectedTopic } = useSessionFormStore();
 

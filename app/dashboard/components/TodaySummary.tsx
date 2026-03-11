@@ -3,10 +3,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTodayStudyLogs } from "@/hooks/useStudyLogs";
 import { BookOpen, Clock, Target } from "lucide-react";
+import { getLocalDateForToday } from "@/lib/utils";
 
 export function TodaySummary() {
     const { data: logs = [] } = useTodayStudyLogs();
-    const today = new Date();
+    const today = getLocalDateForToday();
     const totalMinutes = logs.reduce((sum, log) => sum + log.duration_minutes, 0);
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;

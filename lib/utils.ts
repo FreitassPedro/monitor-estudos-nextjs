@@ -53,3 +53,20 @@ export function formatDateKey(date: Date | string): string {
   const day = String(date.getUTCDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
 }
+
+/**
+ * Cria uma data local respeitando a timezone do cliente/navegador.
+ * Criar uma data local sem problemas de conversão timezone.
+ * 
+ * Problema: `new Date()` no servidor retorna UTC, causando deslocamento para usuários brasileiros.
+ * Solução: Extrair componentes da data local do cliente e criar Date respeitando a timezone local.
+ */
+export function getLocalDateForToday(): Date {
+  const now = new Date();
+  // Cria uma data usando os componentes locais (não UTC)
+  return new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  );
+}

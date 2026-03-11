@@ -184,7 +184,14 @@ export interface UpdateStudyLogInput {
 }
 
 export async function updateStudyLogAction(data: UpdateStudyLogInput) {
-    const updateData: any = {};
+    const updateData = {} as {
+        topicId?: string;
+        start_time?: Date;
+        end_time?: Date;
+        duration_minutes?: number;
+        notes?: string;
+    };
+    
     
     if (data.topic_id !== undefined) updateData.topicId = data.topic_id;
     if (data.start_time !== undefined) updateData.start_time = data.start_time;
@@ -205,13 +212,30 @@ export async function deleteStudyLogAction(id: string) {
     });
 }
 
-export async function getTodayStudyLogsAction(userId: string) {
+export async function getTodayStudyLogsAction(userId: string, todayDate?: Date) {
     "use server";
     // 1. Dizemos ao Next.js: "Aguarde a requisição chegar. Isso não é estático."
     await connection();
-    const today = new Date();
-    const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+    
+    // Se todayDate não for fornecido, usar a data local do servidor como fallback
+    // Idealmente, o cliente deve sempre passar `todayDate` para evitar problemas de timezone
+    const today = todayDate ? new Date(todayDate) : new Date();
+    
+    // Normalizar para dia zero (meia-noite local)
+    const startOfDay = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+      0, 0, 0, 0
+    );
+    
+    // Normalizar para fim do dia (23:59:59:999)
+    const endOfDay = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+      23, 59, 59, 999
+    );
 
     return prisma.studyLogs.findMany({
         where: {
