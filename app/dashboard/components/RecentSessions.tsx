@@ -103,11 +103,11 @@ export function RecentSessions() {
     const { data: todayLogs = [], isLoading } = useTodayStudyLogs();
 
     return (
-        <Card>
+        <Card className="h-auto md:flex md:h-full md:min-h-0 md:flex-col md:overflow-hidden">
             <CardHeader className="pb-2">
                 <CardTitle className="text-lg font-medium">Sessões de Hoje</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="md:flex-1 md:min-h-0 md:overflow-y-auto">
                 {isLoading ? (
                     <RecentSessionsSkeleton />
                 ) : todayLogs.length === 0 ? (
