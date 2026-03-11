@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Clock, ClockArrowUp, Plus } from "lucide-react";
@@ -108,6 +108,9 @@ export function StudySessionForm() {
 
     const [newTopicDialogOpen, setNewTopicDialogOpen] = useState(false);
 
+    const [topicSelectOpen, setTopicSelectOpen] = useState(false);
+    const pendingTopicOpenRef = useRef(false);
+
     const [endTimeError, setEndTimeError] = useState<string | null>(null);
 
     const { data: subjects = [], isLoading: loadingSubjects } = useSubjects();
@@ -158,10 +161,23 @@ export function StudySessionForm() {
 
     }, [form.subjectId, form.topicId, setSelectedSubject, setSelectedTopic, subjects, topics, selectedSubject?.id, selectedTopic?.id]);
 
+    // Auto-open Topic select after Subject is selected and topics finish loading
+    useEffect(() => {
+        if (pendingTopicOpenRef.current && !loadingTopics && form.subjectId) {
+            if (topics.length > 0) {
+                setTopicSelectOpen(true);
+            }
+            pendingTopicOpenRef.current = false;
+        }
+    }, [form.subjectId, loadingTopics, topics]);
+
 
     // --- Handlers ---
 
     const handleSubjectChange = (subjectId: string) => {
+        if (subjectId !== form.subjectId) {
+            pendingTopicOpenRef.current = true;
+        }
         setForm(prev => ({ ...prev, subjectId, topicId: "" }));
     };
 
@@ -304,6 +320,8 @@ export function StudySessionForm() {
                                     value={form.topicId}
                                     onValueChange={handleTopicChange}
                                     disabled={!form.subjectId || topics.length === 0}
+                                    open={topicSelectOpen}
+                                    onOpenChange={setTopicSelectOpen}
                                 >
                                     <SelectTrigger className="w-full" disabled={!form.subjectId}>
                                         <SelectValue
