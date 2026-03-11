@@ -80,6 +80,23 @@ const PainelLogs = ({ logs }) => {
     );
 }
 
+function NodeRow({ node, level = 0 }) {
+    const hasChildren = node.children && node.children.length > 0;
+    return (
+        <>
+            <tr>
+                <td>
+                    {hasChildren && ( <span style={{ cursor: 'pointer' }}>📁</span>)}
+                </td>
+                <td style={{ marginLeft: `${level * 10}px`, borderLeft: '1px solid #ccc', paddingLeft: `${level * 12}px` }}>{node.name}</td>
+            </tr>
+            {hasChildren && node.children.map(child => (
+                <NodeRow key={child.id} node={child} level={level + 1} />
+            ))}
+        </>
+    );
+}
+
 // --- Página Principal (Container) ---
 
 export default function StudyMonitorPage() {
@@ -108,8 +125,8 @@ export default function StudyMonitorPage() {
                 <button onClick={() => setSelectedTopicId(null)}>Limpar Filtro</button>
                 <div style={{ marginTop: '15px' }}>
                     {folderTree.map(subject => (
-                        <div key={subject.subject}>
-                            <h4>{subject.subject}</h4>
+                        <div key={subject.name}>
+                            <h4>{subject.name}</h4>
                             {subject.topics.map(rootTopic => (
                                 <TopicNode
                                     key={rootTopic.id}
@@ -128,7 +145,37 @@ export default function StudyMonitorPage() {
                 {selectedTopicId && <p>Filtrando pelo Tópico ID: {selectedTopicId}</p>}
                 <StatsPanel stats={dashboardStats} />
                 <PainelLogs logs={mockStudyLogs.filter(log => log.id === selectedTopicId)} />
+
+
+                {/* Table */}
+                <div style={{ marginTop: '70px' }}>
+                    <table border="1" width="100%">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {folderTree.map(subject => (
+                                <>
+                                    <tr key={subject.id}>
+                                        <td></td>
+                                        <td className='text-lg font-semibold'>
+                                            {subject.name}
+                                        </td>
+                                    </tr>
+                                    {subject.topics.map(topic => (
+                                        <NodeRow key={topic.id} node={topic} level={0} />
+                                    ))}
+                                </>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
+
         </div>
     );
 }

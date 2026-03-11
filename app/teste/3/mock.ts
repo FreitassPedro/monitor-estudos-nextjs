@@ -11,7 +11,7 @@ interface TopicDB {
 //  Java/
 //   SPRING/
 const topicMock: TopicDB[] = [
-  { id: "1", name: "Programação" },
+  { id: "1", name: "programação" },
   { id: "3", name: "REST" },
   { id: "4", name: "API" },
   { id: "2", name: "Web" },
@@ -22,7 +22,7 @@ const topicMock: TopicDB[] = [
 export const mockJsonTopicTree = [
   {
     "id": "1",
-    "subject": "Programação",
+    "name": "Computação",
     "topics": [
       {
         "id": "1",
@@ -43,7 +43,7 @@ export const mockJsonTopicTree = [
   },
 
   {
-    "subject": "Biologia",
+    "name": "Biologia",
     "topics": [
       {
         "id": "6",
@@ -61,7 +61,7 @@ export const mockJsonTopicTree = [
       }]
   },
   {
-    "subject": "Física",
+    "name": "Física",
     "topics": [
       {
         "id": "11",
