@@ -111,9 +111,19 @@ export function RecentSessions() {
                 {isLoading ? (
                     <RecentSessionsSkeleton />
                 ) : todayLogs.length === 0 ? (
-                    <p className="text-muted-foreground text-sm py-4 text-center">
-                        Nenhuma sessão registrada hoje
-                    </p>
+                    <div className='flex flex-col items-center'>
+                        <p className="text-muted-foreground text-sm py-4 text-center" >
+                            Nenhuma sessão registrada hoje
+
+                        </p>
+                        <Button
+                            variant="default"
+                            size="lg"
+                            className=""
+                        >
+                            Começar a estudar
+                        </Button>
+                    </div>
                 ) : (
                     <div className="space-y-3">
                         {todayLogs.map((log) => (
@@ -122,6 +132,6 @@ export function RecentSessions() {
                     </div>
                 )}
             </CardContent>
-        </Card>
+        </Card >
     );
 }
