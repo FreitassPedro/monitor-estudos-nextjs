@@ -19,7 +19,14 @@ const topicMock: TopicDB[] = [
   { id: "6", name: "Spring" }
 ];
 
-export const mockJsonTopicTree = [
+export interface TopicNode {
+  id: string;
+  name: string;
+  children: TopicNode[];
+};
+
+
+export const mockJsonTopicTree: { id: string; name: string; topics: TopicNode[] }[] = [
   {
     "id": "1",
     "name": "Computação",
@@ -41,8 +48,8 @@ export const mockJsonTopicTree = [
       },
     ]
   },
-
   {
+    "id": "2",
     "name": "Biologia",
     "topics": [
       {
@@ -61,6 +68,7 @@ export const mockJsonTopicTree = [
       }]
   },
   {
+    "id": "3",
     "name": "Física",
     "topics": [
       {
@@ -78,8 +86,13 @@ export const mockJsonTopicTree = [
   }
 ];
 
-
-export const mockStudyLogs = [
+export interface mockStudyLog {
+  id: string;
+  topicId: string;
+  durationMinutes: number;
+  date: string; // ISO format
+}
+export const mockStudyLogs: mockStudyLog[] = [
   { "id": "1", "topicId": "1", "durationMinutes": 45, "date": "2026-03-11" },
   { "id": "2", "topicId": "2", "durationMinutes": 30, "date": "2026-03-10" },
   { "id": "3", "topicId": "2", "durationMinutes": 60, "date": "2026-03-09" },

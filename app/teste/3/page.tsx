@@ -1,9 +1,28 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { mockJsonDashboardStats, mockJsonTopicTree, mockStudyLogs } from './mock';
+import { mockJsonDashboardStats, mockJsonTopicTree, mockStudyLogs, TopicNode } from './mock';
+
+const DetailPanel = ({ topicId, onClose }) => {
+    const logs = mockStudyLogs.filter(log => log.topicId === topicId);
+
+    return (
+        <div className='fixed inset-0 z-40 flex justify-center items-center'>
+            <div className="relative w-full max-w-2xl  bg-card rounded-xl px-4 border border-border shadow-2xl">
+                <h3>Detalhes do Tópico</h3>
+                <div><button onClick={onClose}>Fechar</button></div>
+                <div>ID do Tópico: {topicId}</div>
+                <p>Logs de Estudo:</p>
+                <ul>
+                    {logs.map(log => (
+                        <li key={log.id}>{log.date}</li>
+                    ))}
+                </ul>
+            </div>
+        </div>
+    );
+};
 
 // --- Componentes de Apresentação ---
-
 const TopicNode = ({ topic, onSelectTopic }) => {
     const logs = mockStudyLogs.filter(log => log.topicId === topic.id);
 
@@ -22,77 +41,39 @@ const TopicNode = ({ topic, onSelectTopic }) => {
     );
 };
 
-const StatsPanel = ({ stats }) => {
 
-    return (
-        <div style={{ padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
-            <h2>Estatísticas Gerais</h2>
-            <p>Tempo Total: <strong>{stats.totalStudyMinutes} min</strong></p>
 
-            <h3>Top Subjects</h3>
-            <ul>
-                {stats.topSubjects.map(subject => (
-                    <li key={subject.topicId}>
-                        {subject.topicName}: {subject.totalMinutes} min
-                    </li>
-                ))}
-            </ul>
-
-            <h3>Logs Recentes</h3>
-            <table border="1" width="100%">
-                <thead>
-                    <tr><th>Data</th><th>Tópico Exato</th><th>Duração (min)</th></tr>
-                </thead>
-                <tbody>
-                    {stats.recentLogs.map(log => (
-                        <tr key={log.id}>
-                            <td>{log.date}</td>
-                            <td>{log.topicName}</td>
-                            <td>{log.duration}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
-}
-
-const PainelLogs = ({ logs }) => {
-    if (logs.length === 0) return <p>Nenhum log encontrado para este tópico.</p>;
-    return (
-        <div style={{ marginTop: '20px' }}>
-            <h2>Logs de Estudo</h2>
-            <table border="1" width="100%">
-                <thead>
-                    <tr><th>Data</th><th>Tópico ID</th><th>Duração (min)</th></tr>
-                </thead>
-                <tbody>
-                    {logs.map(log => (
-                        <tr key={log.id}>
-                            <td>{log.date}</td>
-                            <td>{log.topicId}</td>
-                            <td>{log.durationMinutes}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
-}
-
-function NodeRow({ node, level = 0 }) {
+function NodeRow({ node, level = 0, onOpenDetail }: { node: TopicNode, level?: number, onOpenDetail?: (id: string) => void }) {
     const hasChildren = node.children && node.children.length > 0;
+    const [isCollapsed, setIsCollapsed] = useState(false); // Para simplificar, não implementamos colapsar/expandir
+    const randomNumber = Math.floor(Math.random() * 3); // Simula pendências aleatórias
+
     return (
         <>
-            <tr>
+            <tr className='group hover:bg-secondary'>
                 <td>
-                    {hasChildren && ( <span style={{ cursor: 'pointer' }}>📁</span>)}
+                    {hasChildren && (
+                        <button onClick={() => setIsCollapsed(!isCollapsed)} style={{ cursor: 'pointer' }}>
+                            <span style={{ cursor: 'pointer' }}>{isCollapsed ? '🗃' : '📂'}</span>
+                        </button>
+                    )}
                 </td>
-                <td style={{ marginLeft: `${level * 10}px`, borderLeft: '1px solid #ccc', paddingLeft: `${level * 12}px` }}>{node.name}</td>
-            </tr>
-            {hasChildren && node.children.map(child => (
-                <NodeRow key={child.id} node={child} level={level + 1} />
-            ))}
+                <td style={{ marginLeft: `${level * 10}px`, borderLeft: '1px solid #ccc', paddingLeft: `${level * 12}px` }}>
+                    <div style={{ marginLeft: `${level * 10}px`, borderLeft: '1px solid #ccc', paddingLeft: `${level * 12}px` }}>
+                        {node.name}
+                    </div>
+                </td>
+                <td className="text-center" >{randomNumber}💭</td>
+                <td>
+                    <button onClick={() => onOpenDetail?.(node.id)}>
+                        {randomNumber}📋
+                    </button>
+                </td>
+            </tr >
+            {!isCollapsed && node.children.map(child => (
+                <NodeRow key={child.id} node={child} level={level + 1} onOpenDetail={onOpenDetail} />
+            ))
+            }
         </>
     );
 }
@@ -100,8 +81,12 @@ function NodeRow({ node, level = 0 }) {
 // --- Página Principal (Container) ---
 
 export default function StudyMonitorPage() {
-    const [folderTree, setFolderTree] = useState([]);
-    const [topicTree, setTopicTree] = useState([]);
+    const [folderTree, setFolderTree] = useState<{ id: string; name: string; topics: TopicNode[] }[]>([]);
+    const [topicTree, setTopicTree] = useState<TopicNode[]>([]);
+
+    const [detailNode, setDetailNode] = useState<TopicNode | null>(null);
+
+
     const [dashboardStats, setDashboardStats] = useState(null);
     const [selectedTopicId, setSelectedTopicId] = useState(null);
 
@@ -118,64 +103,67 @@ export default function StudyMonitorPage() {
     if (!dashboardStats) return <div>Carregando...</div>;
 
     return (
-        <div style={{ display: 'flex', gap: '20px', fontFamily: 'sans-serif' }}>
-            {/* Sidebar: Navegação da Árvore */}
-            <div style={{ width: '30%', padding: '20px', borderRight: '1px solid #eee' }}>
-                <h3>Meus Tópicos</h3>
-                <button onClick={() => setSelectedTopicId(null)}>Limpar Filtro</button>
-                <div style={{ marginTop: '15px' }}>
-                    {folderTree.map(subject => (
-                        <div key={subject.name}>
-                            <h4>{subject.name}</h4>
-                            {subject.topics.map(rootTopic => (
-                                <TopicNode
-                                    key={rootTopic.id}
-                                    topic={rootTopic}
-                                    onSelectTopic={setSelectedTopicId}
-                                />
-                            ))}
-                        </div>
-                    ))}
+        <>
+            <div className='min-h-screen mx-auto flex'>
+                {/* Sidebar: Navegação da Árvore */}
+                <div style={{ width: '30%', padding: '20px', borderRight: '1px solid #eee' }}>
+                    <h3>Meus Tópicos</h3>
+                    <button onClick={() => setSelectedTopicId(null)}>Limpar Filtro</button>
+                    <div style={{ marginTop: '15px' }}>
+                        {folderTree.map(subject => (
+                            <div key={subject.name}>
+                                <h4>{subject.name}</h4>
+                                {subject.topics.map(rootTopic => (
+                                    <TopicNode
+                                        key={rootTopic.id}
+                                        topic={rootTopic}
+                                        onSelectTopic={setSelectedTopicId}
+                                    />
+                                ))}
+                            </div>
+                        ))}
+                    </div>
                 </div>
-            </div>
 
-            {/* Main Content: Dashboard */}
-            <div style={{ width: '70%', padding: '20px' }}>
-                <h1>Painel de Estudos</h1>
-                {selectedTopicId && <p>Filtrando pelo Tópico ID: {selectedTopicId}</p>}
-                <StatsPanel stats={dashboardStats} />
-                <PainelLogs logs={mockStudyLogs.filter(log => log.id === selectedTopicId)} />
-
-
-                {/* Table */}
-                <div style={{ marginTop: '70px' }}>
-                    <table border="1" width="100%">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {folderTree.map(subject => (
-                                <>
-                                    <tr key={subject.id}>
-                                        <td></td>
-                                        <td className='text-lg font-semibold'>
-                                            {subject.name}
-                                        </td>
-                                    </tr>
-                                    {subject.topics.map(topic => (
-                                        <NodeRow key={topic.id} node={topic} level={0} />
-                                    ))}
-                                </>
-                            ))}
-                        </tbody>
-                    </table>
+                {/* Main Content: Dashboard */}
+                <div style={{ width: '70%', padding: '20px' }}>
+                    <h1>Painel de Estudos</h1>
+                    {selectedTopicId && <p>Filtrando pelo Tópico ID: {selectedTopicId}</p>}
+                    {/* Table */}
+                    <div style={{ marginTop: '70px' }}>
+                        <table border="1" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Pendencias</th>
+                                    <th>Logs</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {folderTree.map(subject => (
+                                    <>
+                                        <tr key={subject.id}>
+                                            <td></td>
+                                            <td className='text-lg font-semibold'>
+                                                {subject.name}
+                                            </td>
+                                        </tr>
+                                        {subject.topics.map(topic => (
+                                            <NodeRow key={topic.id} node={topic} level={1} onOpenDetail={(id) => setDetailNode(topicTree.find(t => t.id === id))} />
+                                        ))}
+                                    </>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+
+
             </div>
-
-
-        </div>
+            {detailNode && (
+                <DetailPanel topicId={detailNode.id} onClose={() => setDetailNode(null)}/>
+            )}
+        </>
     );
 }
