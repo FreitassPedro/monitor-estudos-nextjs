@@ -1,8 +1,5 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { useAuthStore } from "@/store/useAuthStore";
-import { getProfileStatsAction } from "@/server/actions/user.actions";
 import { Card, CardContent } from "@/components/ui/card";
 import {
     BookOpen,
@@ -14,6 +11,7 @@ import {
     Trophy,
     Layers,
 } from "lucide-react";
+import { MOCK_PROFILE_STATS } from "../mockData";
 
 const formatDuration = (minutes: number) => {
     if (minutes === 0) return "0min";
@@ -36,15 +34,15 @@ interface StatCardProps {
 
 function StatCard({ label, value, icon: Icon, color, bg, subtitle, dotColor }: StatCardProps) {
     return (
-        <Card>
-            <CardContent className="pt-4 pb-4">
-                <div className="flex items-center gap-2 mb-3">
-                    <div className={`p-1.5 rounded-md ${bg}`}>
-                        <Icon className={`h-4 w-4 ${color}`} />
+        <Card className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs text-muted-foreground font-medium truncate pr-1">{label}</p>
+                    <div className={`p-1.5 rounded-md ${bg} shrink-0`}>
+                        <Icon className={`h-3.5 w-3.5 ${color}`} />
                     </div>
-                    <p className="text-xs text-muted-foreground font-medium">{label}</p>
                 </div>
-                <p className="text-2xl font-semibold tracking-tight">{value}</p>
+                <p className="text-2xl font-bold tracking-tight">{value}</p>
                 {subtitle && (
                     <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
                         {dotColor && (
@@ -61,41 +59,8 @@ function StatCard({ label, value, icon: Icon, color, bg, subtitle, dotColor }: S
     );
 }
 
-function SkeletonStatCard() {
-    return (
-        <Card>
-            <CardContent className="pt-4 pb-4 animate-pulse">
-                <div className="flex items-center gap-2 mb-3">
-                    <div className="w-7 h-7 bg-muted rounded-md" />
-                    <div className="h-3 w-20 bg-muted rounded" />
-                </div>
-                <div className="h-7 w-24 bg-muted rounded" />
-            </CardContent>
-        </Card>
-    );
-}
-
 export function ProfileStats() {
-    const userId = useAuthStore((state) => state.user?.id);
-
-    const { data: stats, isLoading } = useQuery({
-        queryKey: ["profile", "stats", userId],
-        queryFn: () => getProfileStatsAction(userId!),
-        enabled: !!userId,
-        staleTime: 1000 * 60 * 5,
-    });
-
-    if (isLoading) {
-        return (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                {Array.from({ length: 8 }).map((_, i) => (
-                    <SkeletonStatCard key={i} />
-                ))}
-            </div>
-        );
-    }
-
-    if (!stats) return null;
+    const stats = MOCK_PROFILE_STATS;
 
     const cards: StatCardProps[] = [
         {
@@ -106,7 +71,7 @@ export function ProfileStats() {
             bg: "bg-violet-500/10",
         },
         {
-            label: "Sessões Totais",
+            label: "Sessões",
             value: stats.totalSessions.toString(),
             icon: BookOpen,
             color: "text-cyan-500",
@@ -121,30 +86,30 @@ export function ProfileStats() {
         },
         {
             label: "Sequência Atual",
-            value: `${stats.currentStreak} dia${stats.currentStreak !== 1 ? "s" : ""}`,
+            value: `${stats.currentStreak} dias`,
             icon: Flame,
             color: "text-orange-500",
             bg: "bg-orange-500/10",
         },
         {
-            label: "Média por Sessão",
+            label: "Média / Sessão",
             value: formatDuration(stats.avgSessionMinutes),
             icon: Timer,
             color: "text-amber-500",
             bg: "bg-amber-500/10",
         },
         {
-            label: "Sessão mais Longa",
-            value: formatDuration(stats.longestSession),
+            label: "Recorde",
+            value: formatDuration(stats.longestSessionMinutes),
             icon: TrendingUp,
             color: "text-emerald-500",
             bg: "bg-emerald-500/10",
         },
         {
             label: "Matéria Favorita",
-            value: stats.topSubject?.name ?? "—",
-            subtitle: stats.topSubject ? formatDuration(stats.topSubject.totalMinutes) : undefined,
-            dotColor: stats.topSubject?.color,
+            value: stats.topSubject.name,
+            subtitle: formatDuration(stats.topSubject.totalMinutes),
+            dotColor: stats.topSubject.color,
             icon: Trophy,
             color: "text-rose-500",
             bg: "bg-rose-500/10",
@@ -159,10 +124,11 @@ export function ProfileStats() {
     ];
 
     return (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {cards.map((card) => (
                 <StatCard key={card.label} {...card} />
             ))}
         </div>
     );
 }
+
