@@ -6,6 +6,7 @@ import { getUsersAction } from "@/server/actions/user.actions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "./ui/separator";
+import { UserIcon } from "lucide-react";
 
 interface User {
     id: string;
@@ -38,10 +39,15 @@ export function UserSelector() {
 
     if (loading) {
         return (
-            <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 mx-auto flex items-center justify-center">
                 <Card className="w-100">
                     <CardContent className="pt-6">
-                        <p className="text-center">Carregando...</p>
+                        <UserIcon className="mx-auto mb-4 text-muted-foreground" size={48} />
+                        {user ?
+                            <p className="text-center">Carregando dados do usuário...</p>
+                            :
+                            <p className="text-center">Carregando usuários...</p>
+                        }
                     </CardContent>
                 </Card>
             </div>
@@ -49,8 +55,8 @@ export function UserSelector() {
     }
 
     return (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-            <Card className="w-100">
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 mx-auto flex items-center justify-center">
+            <Card >
                 <CardHeader>
                     <CardTitle>Identificação</CardTitle>
                     <CardDescription>Selecione seu nome para continuar</CardDescription>
