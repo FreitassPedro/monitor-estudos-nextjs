@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Clock, ClockArrowUp, Plus } from "lucide-react";
+import { ClockArrowUp, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -102,15 +102,16 @@ export function StudySessionForm() {
         updateCronometer,
         resetCronometer,
         startTicking,
-        stopTicking
+        stopTicking,
     } = useSessionFormStore();
+
 
     const [timeRegisterType, setTimeRegisterType] = useState<"manual" | "cronometer">("manual");
 
     const [newTopicDialogOpen, setNewTopicDialogOpen] = useState(false);
 
     const [topicSelectOpen, setTopicSelectOpen] = useState(false);
-    const pendingTopicOpenRef = useRef(false);
+    const [pendingTopicAutoOpen, setPendingTopicAutoOpen] = useState(false);
 
     const [endTimeError, setEndTimeError] = useState<string | null>(null);
 
@@ -118,7 +119,6 @@ export function StudySessionForm() {
     const { data: topics = [], isLoading: loadingTopics } = useTopicsBySubject(form?.subjectId);
 
     const createStudyLog = useCreateStudyLog();
-
 
     usePageTitleWithCronometer
         ({
@@ -147,7 +147,7 @@ export function StudySessionForm() {
         return () => window.removeEventListener("beforeunload", handler);
     }, [form, cronometer.isRunning]);
 
-    // Update Glob
+    // Update Global State
     useEffect(() => {
         if (form.subjectId && form.subjectId !== selectedSubject?.id) {
             const findSubject = subjects.find(s => s.id === form.subjectId);
@@ -162,27 +162,24 @@ export function StudySessionForm() {
 
     }, [form.subjectId, form.topicId, setSelectedSubject, setSelectedTopic, subjects, topics, selectedSubject?.id, selectedTopic?.id]);
 
-    // Auto-open Topic select after Subject is selected and topics finish loading
-    useEffect(() => {
-        if (pendingTopicOpenRef.current && !loadingTopics && form.subjectId) {
-            if (topics.length > 0) {
-                setTopicSelectOpen(true);
-            }
-            pendingTopicOpenRef.current = false;
-        }
-    }, [form.subjectId, loadingTopics, topics]);
+    const shouldAutoOpenTopicSelect =
+        pendingTopicAutoOpen &&
+        !!form.subjectId &&
+        !loadingTopics &&
+        topics.length > 0;
 
 
     // --- Handlers ---
 
     const handleSubjectChange = (subjectId: string) => {
         if (subjectId !== form.subjectId) {
-            pendingTopicOpenRef.current = true;
+            setPendingTopicAutoOpen(true);
         }
         setForm(prev => ({ ...prev, subjectId, topicId: "" }));
     };
 
     const handleTopicChange = (topicId: string) => {
+        setPendingTopicAutoOpen(false);
         setForm(prev => ({ ...prev, topicId }));
     };
 
@@ -321,8 +318,13 @@ export function StudySessionForm() {
                                     value={form.topicId}
                                     onValueChange={handleTopicChange}
                                     disabled={!form.subjectId || topics.length === 0}
-                                    open={topicSelectOpen}
-                                    onOpenChange={setTopicSelectOpen}
+                                    open={topicSelectOpen || shouldAutoOpenTopicSelect}
+                                    onOpenChange={(nextOpen) => {
+                                        if (!nextOpen) {
+                                            setPendingTopicAutoOpen(false);
+                                        }
+                                        setTopicSelectOpen(nextOpen);
+                                    }}
                                 >
                                     <SelectTrigger className="w-full" disabled={!form.subjectId}>
                                         <SelectValue
@@ -459,7 +461,7 @@ export function StudySessionForm() {
                                         <Button
                                             type="button"
                                             variant="outline"
-                                            size="icon"
+                                            size="icon" 
                                             onClick={() => setCurrentTime("start_time")}
                                             title="Definir Hora atual"
                                             className="shrink-0"

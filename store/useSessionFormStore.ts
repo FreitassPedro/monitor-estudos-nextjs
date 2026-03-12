@@ -4,6 +4,7 @@ import { create } from 'zustand';
 interface Cronometer {
     isRunning: boolean;
     seconds: number;
+    // Datas UTC para evitar problemas de timezone com @db.Date do Prisma
     startTime: Date | null;
     endTime: Date | null;
 }
@@ -20,6 +21,7 @@ interface SessionFormState {
     startTicking: () => void;
     stopTicking: () => void;
     resetCronometer: () => void;
+    clearCronometer: () => void;
 }
 
 let tickIntervalId: ReturnType<typeof setInterval> | null = null;
@@ -67,6 +69,15 @@ const useSessionFormStore = create<SessionFormState>((set, get) => ({
             cronometer: { isRunning: false, seconds: 0, startTime: null, endTime: null }
         });
     },
+    clearCronometer: () => {
+        if (tickIntervalId) {
+            clearInterval(tickIntervalId);
+            tickIntervalId = null;
+        }
+        set({
+            cronometer: { isRunning: false, seconds: 0, startTime: null, endTime: null }
+        });
+    }
 }));
 
 export default useSessionFormStore;
