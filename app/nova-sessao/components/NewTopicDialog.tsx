@@ -41,8 +41,9 @@ export function NewTopicDialog({ isOpen, onOpenChange, subjectId, onTopicCreated
             onTopicCreated(topic);
             setName("");
             onOpenChange(false);
-        } catch {
-            toast.error("Erro ao criar tópico.");
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Erro ao criar tópico.";
+            toast.error(errorMessage);
         }
     };
 

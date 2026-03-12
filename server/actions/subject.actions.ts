@@ -7,41 +7,67 @@ import { prisma } from "@/lib/prisma";
  * Actions garante que os dados do banco não quebrem a UI
  ***/
 export async function createSubjectAction(data: { name: string; color: string; userId: string }) {
-    const subject = await prisma.subject.create({
-        data: {
-            name: data.name,
-            color: data.color,
-            userId: data.userId,
-        },
+    return prisma.$transaction(async (tx) => {
+        const existingSubject = await tx.subject.findFirst({
+            where: {
+                userId: data.userId,
+                name: { equals: data.name, mode: "insensitive" },
+            },
+        });
+
+        if (existingSubject) {
+            throw new Error(`Já existe uma matéria com o nome "${data.name}".`);
+        }
+
+        return tx.subject.create({
+            data: {
+                name: data.name,
+                color: data.color,
+                userId: data.userId,
+            },
+        });
     });
-    return subject;
 }
 
 export async function updateSubjectAction(data: { id: string; name: string; color: string; userId: string }) {
-    const updateResult = await prisma.subject.updateMany({
-        where: {
-            id: data.id,
-            userId: data.userId,
-        },
-        data: {
-            name: data.name,
-            color: data.color,
-        },
+    return prisma.$transaction(async (tx) => {
+        const existingSubject = await tx.subject.findFirst({
+            where: {
+                userId: data.userId,
+                name: { equals: data.name, mode: "insensitive" },
+                NOT: { id: data.id },
+            },
+        });
+
+        if (existingSubject) {
+            throw new Error(`Já existe uma matéria com o nome "${data.name}".`);
+        }
+
+        const updateResult = await tx.subject.updateMany({
+            where: {
+                id: data.id,
+                userId: data.userId,
+            },
+            data: {
+                name: data.name,
+                color: data.color,
+            },
+        });
+
+        if (updateResult.count === 0) {
+            throw new Error("Matéria não encontrada para atualização");
+        }
+
+        const updatedSubject = await tx.subject.findUnique({
+            where: { id: data.id },
+        });
+
+        if (!updatedSubject) {
+            throw new Error("Matéria não encontrada após atualização");
+        }
+
+        return updatedSubject;
     });
-
-    if (updateResult.count === 0) {
-        throw new Error("Matéria não encontrada para atualização");
-    }
-
-    const updatedSubject = await prisma.subject.findUnique({
-        where: { id: data.id },
-    });
-
-    if (!updatedSubject) {
-        throw new Error("Matéria não encontrada após atualização");
-    }
-
-    return updatedSubject;
 }
 
 

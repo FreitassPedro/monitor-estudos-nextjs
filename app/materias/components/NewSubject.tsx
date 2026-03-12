@@ -49,7 +49,8 @@ export function NewSubject() {
             setNewColor(PRESET_COLORS[Math.floor(Math.random() * PRESET_COLORS.length)]);
             toast.success('Matéria criada!');
         } catch (error) {
-            toast.error('Erro ao criar matéria');
+            const errorMessage = error instanceof Error ? error.message : 'Erro ao criar matéria';
+            toast.error(errorMessage);
             console.error(error);
         }
     };
