@@ -42,7 +42,8 @@ const EditTopicDialog = ({ topic, open, onOpenChange, onSave }: { topic: Topic |
             onSave(topicName);
             onOpenChange(false);
         } catch (error) {
-            toast.error('Erro ao atualizar tópico');
+            const errorMessage = error instanceof Error ? error.message : 'Erro ao atualizar tópico';
+            toast.error(errorMessage);
         }
     };
 
@@ -110,7 +111,8 @@ const EditSubjectDialog = ({ open, onOpenChange, subject, topics }: { open: bool
             setNewTopicName('');
             toast.success('Tópico adicionado com sucesso');
         } catch (error) {
-            toast.error('Erro ao adicionar tópico');
+            const errorMessage = error instanceof Error ? error.message : 'Erro ao adicionar tópico';
+            toast.error(errorMessage);
         }
     };
 
@@ -146,7 +148,8 @@ const EditSubjectDialog = ({ open, onOpenChange, subject, topics }: { open: bool
             toast.success('Matéria atualizada com sucesso');
             onOpenChange(false);
         } catch (error) {
-            toast.error('Erro ao atualizar matéria');
+            const errorMessage = error instanceof Error ? error.message : 'Erro ao atualizar matéria';
+            toast.error(errorMessage);
         }
     };
 

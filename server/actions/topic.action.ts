@@ -23,13 +23,25 @@ export async function getTopicsBySubjectAction(subjectId: string): Promise<Topic
 }
 
 export async function createTopic(name: string, subjectId: string): Promise<Topic> {
-    const newTopic = await prisma.topic.create({
-        data: {
-            name,
-            subjectId,
-        },
+    return prisma.$transaction(async (tx) => {
+        const existingTopic = await tx.topic.findFirst({
+            where: {
+                subjectId,
+                name: { equals: name, mode: "insensitive" },
+            },
+        });
+
+        if (existingTopic) {
+            throw new Error(`Já existe um tópico com o nome "${name}" nesta matéria.`);
+        }
+
+        return tx.topic.create({
+            data: {
+                name,
+                subjectId,
+            },
+        });
     });
-    return newTopic;
 }
 
 export async function deleteTopicAction(topicId: string): Promise<void> {
@@ -50,9 +62,28 @@ export async function deleteTopicAction(topicId: string): Promise<void> {
 }
 
 export async function updateTopicAction(topicId: string, name: string): Promise<Topic> {
-    const updatedTopic = await prisma.topic.update({
-        where: { id: topicId },
-        data: { name },
+    return prisma.$transaction(async (tx) => {
+        const currentTopic = await tx.topic.findUnique({ where: { id: topicId } });
+
+        if (!currentTopic) {
+            throw new Error("Tópico não encontrado.");
+        }
+
+        const existingTopic = await tx.topic.findFirst({
+            where: {
+                subjectId: currentTopic.subjectId,
+                name: { equals: name, mode: "insensitive" },
+                NOT: { id: topicId },
+            },
+        });
+
+        if (existingTopic) {
+            throw new Error(`Já existe um tópico com o nome "${name}" nesta matéria.`);
+        }
+
+        return tx.topic.update({
+            where: { id: topicId },
+            data: { name },
+        });
     });
-    return updatedTopic;
 }
