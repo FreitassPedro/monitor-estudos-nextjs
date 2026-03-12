@@ -13,6 +13,7 @@ const navItems = [
     { href: '/nova-sessao', label: 'Nova Sessão', icon: Plus, isEnabled: true },
     { href: '/historico', label: 'Histórico', icon: History, isEnabled: true },
     { href: '/materias', label: 'Matérias', icon: FolderOpen, isEnabled: true },
+    { href: '/perfil', label: 'Perfil', icon: User, isEnabled: true },
     { href: '/', label: 'Tarefas', icon: CheckSquare, isEnabled: false },
     { href: '/', label: 'Revisões', icon: CalendarClock, isEnabled: false },
     { href: '/', label: 'Ciclos', icon: CalendarClock, isEnabled: false },
@@ -108,9 +109,9 @@ export default function MainNavbar() {
                         {/* User Info */}
                         {user && (
                             <div className="flex items-center gap-1 sm:gap-2 rounded-full border border-border bg-secondary px-2 sm:px-3 py-1 shrink-0 max-w-35 sm:max-w-none">
-                                <span className="text-xs sm:text-sm text-muted-foreground hidden sm:inline truncate max-w-30">
+                                <Link href="/perfil" className="text-xs sm:text-sm text-muted-foreground hidden sm:inline truncate max-w-30 hover:text-foreground transition-colors">
                                     {user.name || user.email}
-                                </span>
+                                </Link>
                                 <Button
                                     variant="ghost"
                                     size="icon"
