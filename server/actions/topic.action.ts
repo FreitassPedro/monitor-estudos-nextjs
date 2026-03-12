@@ -1,5 +1,7 @@
 "use server";
 
+
+import { Prisma } from "@/app/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { Topic } from "@/types/types";
 
@@ -23,25 +25,19 @@ export async function getTopicsBySubjectAction(subjectId: string): Promise<Topic
 }
 
 export async function createTopic(name: string, subjectId: string): Promise<Topic> {
-    return prisma.$transaction(async (tx) => {
-        const existingTopic = await tx.topic.findFirst({
-            where: {
-                subjectId,
-                name: { equals: name, mode: "insensitive" },
-            },
-        });
-
-        if (existingTopic) {
-            throw new Error(`Já existe um tópico com o nome "${name}" nesta matéria.`);
-        }
-
-        return tx.topic.create({
+    try {
+        return await prisma.topic.create({
             data: {
                 name,
                 subjectId,
             },
         });
-    });
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+            throw new Error(`Erro ao criar tópico: ${name} já existe nesta matéria.`);
+        }
+        throw new Error("Erro desconhecido ao criar tópico");
+    }
 }
 
 export async function deleteTopicAction(topicId: string): Promise<void> {
@@ -62,28 +58,22 @@ export async function deleteTopicAction(topicId: string): Promise<void> {
 }
 
 export async function updateTopicAction(topicId: string, name: string): Promise<Topic> {
-    return prisma.$transaction(async (tx) => {
-        const currentTopic = await tx.topic.findUnique({ where: { id: topicId } });
 
-        if (!currentTopic) {
-            throw new Error("Tópico não encontrado.");
-        }
-
-        const existingTopic = await tx.topic.findFirst({
-            where: {
-                subjectId: currentTopic.subjectId,
-                name: { equals: name, mode: "insensitive" },
-                NOT: { id: topicId },
-            },
-        });
-
-        if (existingTopic) {
-            throw new Error(`Já existe um tópico com o nome "${name}" nesta matéria.`);
-        }
-
-        return tx.topic.update({
+    try {
+        return await prisma.topic.update({
             where: { id: topicId },
             data: { name },
         });
-    });
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError) {
+            if (error.code === 'P2002') {
+                throw new Error(`Erro ao atualizar tópico: ${name} já existe nesta matéria.`);
+            }
+
+            if (error.code === 'P2025') {
+                throw new Error(`Erro ao atualizar tópico: tópico com id ${topicId} não encontrado.`);
+            }
+        }
+        throw new Error("Erro desconhecido ao atualizar tópico");
+    }
 }
