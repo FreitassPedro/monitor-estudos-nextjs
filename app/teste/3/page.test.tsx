@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { mockJsonDashboardStats, mockJsonTopicTree, mockStudyLogs, TopicNode } from './mock';
 import {
     ChevronRight,
@@ -201,7 +201,7 @@ function NodeRow({
 }) {
     const hasChildren = node.children && node.children.length > 0;
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const pendingCount = Math.floor(Math.random() * 3);
+    const pendingCount = 2;
     const logsCount = mockStudyLogs.filter(l => l.topicId === node.id).length;
 
     return (
@@ -283,25 +283,10 @@ function NodeRow({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function StudyMonitorPage() {
-    const [folderTree, setFolderTree] = useState<{ id: string; name: string; color: string, topics: TopicNode[] }[]>([]);
-    const [topicTree, setTopicTree] = useState<TopicNode[]>([]);
+    const [folderTree] = useState<{ id: string; name: string; color: string, topics: TopicNode[] }[]>(mockJsonTopicTree);
     const [detailNode, setDetailNode] = useState<TopicNode | null>(null);
-    const [dashboardStats, setDashboardStats] = useState(null);
+    const [dashboardStats] = useState<typeof mockJsonDashboardStats>(mockJsonDashboardStats);
     const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
-
-    useEffect(() => {
-        setTopicTree(mockJsonTopicTree.flatMap(subject => subject.topics));
-        setFolderTree(mockJsonTopicTree);
-        setDashboardStats(mockJsonDashboardStats);
-    }, [selectedTopicId]);
-
-    if (!dashboardStats) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground text-sm">
-                Carregando…
-            </div>
-        );
-    }
 
     return (
         <>
@@ -391,7 +376,7 @@ export default function StudyMonitorPage() {
                                     {folderTree.map(subject => (
                                         <React.Fragment key={subject.id}>
                                             {/* Subject header row */}
-                                            <tr className="group border-b-1 border-border bg-muted/30 border-l-4 transition-colors group-hover:border-l-primary"
+                                            <tr className="group border-b border-border bg-muted/30 border-l-4 transition-colors group-hover:border-l-primary"
                                                 style={{ borderColor: subject.color }}
                                             >
                                                 <td colSpan={4} className="py-2.5 px-4">

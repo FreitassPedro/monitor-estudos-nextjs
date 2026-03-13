@@ -36,11 +36,5 @@
     "**/*.mts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "app/generated/prisma/**",
-    ".next/dev/types/**/*.ts",
-    "dist/**",
-    "build/**"
-  ]
+  "exclude": ["node_modules"]
 }
