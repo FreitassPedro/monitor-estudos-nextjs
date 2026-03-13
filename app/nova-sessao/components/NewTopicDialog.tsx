@@ -10,21 +10,35 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogTrigger,
 } from "@/components/ui/dialog";
 import { useCreateTopic } from "@/hooks/useTopics";
 import { Topic } from "@/types/types";
-import {  useSubjectsMap } from "@/hooks/useSubjects";
+import { useSubjectsMap } from "@/hooks/useSubjects";
 
 interface Props {
-    isOpen: boolean;
-    onOpenChange: (open: boolean) => void;
     subjectId: string;
-    onTopicCreated: (topic: Topic) => void;
+    parentId?: string | null;
+    onTopicCreated?: (topic: Topic) => void;
+    isOpen?: boolean;
+    onOpenChange?: (open: boolean) => void;
+    trigger?: React.ReactNode;
 }
 
-export function NewTopicDialog({ isOpen, onOpenChange, subjectId, onTopicCreated }: Props) {
+export function NewTopicDialog({
+    isOpen,
+    onOpenChange,
+    subjectId,
+    parentId = null,
+    onTopicCreated,
+    trigger,
+}: Props) {
+    const [internalOpen, setInternalOpen] = useState(false);
     const [name, setName] = useState("");
     const createTopic = useCreateTopic();
+    const isControlled = typeof isOpen === "boolean" && typeof onOpenChange === "function";
+    const open = isControlled ? isOpen : internalOpen;
+    const setOpen = isControlled ? onOpenChange : setInternalOpen;
 
     const { data: subjects } = useSubjectsMap();
     const subject = subjects?.[subjectId];
@@ -36,9 +50,9 @@ export function NewTopicDialog({ isOpen, onOpenChange, subjectId, onTopicCreated
         if (!name.trim()) return;
 
         try {
-            const topic = await createTopic.mutateAsync({ name: name.trim(), subjectId: subject!.id });
+            const topic = await createTopic.mutateAsync({ name: name.trim(), subjectId: subject.id, parentId });
             toast.success(`Tópico "${topic.name}" criado!`);
-            onTopicCreated(topic);
+            onTopicCreated?.(topic);
             setName("");
             onOpenChange(false);
         } catch (error) {
@@ -48,7 +62,8 @@ export function NewTopicDialog({ isOpen, onOpenChange, subjectId, onTopicCreated
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={setOpen}>
+            {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Novo tópico em &quot;{subject.name}&quot;</DialogTitle>
@@ -65,7 +80,7 @@ export function NewTopicDialog({ isOpen, onOpenChange, subjectId, onTopicCreated
                         />
                     </div>
                     <div className="flex gap-2 justify-end">
-                        <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                        <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                             Cancelar
                         </Button>
                         <Button type="submit" disabled={createTopic.isPending || !name.trim()}>

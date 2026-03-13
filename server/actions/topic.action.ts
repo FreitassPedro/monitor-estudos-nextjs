@@ -3,7 +3,7 @@
 
 import { Prisma } from "@/app/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import { Topic } from "@/types/types";
+import { Topic, TopicNode } from "@/types/types";
 
 export async function getTopicsAction(userId: string): Promise<Topic[]> {
     await new Promise(resolve => setTimeout(resolve, 20)); // Simula delay
@@ -24,20 +24,37 @@ export async function getTopicsBySubjectAction(subjectId: string): Promise<Topic
     });
 }
 
-export async function createTopic(name: string, subjectId: string): Promise<Topic> {
-    try {
-        return await prisma.topic.create({
-            data: {
-                name,
-                subjectId,
-            },
-        });
-    } catch (error) {
-        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
-            throw new Error(`Erro ao criar tópico: ${name} já existe nesta matéria.`);
+export async function postCreateTopic(name: string, subjectId: string, parentId: string | null): Promise<Topic> {
+    const newTopic = await prisma.topic.create({
+        data: {
+            name,
+            subjectId,
+            parentId,
+        },
+    });
+    return newTopic;
+}
+
+export async function getTopicsTreeAction(userId: string): Promise<TopicNode[]> {
+    const topics = await prisma.topic.findMany({
+        where: { subject: { userId } },
+        select: { id: true, name: true, subjectId: true, parentId: true },
+    });
+
+    const map = new Map<string, TopicNode>();
+    topics.forEach((t) => map.set(t.id, { ...t, children: [] }));
+
+    const roots: TopicNode[] = [];
+    topics.forEach((t) => {
+        const node = map.get(t.id)!;
+        if (t.parentId) {
+            map.get(t.parentId)?.children.push(node);
+        } else {
+            roots.push(node);
         }
-        throw new Error("Erro desconhecido ao criar tópico");
-    }
+    });
+
+    return roots;
 }
 
 export async function deleteTopicAction(topicId: string): Promise<void> {

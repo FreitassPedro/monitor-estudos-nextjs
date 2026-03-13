@@ -1,4 +1,4 @@
-import { createSubjectAction, getSubjectsAction, getSubjectsWithTopicsAction, updateSubjectAction } from "@/server/actions/subject.actions";
+import { createSubjectAction, deleteSubjectAction, getSubjectsAction, getSubjectsWithTopicsAction, updateSubjectAction } from "@/server/actions/subject.actions";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { indexSubjectById } from "@/server/normalizers/indexSubject";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -68,7 +68,23 @@ export function useCreateSubject() {
     });
 }
 
+export function useDeleteSubject() {
+    const queryClient = useQueryClient();
+    const userId = useAuthStore((state) => state.user?.id);
 
+    return useMutation({
+        mutationFn: async (subjectId: string) => {
+            if (!userId) {
+                throw new Error("Usuário não selecionado");
+            }
+            return deleteSubjectAction(subjectId);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: subjectsKeys.byUser(userId) });
+            queryClient.invalidateQueries({ queryKey: subjectsKeys.withTopicsByUser(userId) });
+        },
+    });
+}
 export function useUpdateSubject() {
     const queryClient = useQueryClient();
     const userId = useAuthStore((state) => state.user?.id);

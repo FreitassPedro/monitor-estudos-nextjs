@@ -8,6 +8,15 @@ export interface Topic {
     id: string;
     name: string;
     subjectId: string;
+    parentId?: string | null;
+}
+
+export interface TopicNode {
+    id: string;
+    name: string;
+    subjectId: string;
+    parentId?: string | null;
+    children: TopicNode[];
 }
 
 export interface StudyLog {

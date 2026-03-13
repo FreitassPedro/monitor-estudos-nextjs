@@ -765,7 +765,8 @@ export type SubjectScalarFieldEnum = (typeof SubjectScalarFieldEnum)[keyof typeo
 export const TopicScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  subjectId: 'subjectId'
+  subjectId: 'subjectId',
+  parentId: 'parentId'
 } as const
 
 export type TopicScalarFieldEnum = (typeof TopicScalarFieldEnum)[keyof typeof TopicScalarFieldEnum]

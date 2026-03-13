@@ -33,13 +33,20 @@ model Subject {
 }
 
 model Topic {
-  id    String     @id @default(uuid())
-  name String
-  @@unique([subjectId, name])
+  id        String      @id @default(uuid())
+  name      String
   subjectId String
-  subject Subject @relation(fields: [subjectId], references: [id])
+  subject   Subject     @relation(fields: [subjectId], references: [id])
+  path  Unsupported("ltree")?
+  parentId  String?
+  parent    Topic?      @relation("TopicChildren", fields: [parentId], references: [id])
+  children  Topic[]     @relation("TopicChildren")
   studyLogs StudyLogs[]
+
+  @@unique([parentId, name])
+  @@index([path], type: Gist) 
 }
+
 
 model StudyLogs {
     id               String   @id @default(uuid())
@@ -53,3 +60,5 @@ model StudyLogs {
     created_at       DateTime @default(now()) @db.Timestamptz(3)
     updated_at       DateTime @updatedAt @db.Timestamptz(3)
 }
+
+

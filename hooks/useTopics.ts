@@ -1,4 +1,4 @@
-import { createTopic, getTopicsAction, getTopicsBySubjectAction, deleteTopicAction, updateTopicAction } from "@/server/actions/topic.action";
+import { postCreateTopic, getTopicsAction, getTopicsBySubjectAction, deleteTopicAction, updateTopicAction, getTopicsTreeAction } from "@/server/actions/topic.action";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/useAuthStore";
 
@@ -7,6 +7,7 @@ keyss
 */
 export const topicsKeys = {
     all: ['topics'] as const,
+    tree: ['topics', 'tree'] as const,
     bySubject: (subjectId?: string) => ['topics', 'by-subject', subjectId] as const,
 };
 
@@ -32,7 +33,7 @@ export function useTopics() {
             topics.forEach(topic => {
                 topicsMap[topic.id] = topic;
             });
-            return { topics, topicsMap};
+            return { topics, topicsMap };
         },
     });
 }
@@ -46,12 +47,23 @@ export function useTopicsMap() {
     return { data: data?.topicsMap };
 }
 
+export function useTopicsTree() {
+    const userId = useAuthStore((state) => state.user?.id);
+    return useQuery({
+        queryKey: topicsKeys.tree,
+        queryFn: () => getTopicsTreeAction(userId!),
+        enabled: !!userId,
+    });
+}
+
 export function useCreateTopic() {
     const queryClient = useQueryClient();
 
+   
+
     return useMutation({
-        mutationFn: ({ name, subjectId }: { name: string; subjectId: string }) =>
-            createTopic(name, subjectId),
+        mutationFn: ({ name, subjectId, parentId }: { name: string; subjectId: string, parentId: string | null }) =>
+            postCreateTopic(name, subjectId, parentId),
         onSuccess: (topic, variables) => {
             queryClient.setQueryData(
                 topicsKeys.bySubject(variables.subjectId),
@@ -65,6 +77,7 @@ export function useCreateTopic() {
             queryClient.invalidateQueries({ queryKey: topicsKeys.bySubject(variables.subjectId) });
             queryClient.invalidateQueries({ queryKey: topicsKeys.all });
         },
+        
     });
 }
 

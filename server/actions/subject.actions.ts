@@ -51,6 +51,8 @@ export async function deleteSubjectAction(id: string) {
     await prisma.subject.delete({
         where: { id },
     });
+
+    return { success: true };
 }
 
 export async function getSubjectsAction(userId: string): Promise<Subject[]> {
