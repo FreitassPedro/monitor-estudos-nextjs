@@ -41,9 +41,8 @@ npm run test:db:up
 # Migração
 npm run test:migrate
 
-# Abrir Prisma Studio
+# Abrir Prisma Studio http://localhost:51212/
 npm run test:studio
-
 # Resetar (limpa tudo)
 npm run test:db:reset
 
