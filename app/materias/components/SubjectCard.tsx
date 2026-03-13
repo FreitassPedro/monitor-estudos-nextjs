@@ -105,6 +105,7 @@ const EditSubjectDialog = ({ open, onOpenChange, subject, topics }: { open: bool
             const newTopic = await createTopic.mutateAsync({
                 name: newTopicName,
                 subjectId: subject.id,
+                parentId: null,
             });
             setLocalTopics([...localTopics, newTopic]);
             setNewTopicName('');
