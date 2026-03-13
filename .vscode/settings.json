@@ -1,0 +1,12 @@
+{
+  "files.watcherExclude": {
+    "**/.next/**": true,
+    "**/node_modules/**": true,
+    "**/app/generated/prisma/**": true
+  },
+  "search.exclude": {
+    "**/.next/**": true,
+    "**/app/generated/prisma/**": true
+  },
+  "typescript.tsserver.maxTsServerMemory": 4096
+}
