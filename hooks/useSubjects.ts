@@ -1,4 +1,4 @@
-import { createSubjectAction, deleteSubjectAction, getSubjectsAction, getSubjectsWithTopicsAction, updateSubjectAction } from "@/server/actions/subject.actions";
+import { createSubjectAction, deleteSubjectAction, getSubjectsAction, getSubjectsTrees, getSubjectsWithTopicsAction, updateSubjectAction } from "@/server/actions/subject.actions";
 import { queryOptions, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { indexSubjectById } from "@/server/normalizers/indexSubject";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -8,6 +8,8 @@ import { useAuthStore } from "@/store/useAuthStore";
 ***/
 export const subjectsKeys = {
     all: ["subjects"] as const,
+    tree: ["subjects", "tree"] as const,
+    treeByUser: (userId?: string) => ["subjects", "tree", userId] as const,
     byUser: (userId?: string) => ["subjects", userId] as const,
     withTopicsByUser: (userId?: string) => ["subjects", "with-topics", userId] as const,
 };
@@ -64,9 +66,24 @@ export function useCreateSubject() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: subjectsKeys.byUser(userId) });
             queryClient.invalidateQueries({ queryKey: subjectsKeys.withTopicsByUser(userId) });
+            queryClient.invalidateQueries({ queryKey: subjectsKeys.treeByUser(userId) });
         },
     });
 }
+
+export function useSubjectTree() {
+    const userId = useAuthStore((state) => state.user?.id);
+    return useQuery({
+        queryKey: subjectsKeys.treeByUser(userId),
+        queryFn: () => getSubjectsTrees(userId!),
+        enabled: !!userId,
+        staleTime: Infinity,
+        gcTime: 1000 * 60 * 30,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+    });
+}
+
 
 export function useDeleteSubject() {
     const queryClient = useQueryClient();
@@ -82,6 +99,7 @@ export function useDeleteSubject() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: subjectsKeys.byUser(userId) });
             queryClient.invalidateQueries({ queryKey: subjectsKeys.withTopicsByUser(userId) });
+            queryClient.invalidateQueries({ queryKey: subjectsKeys.treeByUser(userId) });
         },
     });
 }
@@ -99,6 +117,7 @@ export function useUpdateSubject() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: subjectsKeys.byUser(userId) });
             queryClient.invalidateQueries({ queryKey: subjectsKeys.withTopicsByUser(userId) });
+            queryClient.invalidateQueries({ queryKey: subjectsKeys.treeByUser(userId) });
         },
     });
 }

@@ -1,6 +1,6 @@
 "use server";
 
-import { Subject } from "@/types/types";
+import { Subject, SubjectTree, TopicNode } from "@/types/types";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/app/generated/prisma/client";
 
@@ -55,14 +55,8 @@ export async function deleteSubjectAction(id: string) {
     return { success: true };
 }
 
-export async function getSubjectsAction(userId: string): Promise<Subject[]> {
-    return await prisma.subject.findMany({
-        where: { userId }
-    });
-}
-
-export async function getSubjectsWithTopicsAction(userId: string) {
-    const subject = await prisma.subject.findMany({
+export async function getSubjectsTrees(userId: string): Promise<SubjectTree[]> {
+    const subjects: { id: string; name: string; color: string; topics: { id: string; name: string; parentId: string | null; subjectId: string }[] }[] = await prisma.subject.findMany({
         where: { userId },
         include: {
             topics: {
@@ -72,6 +66,59 @@ export async function getSubjectsWithTopicsAction(userId: string) {
             },
         },
     });
-    return subject;
+    // Recebe uma lista de matérias com seus tópicos, e precisamos transformar em uma estrutura de árvore
+
+    return subjects.map((s) => {
+        const map = new Map<string, TopicNode>();
+        s.topics.forEach((t) => map.set(t.id, { ...t, children: [] }));
+
+        const roots: TopicNode[] = [];
+        s.topics.forEach((t) => {
+            const node = map.get(t.id)!;
+
+            if (t.parentId) {
+                const parent = map.get(t.parentId);
+                if (parent) {
+                    parent.children.push(node);
+                } else {
+                    roots.push(node)
+
+                }
+            }
+            else {
+                roots.push(node);
+            }
+        });
+
+        return {
+            subject: {
+                id: s.id,
+                name: s.name,
+                color: s.color,
+            },
+            topics: roots,
+        };
+
+    });
 }
+
+    export async function getSubjectsAction(userId: string): Promise<Subject[]> {
+        return await prisma.subject.findMany({
+            where: { userId }
+        });
+    }
+
+    export async function getSubjectsWithTopicsAction(userId: string) {
+        const subject = await prisma.subject.findMany({
+            where: { userId },
+            include: {
+                topics: {
+                    include: {
+                        studyLogs: false, // Evita carregar os studyLogs
+                    },
+                },
+            },
+        });
+        return subject;
+    }
 

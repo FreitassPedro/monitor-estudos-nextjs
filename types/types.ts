@@ -11,6 +11,10 @@ export interface Topic {
     parentId?: string | null;
 }
 
+export interface SubjectTree {
+    subject: Subject;
+    topics: TopicNode[];
+}
 export interface TopicNode {
     id: string;
     name: string;

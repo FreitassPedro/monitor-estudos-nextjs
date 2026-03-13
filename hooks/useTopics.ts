@@ -76,6 +76,7 @@ export function useCreateTopic() {
 
             queryClient.invalidateQueries({ queryKey: topicsKeys.bySubject(variables.subjectId) });
             queryClient.invalidateQueries({ queryKey: topicsKeys.all });
+            queryClient.invalidateQueries({ queryKey: ["subjects", "tree"] });
         },
         
     });
@@ -88,6 +89,7 @@ export function useDeleteTopic() {
         mutationFn: (topicId: string) => deleteTopicAction(topicId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: topicsKeys.all });
+            queryClient.invalidateQueries({ queryKey: ["subjects", "tree"] });
         },
     });
 }
@@ -100,6 +102,7 @@ export function useUpdateTopic() {
             updateTopicAction(topicId, name),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: topicsKeys.all });
+            queryClient.invalidateQueries({ queryKey: ["subjects", "tree"] });
         },
     });
 }

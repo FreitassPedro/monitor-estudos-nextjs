@@ -1,11 +1,11 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useDeleteSubject, useSubjectsWithTopics } from "@/hooks/useSubjects";
+import { useDeleteSubject, useSubjectTree } from "@/hooks/useSubjects";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronRight, FileText, Folder, FolderOpen, Plus, Trash2 } from "lucide-react";
-import { useCreateTopic, useTopicsMap, useTopicsTree } from "@/hooks/useTopics";
-import { Topic, TopicNode } from "@/types/types";
+import { useCreateTopic, useTopicsMap } from "@/hooks/useTopics";
+import { SubjectTree, Topic, TopicNode } from "@/types/types";
 import { ChangeEvent, FormEvent, Fragment, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -175,9 +175,8 @@ export const SubjectsSkeleton = () => {
         </Card>
     );
 }
-function SubjectItem({ subject, topicTree }: {
-    subject: { id: string; name: string; color: string };
-    topicTree: TopicNode[];
+function SubjectItem({ subjectTree }: {
+    subjectTree: SubjectTree;
 }) {
     const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -185,7 +184,7 @@ function SubjectItem({ subject, topicTree }: {
 
     const handleDelete = async () => {
         try {
-            await deleteSubject.mutateAsync(subject.id);
+            await deleteSubject.mutateAsync(subjectTree.subject.id);
             toast.info("Matéria removida com sucesso.");
         } catch {
             toast.error("Erro ao remover matéria.");
@@ -193,9 +192,9 @@ function SubjectItem({ subject, topicTree }: {
     };
 
     return (
-        <Fragment key={subject.id}>
-            <tr className="border-l border-r border-b-2 select-none bg-muted/40 " style={{ borderColor: subject.color }}>
-                <td colSpan={4} className="py-2.5 px-4">
+        <Fragment key={subjectTree.subject.id}>
+            <tr className="select-none">
+                <td colSpan={4} className="py-2.5 px-4 rounded-xl border border-b-2 bg-muted/40" style={{ borderColor: subjectTree.subject.color }}>
                     <div className="flex w-full items-center justify-between gap-6">
                         <button onClick={() => setIsCollapsed(!isCollapsed)}
                             className={`flex items-center justify-center h-5 w-5 rounded hover:bg-accent text-muted-foreground transition-colors `}
@@ -205,13 +204,13 @@ function SubjectItem({ subject, topicTree }: {
                         <div className="flex items-center gap-3">
                             <div
                                 className="w-4 h-4 rounded-full"
-                                style={{ backgroundColor: subject.color }}
+                                style={{ backgroundColor: subjectTree.subject.color }}
                             />
-                            <span className="font-medium text-foreground">{subject.name}</span>
+                            <span className="font-medium text-foreground">{subjectTree.subject.name}</span>
                         </div>
                         <div className="ml-6 flex items-center gap-2">
                             <NewTopicDialog
-                                subjectId={subject.id}
+                                subjectId={subjectTree.subject.id}
                                 parentId={null}
                                 trigger={
                                     <Button
@@ -236,7 +235,7 @@ function SubjectItem({ subject, topicTree }: {
                 </td>
             </tr>
             {!isCollapsed &&
-                topicTree.map((topic) => (
+                subjectTree.topics.map((topic) => (
                     <NodeRow
                         key={topic.id}
                         node={topic}
@@ -249,40 +248,38 @@ function SubjectItem({ subject, topicTree }: {
 };
 
 export default function SubjectList() {
-    const { data: subjects = [], isLoading } = useSubjectsWithTopics();
-
-    const { data: topicTree = [] } = useTopicsTree();
-
+    const { data: tree = [], isLoading } = useSubjectTree();
 
     if (isLoading) {
         return <SubjectsSkeleton />;
     }
 
     return (
-        <table className="w-full text-sm ">
-            <thead>
-                <tr className="border-b border-border bg-muted/40">
-                    <th className="w-8" />
-                    <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        Tópico
-                    </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-24">
-                        {/* Pendências /*}
-                    </th>
-                    <th className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-24">
-                        {/* logs */}
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {subjects.map((subject) => (
-                    <SubjectItem
-                        key={subject.id}
-                        subject={subject}
-                        topicTree={topicTree}
-                    />
-                ))}
-            </tbody>
-        </table>
+        <div className="mt-10 rounded-2xl border border-border bg-card p-2 overflow-hidden">
+            <table className="w-full text-sm border-separate border-spacing-y-2">
+                <thead>
+                    <tr className="border-b border-border bg-muted/40">
+                        <th className="w-8" />
+                        <th className="text-left py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            Tópico
+                        </th>
+                        <th className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-24">
+                            {/* Pendências */}
+                        </th>
+                        <th className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-24">
+                            {/* logs */}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {tree.map((subjectTree) => (
+                        <SubjectItem
+                            key={subjectTree.subject.id}
+                            subjectTree={subjectTree}
+                        />
+                    ))}
+                </tbody>
+            </table>
+        </div>
     );
 }
