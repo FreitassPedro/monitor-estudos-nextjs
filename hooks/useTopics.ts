@@ -1,4 +1,4 @@
-import { createTopic, getTopicsAction, getTopicsBySubjectAction, deleteTopicAction, updateTopicAction } from "@/server/actions/topic.action";
+import { createTopic, getTopicsAction, getTopicsBySubjectAction, deleteTopicAction, updateTopicAction, getTopicsTreeAction } from "@/server/actions/topic.action";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/useAuthStore";
 
@@ -7,6 +7,7 @@ keyss
 */
 export const topicsKeys = {
     all: ['topics'] as const,
+    tree: ['topics', 'tree'] as const,
     bySubject: (subjectId?: string) => ['topics', 'by-subject', subjectId] as const,
 };
 
@@ -32,7 +33,7 @@ export function useTopics() {
             topics.forEach(topic => {
                 topicsMap[topic.id] = topic;
             });
-            return { topics, topicsMap};
+            return { topics, topicsMap };
         },
     });
 }
@@ -44,6 +45,15 @@ export function useTopicsBySubject(subjectId?: string) {
 export function useTopicsMap() {
     const { data } = useTopics();
     return { data: data?.topicsMap };
+}
+
+export function useTopicsTree() {
+    const userId = useAuthStore((state) => state.user?.id);
+    return useQuery({
+        queryKey: topicsKeys.tree,
+        queryFn: () => getTopicsTreeAction(userId!),
+        enabled: !!userId,
+    });
 }
 
 export function useCreateTopic() {

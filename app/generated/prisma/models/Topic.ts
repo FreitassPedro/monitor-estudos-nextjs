@@ -28,18 +28,21 @@ export type TopicMinAggregateOutputType = {
   id: string | null
   name: string | null
   subjectId: string | null
+  parentId: string | null
 }
 
 export type TopicMaxAggregateOutputType = {
   id: string | null
   name: string | null
   subjectId: string | null
+  parentId: string | null
 }
 
 export type TopicCountAggregateOutputType = {
   id: number
   name: number
   subjectId: number
+  parentId: number
   _all: number
 }
 
@@ -48,18 +51,21 @@ export type TopicMinAggregateInputType = {
   id?: true
   name?: true
   subjectId?: true
+  parentId?: true
 }
 
 export type TopicMaxAggregateInputType = {
   id?: true
   name?: true
   subjectId?: true
+  parentId?: true
 }
 
 export type TopicCountAggregateInputType = {
   id?: true
   name?: true
   subjectId?: true
+  parentId?: true
   _all?: true
 }
 
@@ -139,6 +145,7 @@ export type TopicGroupByOutputType = {
   id: string
   name: string
   subjectId: string
+  parentId: string | null
   _count: TopicCountAggregateOutputType | null
   _min: TopicMinAggregateOutputType | null
   _max: TopicMaxAggregateOutputType | null
@@ -166,7 +173,10 @@ export type TopicWhereInput = {
   id?: Prisma.StringFilter<"Topic"> | string
   name?: Prisma.StringFilter<"Topic"> | string
   subjectId?: Prisma.StringFilter<"Topic"> | string
+  parentId?: Prisma.StringNullableFilter<"Topic"> | string | null
   subject?: Prisma.XOR<Prisma.SubjectScalarRelationFilter, Prisma.SubjectWhereInput>
+  parent?: Prisma.XOR<Prisma.TopicNullableScalarRelationFilter, Prisma.TopicWhereInput> | null
+  children?: Prisma.TopicListRelationFilter
   studyLogs?: Prisma.StudyLogsListRelationFilter
 }
 
@@ -174,7 +184,10 @@ export type TopicOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   subjectId?: Prisma.SortOrder
+  parentId?: Prisma.SortOrderInput | Prisma.SortOrder
   subject?: Prisma.SubjectOrderByWithRelationInput
+  parent?: Prisma.TopicOrderByWithRelationInput
+  children?: Prisma.TopicOrderByRelationAggregateInput
   studyLogs?: Prisma.StudyLogsOrderByRelationAggregateInput
 }
 
@@ -185,7 +198,10 @@ export type TopicWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.TopicWhereInput | Prisma.TopicWhereInput[]
   name?: Prisma.StringFilter<"Topic"> | string
   subjectId?: Prisma.StringFilter<"Topic"> | string
+  parentId?: Prisma.StringNullableFilter<"Topic"> | string | null
   subject?: Prisma.XOR<Prisma.SubjectScalarRelationFilter, Prisma.SubjectWhereInput>
+  parent?: Prisma.XOR<Prisma.TopicNullableScalarRelationFilter, Prisma.TopicWhereInput> | null
+  children?: Prisma.TopicListRelationFilter
   studyLogs?: Prisma.StudyLogsListRelationFilter
 }, "id">
 
@@ -193,6 +209,7 @@ export type TopicOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   subjectId?: Prisma.SortOrder
+  parentId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.TopicCountOrderByAggregateInput
   _max?: Prisma.TopicMaxOrderByAggregateInput
   _min?: Prisma.TopicMinOrderByAggregateInput
@@ -205,12 +222,15 @@ export type TopicScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Topic"> | string
   name?: Prisma.StringWithAggregatesFilter<"Topic"> | string
   subjectId?: Prisma.StringWithAggregatesFilter<"Topic"> | string
+  parentId?: Prisma.StringNullableWithAggregatesFilter<"Topic"> | string | null
 }
 
 export type TopicCreateInput = {
   id?: string
   name: string
   subject: Prisma.SubjectCreateNestedOneWithoutTopicsInput
+  parent?: Prisma.TopicCreateNestedOneWithoutChildrenInput
+  children?: Prisma.TopicCreateNestedManyWithoutParentInput
   studyLogs?: Prisma.StudyLogsCreateNestedManyWithoutTopicInput
 }
 
@@ -218,6 +238,8 @@ export type TopicUncheckedCreateInput = {
   id?: string
   name: string
   subjectId: string
+  parentId?: string | null
+  children?: Prisma.TopicUncheckedCreateNestedManyWithoutParentInput
   studyLogs?: Prisma.StudyLogsUncheckedCreateNestedManyWithoutTopicInput
 }
 
@@ -225,6 +247,8 @@ export type TopicUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   subject?: Prisma.SubjectUpdateOneRequiredWithoutTopicsNestedInput
+  parent?: Prisma.TopicUpdateOneWithoutChildrenNestedInput
+  children?: Prisma.TopicUpdateManyWithoutParentNestedInput
   studyLogs?: Prisma.StudyLogsUpdateManyWithoutTopicNestedInput
 }
 
@@ -232,6 +256,8 @@ export type TopicUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   subjectId?: Prisma.StringFieldUpdateOperationsInput | string
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  children?: Prisma.TopicUncheckedUpdateManyWithoutParentNestedInput
   studyLogs?: Prisma.StudyLogsUncheckedUpdateManyWithoutTopicNestedInput
 }
 
@@ -239,6 +265,7 @@ export type TopicCreateManyInput = {
   id?: string
   name: string
   subjectId: string
+  parentId?: string | null
 }
 
 export type TopicUpdateManyMutationInput = {
@@ -250,6 +277,7 @@ export type TopicUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   subjectId?: Prisma.StringFieldUpdateOperationsInput | string
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type TopicListRelationFilter = {
@@ -262,22 +290,30 @@ export type TopicOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type TopicNullableScalarRelationFilter = {
+  is?: Prisma.TopicWhereInput | null
+  isNot?: Prisma.TopicWhereInput | null
+}
+
 export type TopicCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   subjectId?: Prisma.SortOrder
+  parentId?: Prisma.SortOrder
 }
 
 export type TopicMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   subjectId?: Prisma.SortOrder
+  parentId?: Prisma.SortOrder
 }
 
 export type TopicMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   subjectId?: Prisma.SortOrder
+  parentId?: Prisma.SortOrder
 }
 
 export type TopicScalarRelationFilter = {
@@ -327,6 +363,64 @@ export type TopicUncheckedUpdateManyWithoutSubjectNestedInput = {
   deleteMany?: Prisma.TopicScalarWhereInput | Prisma.TopicScalarWhereInput[]
 }
 
+export type TopicCreateNestedOneWithoutChildrenInput = {
+  create?: Prisma.XOR<Prisma.TopicCreateWithoutChildrenInput, Prisma.TopicUncheckedCreateWithoutChildrenInput>
+  connectOrCreate?: Prisma.TopicCreateOrConnectWithoutChildrenInput
+  connect?: Prisma.TopicWhereUniqueInput
+}
+
+export type TopicCreateNestedManyWithoutParentInput = {
+  create?: Prisma.XOR<Prisma.TopicCreateWithoutParentInput, Prisma.TopicUncheckedCreateWithoutParentInput> | Prisma.TopicCreateWithoutParentInput[] | Prisma.TopicUncheckedCreateWithoutParentInput[]
+  connectOrCreate?: Prisma.TopicCreateOrConnectWithoutParentInput | Prisma.TopicCreateOrConnectWithoutParentInput[]
+  createMany?: Prisma.TopicCreateManyParentInputEnvelope
+  connect?: Prisma.TopicWhereUniqueInput | Prisma.TopicWhereUniqueInput[]
+}
+
+export type TopicUncheckedCreateNestedManyWithoutParentInput = {
+  create?: Prisma.XOR<Prisma.TopicCreateWithoutParentInput, Prisma.TopicUncheckedCreateWithoutParentInput> | Prisma.TopicCreateWithoutParentInput[] | Prisma.TopicUncheckedCreateWithoutParentInput[]
+  connectOrCreate?: Prisma.TopicCreateOrConnectWithoutParentInput | Prisma.TopicCreateOrConnectWithoutParentInput[]
+  createMany?: Prisma.TopicCreateManyParentInputEnvelope
+  connect?: Prisma.TopicWhereUniqueInput | Prisma.TopicWhereUniqueInput[]
+}
+
+export type TopicUpdateOneWithoutChildrenNestedInput = {
+  create?: Prisma.XOR<Prisma.TopicCreateWithoutChildrenInput, Prisma.TopicUncheckedCreateWithoutChildrenInput>
+  connectOrCreate?: Prisma.TopicCreateOrConnectWithoutChildrenInput
+  upsert?: Prisma.TopicUpsertWithoutChildrenInput
+  disconnect?: Prisma.TopicWhereInput | boolean
+  delete?: Prisma.TopicWhereInput | boolean
+  connect?: Prisma.TopicWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TopicUpdateToOneWithWhereWithoutChildrenInput, Prisma.TopicUpdateWithoutChildrenInput>, Prisma.TopicUncheckedUpdateWithoutChildrenInput>
+}
+
+export type TopicUpdateManyWithoutParentNestedInput = {
+  create?: Prisma.XOR<Prisma.TopicCreateWithoutParentInput, Prisma.TopicUncheckedCreateWithoutParentInput> | Prisma.TopicCreateWithoutParentInput[] | Prisma.TopicUncheckedCreateWithoutParentInput[]
+  connectOrCreate?: Prisma.TopicCreateOrConnectWithoutParentInput | Prisma.TopicCreateOrConnectWithoutParentInput[]
+  upsert?: Prisma.TopicUpsertWithWhereUniqueWithoutParentInput | Prisma.TopicUpsertWithWhereUniqueWithoutParentInput[]
+  createMany?: Prisma.TopicCreateManyParentInputEnvelope
+  set?: Prisma.TopicWhereUniqueInput | Prisma.TopicWhereUniqueInput[]
+  disconnect?: Prisma.TopicWhereUniqueInput | Prisma.TopicWhereUniqueInput[]
+  delete?: Prisma.TopicWhereUniqueInput | Prisma.TopicWhereUniqueInput[]
+  connect?: Prisma.TopicWhereUniqueInput | Prisma.TopicWhereUniqueInput[]
+  update?: Prisma.TopicUpdateWithWhereUniqueWithoutParentInput | Prisma.TopicUpdateWithWhereUniqueWithoutParentInput[]
+  updateMany?: Prisma.TopicUpdateManyWithWhereWithoutParentInput | Prisma.TopicUpdateManyWithWhereWithoutParentInput[]
+  deleteMany?: Prisma.TopicScalarWhereInput | Prisma.TopicScalarWhereInput[]
+}
+
+export type TopicUncheckedUpdateManyWithoutParentNestedInput = {
+  create?: Prisma.XOR<Prisma.TopicCreateWithoutParentInput, Prisma.TopicUncheckedCreateWithoutParentInput> | Prisma.TopicCreateWithoutParentInput[] | Prisma.TopicUncheckedCreateWithoutParentInput[]
+  connectOrCreate?: Prisma.TopicCreateOrConnectWithoutParentInput | Prisma.TopicCreateOrConnectWithoutParentInput[]
+  upsert?: Prisma.TopicUpsertWithWhereUniqueWithoutParentInput | Prisma.TopicUpsertWithWhereUniqueWithoutParentInput[]
+  createMany?: Prisma.TopicCreateManyParentInputEnvelope
+  set?: Prisma.TopicWhereUniqueInput | Prisma.TopicWhereUniqueInput[]
+  disconnect?: Prisma.TopicWhereUniqueInput | Prisma.TopicWhereUniqueInput[]
+  delete?: Prisma.TopicWhereUniqueInput | Prisma.TopicWhereUniqueInput[]
+  connect?: Prisma.TopicWhereUniqueInput | Prisma.TopicWhereUniqueInput[]
+  update?: Prisma.TopicUpdateWithWhereUniqueWithoutParentInput | Prisma.TopicUpdateWithWhereUniqueWithoutParentInput[]
+  updateMany?: Prisma.TopicUpdateManyWithWhereWithoutParentInput | Prisma.TopicUpdateManyWithWhereWithoutParentInput[]
+  deleteMany?: Prisma.TopicScalarWhereInput | Prisma.TopicScalarWhereInput[]
+}
+
 export type TopicCreateNestedOneWithoutStudyLogsInput = {
   create?: Prisma.XOR<Prisma.TopicCreateWithoutStudyLogsInput, Prisma.TopicUncheckedCreateWithoutStudyLogsInput>
   connectOrCreate?: Prisma.TopicCreateOrConnectWithoutStudyLogsInput
@@ -344,12 +438,16 @@ export type TopicUpdateOneRequiredWithoutStudyLogsNestedInput = {
 export type TopicCreateWithoutSubjectInput = {
   id?: string
   name: string
+  parent?: Prisma.TopicCreateNestedOneWithoutChildrenInput
+  children?: Prisma.TopicCreateNestedManyWithoutParentInput
   studyLogs?: Prisma.StudyLogsCreateNestedManyWithoutTopicInput
 }
 
 export type TopicUncheckedCreateWithoutSubjectInput = {
   id?: string
   name: string
+  parentId?: string | null
+  children?: Prisma.TopicUncheckedCreateNestedManyWithoutParentInput
   studyLogs?: Prisma.StudyLogsUncheckedCreateNestedManyWithoutTopicInput
 }
 
@@ -386,18 +484,113 @@ export type TopicScalarWhereInput = {
   id?: Prisma.StringFilter<"Topic"> | string
   name?: Prisma.StringFilter<"Topic"> | string
   subjectId?: Prisma.StringFilter<"Topic"> | string
+  parentId?: Prisma.StringNullableFilter<"Topic"> | string | null
+}
+
+export type TopicCreateWithoutChildrenInput = {
+  id?: string
+  name: string
+  subject: Prisma.SubjectCreateNestedOneWithoutTopicsInput
+  parent?: Prisma.TopicCreateNestedOneWithoutChildrenInput
+  studyLogs?: Prisma.StudyLogsCreateNestedManyWithoutTopicInput
+}
+
+export type TopicUncheckedCreateWithoutChildrenInput = {
+  id?: string
+  name: string
+  subjectId: string
+  parentId?: string | null
+  studyLogs?: Prisma.StudyLogsUncheckedCreateNestedManyWithoutTopicInput
+}
+
+export type TopicCreateOrConnectWithoutChildrenInput = {
+  where: Prisma.TopicWhereUniqueInput
+  create: Prisma.XOR<Prisma.TopicCreateWithoutChildrenInput, Prisma.TopicUncheckedCreateWithoutChildrenInput>
+}
+
+export type TopicCreateWithoutParentInput = {
+  id?: string
+  name: string
+  subject: Prisma.SubjectCreateNestedOneWithoutTopicsInput
+  children?: Prisma.TopicCreateNestedManyWithoutParentInput
+  studyLogs?: Prisma.StudyLogsCreateNestedManyWithoutTopicInput
+}
+
+export type TopicUncheckedCreateWithoutParentInput = {
+  id?: string
+  name: string
+  subjectId: string
+  children?: Prisma.TopicUncheckedCreateNestedManyWithoutParentInput
+  studyLogs?: Prisma.StudyLogsUncheckedCreateNestedManyWithoutTopicInput
+}
+
+export type TopicCreateOrConnectWithoutParentInput = {
+  where: Prisma.TopicWhereUniqueInput
+  create: Prisma.XOR<Prisma.TopicCreateWithoutParentInput, Prisma.TopicUncheckedCreateWithoutParentInput>
+}
+
+export type TopicCreateManyParentInputEnvelope = {
+  data: Prisma.TopicCreateManyParentInput | Prisma.TopicCreateManyParentInput[]
+  skipDuplicates?: boolean
+}
+
+export type TopicUpsertWithoutChildrenInput = {
+  update: Prisma.XOR<Prisma.TopicUpdateWithoutChildrenInput, Prisma.TopicUncheckedUpdateWithoutChildrenInput>
+  create: Prisma.XOR<Prisma.TopicCreateWithoutChildrenInput, Prisma.TopicUncheckedCreateWithoutChildrenInput>
+  where?: Prisma.TopicWhereInput
+}
+
+export type TopicUpdateToOneWithWhereWithoutChildrenInput = {
+  where?: Prisma.TopicWhereInput
+  data: Prisma.XOR<Prisma.TopicUpdateWithoutChildrenInput, Prisma.TopicUncheckedUpdateWithoutChildrenInput>
+}
+
+export type TopicUpdateWithoutChildrenInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  subject?: Prisma.SubjectUpdateOneRequiredWithoutTopicsNestedInput
+  parent?: Prisma.TopicUpdateOneWithoutChildrenNestedInput
+  studyLogs?: Prisma.StudyLogsUpdateManyWithoutTopicNestedInput
+}
+
+export type TopicUncheckedUpdateWithoutChildrenInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  subjectId?: Prisma.StringFieldUpdateOperationsInput | string
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  studyLogs?: Prisma.StudyLogsUncheckedUpdateManyWithoutTopicNestedInput
+}
+
+export type TopicUpsertWithWhereUniqueWithoutParentInput = {
+  where: Prisma.TopicWhereUniqueInput
+  update: Prisma.XOR<Prisma.TopicUpdateWithoutParentInput, Prisma.TopicUncheckedUpdateWithoutParentInput>
+  create: Prisma.XOR<Prisma.TopicCreateWithoutParentInput, Prisma.TopicUncheckedCreateWithoutParentInput>
+}
+
+export type TopicUpdateWithWhereUniqueWithoutParentInput = {
+  where: Prisma.TopicWhereUniqueInput
+  data: Prisma.XOR<Prisma.TopicUpdateWithoutParentInput, Prisma.TopicUncheckedUpdateWithoutParentInput>
+}
+
+export type TopicUpdateManyWithWhereWithoutParentInput = {
+  where: Prisma.TopicScalarWhereInput
+  data: Prisma.XOR<Prisma.TopicUpdateManyMutationInput, Prisma.TopicUncheckedUpdateManyWithoutParentInput>
 }
 
 export type TopicCreateWithoutStudyLogsInput = {
   id?: string
   name: string
   subject: Prisma.SubjectCreateNestedOneWithoutTopicsInput
+  parent?: Prisma.TopicCreateNestedOneWithoutChildrenInput
+  children?: Prisma.TopicCreateNestedManyWithoutParentInput
 }
 
 export type TopicUncheckedCreateWithoutStudyLogsInput = {
   id?: string
   name: string
   subjectId: string
+  parentId?: string | null
+  children?: Prisma.TopicUncheckedCreateNestedManyWithoutParentInput
 }
 
 export type TopicCreateOrConnectWithoutStudyLogsInput = {
@@ -420,34 +613,72 @@ export type TopicUpdateWithoutStudyLogsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   subject?: Prisma.SubjectUpdateOneRequiredWithoutTopicsNestedInput
+  parent?: Prisma.TopicUpdateOneWithoutChildrenNestedInput
+  children?: Prisma.TopicUpdateManyWithoutParentNestedInput
 }
 
 export type TopicUncheckedUpdateWithoutStudyLogsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   subjectId?: Prisma.StringFieldUpdateOperationsInput | string
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  children?: Prisma.TopicUncheckedUpdateManyWithoutParentNestedInput
 }
 
 export type TopicCreateManySubjectInput = {
   id?: string
   name: string
+  parentId?: string | null
 }
 
 export type TopicUpdateWithoutSubjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  parent?: Prisma.TopicUpdateOneWithoutChildrenNestedInput
+  children?: Prisma.TopicUpdateManyWithoutParentNestedInput
   studyLogs?: Prisma.StudyLogsUpdateManyWithoutTopicNestedInput
 }
 
 export type TopicUncheckedUpdateWithoutSubjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  children?: Prisma.TopicUncheckedUpdateManyWithoutParentNestedInput
   studyLogs?: Prisma.StudyLogsUncheckedUpdateManyWithoutTopicNestedInput
 }
 
 export type TopicUncheckedUpdateManyWithoutSubjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  parentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type TopicCreateManyParentInput = {
+  id?: string
+  name: string
+  subjectId: string
+}
+
+export type TopicUpdateWithoutParentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  subject?: Prisma.SubjectUpdateOneRequiredWithoutTopicsNestedInput
+  children?: Prisma.TopicUpdateManyWithoutParentNestedInput
+  studyLogs?: Prisma.StudyLogsUpdateManyWithoutTopicNestedInput
+}
+
+export type TopicUncheckedUpdateWithoutParentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  subjectId?: Prisma.StringFieldUpdateOperationsInput | string
+  children?: Prisma.TopicUncheckedUpdateManyWithoutParentNestedInput
+  studyLogs?: Prisma.StudyLogsUncheckedUpdateManyWithoutTopicNestedInput
+}
+
+export type TopicUncheckedUpdateManyWithoutParentInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  subjectId?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 
@@ -456,10 +687,12 @@ export type TopicUncheckedUpdateManyWithoutSubjectInput = {
  */
 
 export type TopicCountOutputType = {
+  children: number
   studyLogs: number
 }
 
 export type TopicCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  children?: boolean | TopicCountOutputTypeCountChildrenArgs
   studyLogs?: boolean | TopicCountOutputTypeCountStudyLogsArgs
 }
 
@@ -476,6 +709,13 @@ export type TopicCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extens
 /**
  * TopicCountOutputType without action
  */
+export type TopicCountOutputTypeCountChildrenArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TopicWhereInput
+}
+
+/**
+ * TopicCountOutputType without action
+ */
 export type TopicCountOutputTypeCountStudyLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.StudyLogsWhereInput
 }
@@ -485,7 +725,10 @@ export type TopicSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   id?: boolean
   name?: boolean
   subjectId?: boolean
+  parentId?: boolean
   subject?: boolean | Prisma.SubjectDefaultArgs<ExtArgs>
+  parent?: boolean | Prisma.Topic$parentArgs<ExtArgs>
+  children?: boolean | Prisma.Topic$childrenArgs<ExtArgs>
   studyLogs?: boolean | Prisma.Topic$studyLogsArgs<ExtArgs>
   _count?: boolean | Prisma.TopicCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["topic"]>
@@ -494,45 +737,57 @@ export type TopicSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   id?: boolean
   name?: boolean
   subjectId?: boolean
+  parentId?: boolean
   subject?: boolean | Prisma.SubjectDefaultArgs<ExtArgs>
+  parent?: boolean | Prisma.Topic$parentArgs<ExtArgs>
 }, ExtArgs["result"]["topic"]>
 
 export type TopicSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
   subjectId?: boolean
+  parentId?: boolean
   subject?: boolean | Prisma.SubjectDefaultArgs<ExtArgs>
+  parent?: boolean | Prisma.Topic$parentArgs<ExtArgs>
 }, ExtArgs["result"]["topic"]>
 
 export type TopicSelectScalar = {
   id?: boolean
   name?: boolean
   subjectId?: boolean
+  parentId?: boolean
 }
 
-export type TopicOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "subjectId", ExtArgs["result"]["topic"]>
+export type TopicOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "subjectId" | "parentId", ExtArgs["result"]["topic"]>
 export type TopicInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   subject?: boolean | Prisma.SubjectDefaultArgs<ExtArgs>
+  parent?: boolean | Prisma.Topic$parentArgs<ExtArgs>
+  children?: boolean | Prisma.Topic$childrenArgs<ExtArgs>
   studyLogs?: boolean | Prisma.Topic$studyLogsArgs<ExtArgs>
   _count?: boolean | Prisma.TopicCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TopicIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   subject?: boolean | Prisma.SubjectDefaultArgs<ExtArgs>
+  parent?: boolean | Prisma.Topic$parentArgs<ExtArgs>
 }
 export type TopicIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   subject?: boolean | Prisma.SubjectDefaultArgs<ExtArgs>
+  parent?: boolean | Prisma.Topic$parentArgs<ExtArgs>
 }
 
 export type $TopicPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Topic"
   objects: {
     subject: Prisma.$SubjectPayload<ExtArgs>
+    parent: Prisma.$TopicPayload<ExtArgs> | null
+    children: Prisma.$TopicPayload<ExtArgs>[]
     studyLogs: Prisma.$StudyLogsPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     name: string
     subjectId: string
+    parentId: string | null
   }, ExtArgs["result"]["topic"]>
   composites: {}
 }
@@ -928,6 +1183,8 @@ readonly fields: TopicFieldRefs;
 export interface Prisma__TopicClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   subject<T extends Prisma.SubjectDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SubjectDefaultArgs<ExtArgs>>): Prisma.Prisma__SubjectClient<runtime.Types.Result.GetResult<Prisma.$SubjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  parent<T extends Prisma.Topic$parentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Topic$parentArgs<ExtArgs>>): Prisma.Prisma__TopicClient<runtime.Types.Result.GetResult<Prisma.$TopicPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  children<T extends Prisma.Topic$childrenArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Topic$childrenArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TopicPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   studyLogs<T extends Prisma.Topic$studyLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Topic$studyLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StudyLogsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -961,6 +1218,7 @@ export interface TopicFieldRefs {
   readonly id: Prisma.FieldRef<"Topic", 'String'>
   readonly name: Prisma.FieldRef<"Topic", 'String'>
   readonly subjectId: Prisma.FieldRef<"Topic", 'String'>
+  readonly parentId: Prisma.FieldRef<"Topic", 'String'>
 }
     
 
@@ -1354,6 +1612,49 @@ export type TopicDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * Limit how many Topics to delete.
    */
   limit?: number
+}
+
+/**
+ * Topic.parent
+ */
+export type Topic$parentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Topic
+   */
+  select?: Prisma.TopicSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Topic
+   */
+  omit?: Prisma.TopicOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TopicInclude<ExtArgs> | null
+  where?: Prisma.TopicWhereInput
+}
+
+/**
+ * Topic.children
+ */
+export type Topic$childrenArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Topic
+   */
+  select?: Prisma.TopicSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Topic
+   */
+  omit?: Prisma.TopicOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TopicInclude<ExtArgs> | null
+  where?: Prisma.TopicWhereInput
+  orderBy?: Prisma.TopicOrderByWithRelationInput | Prisma.TopicOrderByWithRelationInput[]
+  cursor?: Prisma.TopicWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TopicScalarFieldEnum | Prisma.TopicScalarFieldEnum[]
 }
 
 /**
