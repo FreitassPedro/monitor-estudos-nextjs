@@ -24,7 +24,6 @@ interface Props {
     onOpenChange?: (open: boolean) => void;
     trigger?: React.ReactNode;
 }
-
 export function NewTopicDialog({
     isOpen,
     onOpenChange,
@@ -54,10 +53,9 @@ export function NewTopicDialog({
             toast.success(`Tópico "${topic.name}" criado!`);
             onTopicCreated?.(topic);
             setName("");
-            onOpenChange(false);
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : "Erro ao criar tópico.";
-            toast.error(errorMessage);
+            setOpen(false);
+        } catch {
+            toast.error("Erro ao criar tópico.");
         }
     };
 
