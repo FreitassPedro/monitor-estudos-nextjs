@@ -22,11 +22,12 @@ export async function getTopicsBySubjectAction(subjectId: string): Promise<Topic
     });
 }
 
-export async function createTopic(name: string, subjectId: string): Promise<Topic> {
+export async function postCreateTopic(name: string, subjectId: string, parentId: string | null): Promise<Topic> {
     const newTopic = await prisma.topic.create({
         data: {
             name,
             subjectId,
+            parentId,
         },
     });
     return newTopic;

@@ -43,7 +43,7 @@ model Topic {
   children  Topic[]     @relation("TopicChildren")
   studyLogs StudyLogs[]
 
-  @@unique([subjectId, name])
+  @@unique([parentId, name])
   @@index([path], type: Gist) 
 }
 
