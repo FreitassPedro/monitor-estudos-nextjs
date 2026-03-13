@@ -4,9 +4,21 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:test": "dotenv -e .env.test -- next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+
+    "test:db:up": "docker-compose -f docker-compose.test.yml up -d",
+    "test:db:down": "docker-compose -f docker-compose.test.yml down",
+    "test:db:reset": "docker-compose -f docker-compose.test.yml down -v && docker-compose -f docker-compose.test.yml up -d",
+    "test:db:logs": "docker-compose -f docker-compose.test.yml logs -f postgres-test",
+    "test:migrate": "dotenv -e .env.test -- prisma migrate dev",
+    "test:push": "dotenv -e .env.test -- prisma db push",
+    "test:studio": "dotenv -e .env.test -- prisma studio",
+    "test:seed": "dotenv -e .env.test -- tsx prisma/seed-test.ts",
+    "test:seed:auto": "npm run test:db:up && npm run test:push && npm run test:seed",
+    "test:reset:seed": "npm run test:db:reset && npm run test:push && npm run test:seed"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -52,6 +64,8 @@
     "typescript": "^5"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "seed-test": "tsx prisma/seed-test.ts"
   }
+  
 }
