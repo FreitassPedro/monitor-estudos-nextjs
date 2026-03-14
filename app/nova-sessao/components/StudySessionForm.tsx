@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ClockArrowUp, Plus } from "lucide-react";
+import { Circle, ClockArrowUp, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -112,6 +112,8 @@ export function StudySessionForm() {
 
     const [topicSelectOpen, setTopicSelectOpen] = useState(false);
     const [pendingTopicAutoOpen, setPendingTopicAutoOpen] = useState(false);
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [endTimeError, setEndTimeError] = useState<string | null>(null);
 
@@ -247,18 +249,25 @@ export function StudySessionForm() {
         };
 
         try {
-            await createStudyLog.mutateAsync(data);
+            setIsSubmitting(true);
+            const result = await createStudyLog.mutateAsync(data);
+
             toast.success("Sessão de estudo registrada!");
             setForm(emptyForm);
             resetCronometer();
             router.push("/");
         } catch {
+            setIsSubmitting(false);
+
             toast.error("Erro ao registrar sessão.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
     const duration = calcDurationMinutes(form.start_time, form.end_time);
     const isFormReadyToSubmit = !getFormSubmitError(form);
+
 
     return (
         <>
@@ -461,7 +470,7 @@ export function StudySessionForm() {
                                         <Button
                                             type="button"
                                             variant="outline"
-                                            size="icon" 
+                                            size="icon"
                                             onClick={() => setCurrentTime("start_time")}
                                             title="Definir Hora atual"
                                             className="shrink-0"
@@ -554,6 +563,18 @@ export function StudySessionForm() {
                     }}
                 />
             )}
+            {
+                isSubmitting && (
+                    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 mx-auto flex items-center justify-center">
+                        <Card>
+                            <CardContent className="flex items-center">
+                                Registrando sessão...
+                                <Circle className="animate-spin ml-4" />
+                            </CardContent>
+                        </Card>
+                    </div>
+                )
+            }
         </>
     );
 }
