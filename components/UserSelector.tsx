@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "./ui/separator";
 import { Icon, User, User2Icon, UserIcon } from "lucide-react";
 import { Input } from "./ui/input";
+import { redirect } from "next/navigation";
 
 
 interface User {
@@ -60,6 +61,11 @@ export function UserSelector() {
         setLoading(false);
     }
 
+    const handleUSerSelect = (selectedUser: User) => () => {
+        setUser(selectedUser);
+        redirect("/dashboard");
+    }
+
     if (user) {
         return null; // Não mostra o seletor se já tem usuário logado
     }
@@ -93,7 +99,7 @@ export function UserSelector() {
                         users.map((u) => (
                             <Button
                                 key={u.id}
-                                onClick={() => setUser(u)}
+                                onClick={handleUSerSelect(u)}
                                 variant="outline"
                                 className="w-full justify-start text-lg h-14"
                             >
