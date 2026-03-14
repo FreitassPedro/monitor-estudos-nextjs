@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { BookOpen, Plus, History, FolderOpen, CheckSquare, CalendarClock, User, LibraryBig } from 'lucide-react';
+import { BookOpen, Plus, History, FolderOpen, CheckSquare, CalendarClock, User, LibraryBig, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
 import ThemeSwitch from './ThemeSwtich';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { Separator } from './ui/separator';
 
 const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: LibraryBig, isEnabled: true },
@@ -19,19 +21,8 @@ const navItems = [
 ];
 
 export default function MainNavbar() {
-    const [currentPath, setCurrentPath] = useState('');
+    const currentPath = usePathname();
     const { user, clearUser } = useAuthStore();
-
-    useEffect(() => {
-        setCurrentPath(window.location.pathname);
-
-        const handlePopState = () => {
-            setCurrentPath(window.location.pathname);
-        };
-
-        window.addEventListener('popstate', handlePopState);
-        return () => window.removeEventListener('popstate', handlePopState);
-    }, []);
 
     const enabledItems = navItems.filter(item => item.isEnabled);
 
@@ -70,7 +61,6 @@ export default function MainNavbar() {
                                         <Link
                                             href={item.href}
                                             className="flex items-center gap-1.5"
-                                            onClick={() => setCurrentPath(item.href)}
                                         >
                                             <Icon className="h-4 w-4" />
                                             <span className="hidden lg:inline">{item.label}</span>
@@ -97,7 +87,6 @@ export default function MainNavbar() {
                                                 : "text-muted-foreground hover:bg-accent hover:text-foreground"
                                         )}
                                         title={item.label}
-                                        onClick={() => setCurrentPath(item.href)}
                                     >
                                         <Icon className="h-5 w-5" />
                                     </Link>
@@ -107,20 +96,32 @@ export default function MainNavbar() {
 
                         {/* User Info */}
                         {user && (
-                            <div className="flex items-center gap-1 sm:gap-2 rounded-full border border-border bg-secondary px-2 sm:px-3 py-1 shrink-0 max-w-35 sm:max-w-none">
-                                <span className="text-xs sm:text-sm text-muted-foreground hidden sm:inline truncate max-w-30">
-                                    {user.name || user.email}
-                                </span>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-7 w-7 shrink-0"
-                                    onClick={() => clearUser()}
-                                    title="Trocar usuário"
-                                >
-                                    <User className="h-4 w-4" />
-                                </Button>
-                            </div>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <div className="flex items-center gap-1 sm:gap-2 rounded-full border border-border bg-secondary px-2 sm:px-3 py-1 shrink-0 max-w-35 sm:max-w-none">
+                                        <span className="text-xs sm:text-sm text-muted-foreground hidden sm:inline truncate max-w-30">
+                                            {user.name || user.email}
+                                        </span>
+
+                                        <User className="h-4 w-4" />
+
+                                    </div>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                    <DropdownMenuGroup>
+                                        <DropdownMenuItem
+                                            onSelect={() => { }}
+                                        >Perfil</DropdownMenuItem>
+                                    </DropdownMenuGroup>
+                                    <Separator />
+                                    <DropdownMenuGroup>
+                                        <DropdownMenuItem variant='destructive'
+                                            onSelect={() => clearUser()}
+                                        > <LogOut></LogOut> Alterar conta</DropdownMenuItem>
+                                    </DropdownMenuGroup>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+
                         )}
                         <ThemeSwitch />
                     </div>

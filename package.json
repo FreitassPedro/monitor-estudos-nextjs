@@ -8,7 +8,6 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-
     "test:db:up": "docker-compose -f docker-compose.test.yml up -d",
     "test:db:down": "docker-compose -f docker-compose.test.yml down",
     "test:db:reset": "docker-compose -f docker-compose.test.yml down -v && docker-compose -f docker-compose.test.yml up -d",
@@ -67,5 +66,4 @@
     "seed": "tsx prisma/seed.ts",
     "seed-test": "tsx prisma/seed-test.ts"
   }
-  
 }
