@@ -79,7 +79,7 @@ function NodeRow({
 
     return (
         <>
-            <tr className="group border-b border-muted hover:bg-muted/30 transition-colors">
+            <tr className="group border-b border-muted hover:bg-muted/30 transition-colors animate-in fade-in-0 slide-in-from-top-1 duration-200">
                 <td className="">
                     {hasChildren && (
                         <button onClick={toggleCollapse}
@@ -199,7 +199,8 @@ function SubjectItem({ subjectTree }: {
                         <button onClick={() => setIsCollapsed(!isCollapsed)}
                             className={`flex items-center justify-center h-5 w-5 rounded hover:bg-accent text-muted-foreground transition-colors `}
                         >
-                            {isCollapsed ? <ChevronRight size={13} /> : <ChevronDown size={13} />}
+                            
+                            <ChevronRight size={24} className={` ${isCollapsed ? "rotate-0" : "rotate-90"} transition-transform ease-in-out`} />
                         </button>
                         <div className="flex items-center gap-3">
                             <div
