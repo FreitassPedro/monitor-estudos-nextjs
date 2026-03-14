@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDeleteSubject, useSubjectTree } from "@/hooks/useSubjects";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronRight, FileText, Folder, FolderOpen, Plus, Trash2 } from "lucide-react";
-import { useCreateTopic, useTopicsMap } from "@/hooks/useTopics";
+import { useCreateTopic, useDeleteTopic, useTopicsMap } from "@/hooks/useTopics";
 import { SubjectTree, Topic, TopicNode } from "@/types/types";
 import { ChangeEvent, FormEvent, Fragment, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -38,6 +38,20 @@ function NodeRow({
     const toggleCollapse = () => {
         setIsCollapsed((prev) => !prev);
     }
+
+    const deleteTopic = useDeleteTopic();
+
+    const handleDeleteTopic = async () => {
+        if (!confirm(`Tem certeza que deseja excluir o tópico "${node.name}"? Esta ação não pode ser desfeita.`)) {
+            return;
+        }
+        try {
+            await deleteTopic.mutateAsync(node.id);
+            toast.info("Tópico removido com sucesso.");
+        } catch {
+            toast.error("Erro ao remover tópico.");
+        }
+    };
 
     const getCreateTopicErrorMessage = (error: unknown) => {
         const errorMessage = error instanceof Error ? error.message.toLowerCase() : "";
@@ -119,7 +133,9 @@ function NodeRow({
                                     <DialogTitle>Novo tópico em &quot;{node.name}&quot;</DialogTitle>
                                     <DialogDescription></DialogDescription>
                                 </DialogHeader>
-                                <div><p>Tópico pai {parentTopic?.name}</p></div>
+                                <div>
+                                    <p>{parentTopic ? `Tópico pai: ${parentTopic.name}` : ''}</p>
+                                </div>
                                 <form className="space-y-4 pt-2" onSubmit={handleSubmit}>
                                     <div className="space-y-2">
                                         <Label htmlFor="topic-name">Nome do tópico</Label>
@@ -139,6 +155,15 @@ function NodeRow({
                                 </form>
                             </DialogContent>
                         </Dialog>
+
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 opacity-20 pointer-events-none transition-opacity group-hover:opacity-100 group-hover:pointer-events-auto"
+                            onClick={handleDeleteTopic}
+                        >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
                     </div>
                 </td>
             </tr>
@@ -199,7 +224,7 @@ function SubjectItem({ subjectTree }: {
                         <button onClick={() => setIsCollapsed(!isCollapsed)}
                             className={`flex items-center justify-center h-5 w-5 rounded hover:bg-accent text-muted-foreground transition-colors `}
                         >
-                            
+
                             <ChevronRight size={24} className={` ${isCollapsed ? "rotate-0" : "rotate-90"} transition-transform ease-in-out`} />
                         </button>
                         <div className="flex items-center gap-3">

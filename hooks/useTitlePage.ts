@@ -10,7 +10,7 @@ export function useTitlePage({ title }: useTitlePageInput) {
     const previousTitleRef = useRef<string>("");
 
     useEffect(() => {
-        let newTitle = title ? `${title} - ${BASE_TITLE}` : BASE_TITLE;
+        const newTitle = title ? `${title} - ${BASE_TITLE}` : BASE_TITLE;
         if (!previousTitleRef.current) {
             previousTitleRef.current = document.title;
         }
