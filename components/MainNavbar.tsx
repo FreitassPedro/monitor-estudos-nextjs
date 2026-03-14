@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, Plus, History, FolderOpen, CheckSquare, CalendarClock, User, LibraryBig, LogOut } from 'lucide-react';
+import { BookOpen, Plus, History, FolderOpen, CheckSquare, CalendarClock, User, LibraryBig, LogOut, TrendingUp, ChartSpline, PencilLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -12,8 +12,8 @@ import { Separator } from './ui/separator';
 
 const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: LibraryBig, isEnabled: true },
-    { href: '/nova-sessao', label: 'Nova Sessão', icon: Plus, isEnabled: true },
-    { href: '/historico', label: 'Histórico', icon: History, isEnabled: true },
+    { href: '/nova-sessao', label: 'Nova Sessão', icon: PencilLine, isEnabled: true },
+    { href: '/historico', label: 'Estatísticas', icon: ChartSpline, isEnabled: true },
     { href: '/materias', label: 'Matérias', icon: FolderOpen, isEnabled: true },
     { href: '/', label: 'Tarefas', icon: CheckSquare, isEnabled: false },
     { href: '/', label: 'Revisões', icon: CalendarClock, isEnabled: false },
@@ -99,7 +99,7 @@ export default function MainNavbar() {
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <div className="flex items-center gap-1 sm:gap-2 rounded-full border border-border bg-secondary px-2 sm:px-3 py-1 shrink-0 max-w-35 sm:max-w-none">
-                                        <span className="text-xs sm:text-sm text-muted-foreground hidden sm:inline truncate max-w-30">
+                                        <span className="text-xs sm:text-sm text-muted-foreground sm:inline truncate max-w-30">
                                             {user.name || user.email}
                                         </span>
 
