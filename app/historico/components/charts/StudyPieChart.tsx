@@ -68,7 +68,7 @@ const MyCustomPie = (props: PieSectorShapeProps) => <Sector {...props} fill={pro
 
 const MyCustomLabel = (props: LabelProps) => (
     <>
-        <Label {...props} fontSize={11} fontWeight={500} fill="#000" position="outside" offset={20} />
+        <Label {...props} fontSize={11} fontWeight={500}  position="outside" offset={20} />
     </>
 );
 
