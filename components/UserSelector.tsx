@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
-import { getUsersAction } from "@/server/actions/user.actions";
+import { createUserAction, getUsersAction } from "@/server/actions/user.actions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "./ui/separator";
-import { UserIcon } from "lucide-react";
+import { Icon, User, User2Icon, UserIcon } from "lucide-react";
+import { Input } from "./ui/input";
+
 
 interface User {
     id: string;
@@ -18,6 +20,9 @@ export function UserSelector() {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const { user, setUser } = useAuthStore();
+
+    const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+    const [newUserName, setNewUserName] = useState("");
 
     useEffect(() => {
         async function loadUsers() {
@@ -32,6 +37,28 @@ export function UserSelector() {
         }
         loadUsers();
     }, []);
+
+    const handleCreateAccount = async () => {
+
+        if (!isCreatingAccount) {
+            setIsCreatingAccount(true);
+            return;
+        }
+
+        if (!newUserName.trim()) {
+            alert("Por favor, insira um nome válido.");
+            return;
+        }
+
+        await createUserAction(newUserName.trim());
+        setIsCreatingAccount(false);
+        setNewUserName("");
+        // Recarrega a lista de usuários para incluir o novo usuário criado
+        setLoading(true);
+        const data = await getUsersAction();
+        setUsers(data);
+        setLoading(false);
+    }
 
     if (user) {
         return null; // Não mostra o seletor se já tem usuário logado
@@ -62,17 +89,44 @@ export function UserSelector() {
                     <CardDescription>Selecione seu nome para continuar</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                    {users.map((u) => (
-                        <Button
-                            key={u.id}
-                            onClick={() => setUser(u)}
-                            variant="outline"
-                            className="w-full justify-start text-lg h-14"
-                        >
-                            {u.name || u.email}
-                        </Button>
-                    ))}
+                    {!isCreatingAccount ? (
+                        users.map((u) => (
+                            <Button
+                                key={u.id}
+                                onClick={() => setUser(u)}
+                                variant="outline"
+                                className="w-full justify-start text-lg h-14"
+                            >
+                                {u.name || u.email}
+                            </Button>
+                        ))) : (
+                        <div className="text-center gap-2 flex flex-col">
+                            <p className="text-muted-foreground">
+                                Insira o nome para criar uma nova conta.
+                            </p>
+                            <Input
+                                placeholder="Nome"
+                                className="mt-4"
+                                value={newUserName}
+                                onChange={(e) => setNewUserName(e.target.value)}
+                            />
+                            <Button variant={"default"} size="sm" className="w-full justify-start" onClick={handleCreateAccount}>
+                                <User2Icon name="plus" className="mr-2" size={16} />
+                                Criar nova conta
+                            </Button>
+                        </div>
+                    )}
                     <Separator className="my-4" />
+                    {isCreatingAccount ? (
+                        <Button variant={"outline"} className="w-full justify-center" onClick={() => setIsCreatingAccount(false)}>
+                            Voltar
+                        </Button>
+                    ) : (
+                        <Button variant={"default"} size="lg" className="w-full justify-start" onClick={handleCreateAccount}>
+                            <User2Icon name="plus" className="mr-2" size={16} />
+                            Criar nova conta
+                        </Button>
+                    )}
                     <Button
                         variant="secondary"
                         size="sm"
