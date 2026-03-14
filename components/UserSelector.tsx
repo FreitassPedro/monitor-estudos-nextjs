@@ -112,41 +112,47 @@ export function UserSelector() {
                             </p>
                             <Input
                                 placeholder="Nome"
-                                className="mt-4"
+                                className=""
                                 value={newUserName}
                                 onChange={(e) => setNewUserName(e.target.value)}
                             />
-                            <Button variant={"default"} size="sm" className="w-full justify-start" onClick={handleCreateAccount}>
-                                <User2Icon name="plus" className="mr-2" size={16} />
-                                Criar nova conta
-                            </Button>
+
                         </div>
                     )}
                     <Separator className="my-4" />
                     {isCreatingAccount ? (
-                        <Button variant={"outline"} className="w-full justify-center" onClick={() => setIsCreatingAccount(false)}>
-                            Voltar
-                        </Button>
+                        <>
+                            <Button variant={"default"} size="sm" className="w-full " onClick={handleCreateAccount}>
+                                <User2Icon name="plus" className="mr-2" size={16} />
+                                Registrar conta
+                            </Button>
+                            <Button variant={"outline"} className="w-full justify-center" onClick={() => setIsCreatingAccount(false)}>
+                                Voltar
+                            </Button>
+                        </>
                     ) : (
-                        <Button variant={"default"} size="lg" className="w-full justify-start" onClick={handleCreateAccount}>
-                            <User2Icon name="plus" className="mr-2" size={16} />
-                            Criar nova conta
-                        </Button>
+                        <>
+                            <Button variant={"default"} size="lg" className="w-full" onClick={handleCreateAccount}>
+                                <User2Icon name="plus" className="mr-2" size={16} />
+                                Criar nova conta
+                            </Button>
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => {
+                                    setUser({
+                                        id: "guest",
+                                        name: "Visitante",
+                                        email: "",
+                                    });
+                                }}
+                                className="w-full"
+                            >
+                                Continuar como visitante
+                            </Button>
+                        </>
                     )}
-                    <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => {
-                            setUser({
-                                id: "guest",
-                                name: "Visitante",
-                                email: "",
-                            });
-                        }}
-                        className="w-full"
-                    >
-                        Continuar como visitante
-                    </Button>
+
                 </CardContent>
             </Card>
         </div>
