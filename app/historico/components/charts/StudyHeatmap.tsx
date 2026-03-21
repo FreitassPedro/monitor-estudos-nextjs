@@ -28,8 +28,8 @@ const getDaysInMonth = (date: Date) => {
 const getHeatmapColor = (minutes: number) => {
   if (minutes === 0) return 'bg-zinc-100 dark:bg-zinc-800';
   if (minutes < 60) return 'bg-emerald-200 dark:bg-emerald-900';
-  if (minutes < 120) return 'bg-emerald-400 dark:bg-emerald-700';
-  if (minutes < 180) return 'bg-emerald-500 dark:bg-emerald-600';
+  if (minutes < 240) return 'bg-emerald-400 dark:bg-emerald-700';
+  if (minutes < 360) return 'bg-emerald-500 dark:bg-emerald-600';
   return 'bg-emerald-700 dark:bg-emerald-500';
 };
 
