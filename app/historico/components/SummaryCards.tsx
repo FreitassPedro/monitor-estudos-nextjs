@@ -123,6 +123,14 @@ export function SummaryCards() {
             bg: 'bg-emerald-500/10',
         },
         {
+            
+            label: 'Média de horas',
+            value: formatDuration(stats.avgSession),
+            icon: TrendingUp,
+            color: 'text-emerald-500',
+            bg: 'bg-emerald-500/10',
+        },
+        {
             label: 'Matéria Destaque',
             value: stats.topSubject?.name || '—',
             subtitle: stats.topSubject ? formatDuration(stats.topSubjectMinutes) : undefined,
