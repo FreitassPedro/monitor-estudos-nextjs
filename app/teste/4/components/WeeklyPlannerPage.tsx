@@ -138,6 +138,7 @@ export default function WeeklyPlannerPage() {
           {/* ── Tools Sidebar ── */}
           <SidebarTools 
              unscheduledBlocks={unscheduledBlocks}
+             subjectBreakdown={stats.subjectBreakdown}
              onAddUnscheduled={addUnscheduled}
              onRemoveUnscheduled={() => {}} // Not implemented yet
              onDragStart={setDraggedId}
