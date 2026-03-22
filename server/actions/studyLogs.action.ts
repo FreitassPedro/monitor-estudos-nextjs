@@ -307,6 +307,7 @@ export type SummaryStats = {
         color: string;
     } | null;
     topSubjectMinutes: number;
+    avgMinutesPerDay: number;
 };
 
 export async function getSummaryStatsAction(
@@ -342,11 +343,14 @@ export async function getSummaryStatsAction(
             AND s."userId" = ${userId}
     `;
 
+
+    
     const basicStats = basicStatsResult[0];
     const totalMinutes = Number(basicStats?.totalMinutes ?? 0);
     const totalSessions = Number(basicStats?.totalSessions ?? 0);
     const longestSession = basicStats?.longestSession ?? 0;
     const avgSession = totalSessions > 0 ? Math.round(totalMinutes / totalSessions) : 0;
+    const avgMinutesPerDay = Math.round(totalMinutes / ((normalizedEnd.getTime() - normalizedStart.getTime()) / (1000 * 60 * 60 * 24)));
 
     // Query 2: Matéria com mais minutos
     type TopSubjectResult = {
@@ -389,5 +393,6 @@ export async function getSummaryStatsAction(
         longestSession,
         topSubject,
         topSubjectMinutes,
+        avgMinutesPerDay,
     };
 }

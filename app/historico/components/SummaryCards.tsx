@@ -124,9 +124,9 @@ export function SummaryCards() {
         },
         {
             
-            label: 'Média de horas',
-            value: formatDuration(stats.avgSession),
-            icon: TrendingUp,
+            label: 'Média de horas / dia',
+            value: formatDuration(stats.avgMinutesPerDay),
+            icon: Timer,
             color: 'text-emerald-500',
             bg: 'bg-emerald-500/10',
         },

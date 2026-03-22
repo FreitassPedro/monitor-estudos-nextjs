@@ -122,7 +122,7 @@ export const StudyBarChart = () => {
 
     if (isLoading) {
         return (
-            <Card>
+            <Card className="h-full">
                 <CardHeader className="pb-2">
                     <CardTitle className="text-base flex items-center gap-2">
                         <BarChart3 className="h-4 w-4 text-emerald-500" />
@@ -130,8 +130,8 @@ export const StudyBarChart = () => {
                     </CardTitle>
                     <CardDescription>Barra total diária segmentada por matéria</CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <div className="flex items-center justify-center h-50 text-sm text-muted-foreground">
+                <CardContent className="flex-1 min-h-60">
+                    <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                         Carregando...
                     </div>
                 </CardContent>
@@ -142,7 +142,7 @@ export const StudyBarChart = () => {
     const hasData = barData.length > 0;
 
     return (
-        <Card>
+        <Card className="h-full">
             <CardHeader className="pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
                     <BarChart3 className="h-4 w-4 text-emerald-500" />
@@ -150,13 +150,13 @@ export const StudyBarChart = () => {
                 </CardTitle>
                 <CardDescription>Barra total diária segmentada por matéria</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-1 min-h-60">
                 {!hasData ? (
-                    <div className="flex items-center justify-center h-50 text-sm text-muted-foreground">
+                    <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
                         Sem dados para exibir neste período
                     </div>
                 ) : (
-                    <ResponsiveContainer width="100%" height={240}>
+                    <ResponsiveContainer  width="100%" height="80%">
                         <BarChart data={barData} margin={{ top: 5, right: 5, left: -15, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                             <XAxis
