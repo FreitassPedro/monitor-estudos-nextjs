@@ -8,63 +8,65 @@ import { Clock, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMemo } from "react";
 import { MOCK_BLOCKS, StudyBlock, SubjectColor } from "./mockData";
+import { formatDuration } from "../page";
+import { Badge } from "@/components/ui/badge";
 
 function getDayName(date: Date): string {
     const days = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
     return days[getDay(date)];
 }
 export const COLOR_MAP: Record<
-  SubjectColor,
-  { bg: string; text: string; border: string; badge: string }
+    SubjectColor,
+    { bg: string; text: string; border: string; badge: string }
 > = {
-  emerald: {
-    bg: "bg-emerald-50 dark:bg-emerald-950/40",
-    text: "text-emerald-800 dark:text-emerald-200",
-    border: "border-emerald-200 dark:border-emerald-800",
-    badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
-  },
-  blue: {
-    bg: "bg-blue-50 dark:bg-blue-950/40",
-    text: "text-blue-800 dark:text-blue-200",
-    border: "border-blue-200 dark:border-blue-800",
-    badge: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-  },
-  amber: {
-    bg: "bg-amber-50 dark:bg-amber-950/40",
-    text: "text-amber-800 dark:text-amber-200",
-    border: "border-amber-200 dark:border-amber-800",
-    badge: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
-  },
-  rose: {
-    bg: "bg-rose-50 dark:bg-rose-950/40",
-    text: "text-rose-800 dark:text-rose-200",
-    border: "border-rose-200 dark:border-rose-800",
-    badge: "bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-300",
-  },
-  violet: {
-    bg: "bg-violet-50 dark:bg-violet-950/40",
-    text: "text-violet-800 dark:text-violet-200",
-    border: "border-violet-200 dark:border-violet-800",
-    badge: "bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300",
-  },
-  orange: {
-    bg: "bg-orange-50 dark:bg-orange-950/40",
-    text: "text-orange-800 dark:text-orange-200",
-    border: "border-orange-200 dark:border-orange-800",
-    badge: "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
-  },
-  teal: {
-    bg: "bg-teal-50 dark:bg-teal-950/40",
-    text: "text-teal-800 dark:text-teal-200",
-    border: "border-teal-200 dark:border-teal-800",
-    badge: "bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300",
-  },
-  pink: {
-    bg: "bg-pink-50 dark:bg-pink-950/40",
-    text: "text-pink-800 dark:text-pink-200",
-    border: "border-pink-200 dark:border-pink-800",
-    badge: "bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300",
-  },
+    emerald: {
+        bg: "bg-emerald-50 dark:bg-emerald-950/40",
+        text: "text-emerald-800 dark:text-emerald-200",
+        border: "border-emerald-200 dark:border-emerald-800",
+        badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
+    },
+    blue: {
+        bg: "bg-blue-50 dark:bg-blue-950/40",
+        text: "text-blue-800 dark:text-blue-200",
+        border: "border-blue-200 dark:border-blue-800",
+        badge: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
+    },
+    amber: {
+        bg: "bg-amber-50 dark:bg-amber-950/40",
+        text: "text-amber-800 dark:text-amber-200",
+        border: "border-amber-200 dark:border-amber-800",
+        badge: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
+    },
+    rose: {
+        bg: "bg-rose-50 dark:bg-rose-950/40",
+        text: "text-rose-800 dark:text-rose-200",
+        border: "border-rose-200 dark:border-rose-800",
+        badge: "bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-300",
+    },
+    violet: {
+        bg: "bg-violet-50 dark:bg-violet-950/40",
+        text: "text-violet-800 dark:text-violet-200",
+        border: "border-violet-200 dark:border-violet-800",
+        badge: "bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300",
+    },
+    orange: {
+        bg: "bg-orange-50 dark:bg-orange-950/40",
+        text: "text-orange-800 dark:text-orange-200",
+        border: "border-orange-200 dark:border-orange-800",
+        badge: "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
+    },
+    teal: {
+        bg: "bg-teal-50 dark:bg-teal-950/40",
+        text: "text-teal-800 dark:text-teal-200",
+        border: "border-teal-200 dark:border-teal-800",
+        badge: "bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300",
+    },
+    pink: {
+        bg: "bg-pink-50 dark:bg-pink-950/40",
+        text: "text-pink-800 dark:text-pink-200",
+        border: "border-pink-200 dark:border-pink-800",
+        badge: "bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300",
+    },
 };
 
 
@@ -76,37 +78,48 @@ export function StudyBlockCard({ block }: { block: StudyBlock }) {
         <div
             className={cn(
                 "relative group rounded-lg border select-none",
-                 "p-3 cursor-pointer hover:bg-primary/70 transition-colors",
-                 colors.bg,
+                "p-3 cursor-pointer hover:bg-primary/70 transition-colors",
+                colors.bg,
             )}
             style={{ height: size }}
         >
             <h3 className="text-sm font-semibold">{block.subject}</h3>
-            <h3 className="text-sm">{block.topic}</h3>
+            <h3 className="text-xs text-muted-foreground">{block.topic}</h3>
             <Pencil className="absolute top-1 right-1 w-3 h-3 text-muted-foreground" />
-            <div>
-                <Clock className="w-3 h-3 text-muted-foreground" />
-                <p className="text-xs mt-1">{block.startTime}-{block.endTime}</p>
+            <div className="flex items-center mt-1 text-muted-foreground">
+                <Clock className="w-3 h-3 " />
+                <p className="text-xs ">{block.startTime}-{block.endTime}</p>
             </div>
         </div>
     );
 };
 export function DayColumn({ date, dayIndex }: { date: Date; dayIndex: number }) {
-    
+
     const blocks = useMemo(() => {
-            return MOCK_BLOCKS.filter((block) => block.dayIndex === dayIndex)
+        return MOCK_BLOCKS.filter((block) => block.dayIndex === dayIndex)
     }, [dayIndex])
+
+    const dayMinutes = useMemo(() => {
+        return blocks.reduce((total, block) => {
+            const start = parseInt(block.startTime.split(":")[0]) * 60 + parseInt(block.startTime.split(":")[1]);
+            const end = parseInt(block.endTime.split(":")[0]) * 60 + parseInt(block.endTime.split(":")[1]);
+            return total + (end - start);
+        }, 0);
+    }, [blocks])
+
     return (
-        <div className="flex flex-col">
-            <div>
+        <div className="flex flex-col h-full min-w-0">
+            <div className="px-2 py-2">
                 <p className="text-md font-semibold text-primary">{getDayName(date)}</p>
                 <p className="text-xs text-muted-foreground">{date.toLocaleDateString("pt-BR")}</p>
+                <Badge variant={"secondary"}>
+                    {formatDuration(dayMinutes)}
+                </Badge>
             </div>
             <Separator className="my-2" />
 
             {/* Drop zone */}
-            <div className="bg-muted/40 min-h-[280px] rounded-lg p-1.5 gap-2 flex flex-col">
-                
+            <div className="bg-muted/40 min-h-[280px] rounded-lg p-1.5 gap-2 flex flex-col h-full">
                 {blocks ? blocks.map((block) => (
                     <StudyBlockCard key={block.id} block={block} />
                 )) : (
