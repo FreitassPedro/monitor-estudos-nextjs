@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, CheckCircle, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { StudyBlock } from "./mock-data";
+import { StudyBlock } from "./planner";
 import { DAY_NAMES, DAY_SHORT, formatDate, blockDurationMinutes, formatDuration } from "./planner-utils";
 import { StudyBlockCard } from "./StudyBlockCard";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ interface DayColumnProps {
   onResizeBlock: (id: string, deltaMinutes: number) => void;
   onDragStart: (id: string) => void;
   onDrop: (blockId: string, targetDay: number) => void;
+  onToggleStatus: (id: string) => void;
 }
 
 export function DayColumn({
@@ -33,63 +34,85 @@ export function DayColumn({
   onResizeBlock,
   onDragStart,
   onDrop,
+  onToggleStatus,
 }: DayColumnProps) {
   const [isDragOver, setIsDragOver] = useState(false);
+  
   const dayMinutes = blocks.reduce((a, b) => a + blockDurationMinutes(b), 0);
+  const doneBlocks = blocks.filter(b => b.status === 'done');
+  const totalBlocks = blocks.length;
   const isWeekend = dayIndex >= 5;
 
   return (
-    <div className="flex flex-col min-w-0">
+    <div className={cn(
+        "flex flex-col min-w-0 transition-opacity",
+        !isToday && !isWeekend && "opacity-95 hover:opacity-100"
+      )}>
       {/* Day header */}
       <div
         className={cn(
-          "mb-2 px-1 pb-2 border-b",
-          isToday ? "border-foreground/20" : "border-border"
+          "mb-3 px-2 pb-2.5 border-b-2 transition-all",
+          isToday ? "border-primary" : "border-border/50",
+          isToday && "bg-primary/5 rounded-t-lg"
         )}
       >
-        <div className="flex items-center justify-between gap-1">
-          <div>
-            <p
+        <div className="flex items-start justify-between">
+          <div className="min-w-0">
+            <h3
               className={cn(
-                "text-[11px] font-semibold uppercase tracking-widest",
-                isToday ? "text-foreground" : "text-muted-foreground",
+                "text-xs font-bold uppercase tracking-wider truncate",
+                isToday ? "text-primary" : "text-muted-foreground",
                 isWeekend && !isToday && "text-muted-foreground/60"
               )}
             >
-              <span className="hidden sm:inline">{DAY_NAMES[dayIndex]}</span>
-              <span className="sm:hidden">{DAY_SHORT[dayIndex]}</span>
-            </p>
+              <span className="hidden lg:inline">{DAY_NAMES[dayIndex]}</span>
+              <span className="lg:hidden">{DAY_SHORT[dayIndex]}</span>
+            </h3>
             <p
               className={cn(
-                "text-[10px] tabular-nums",
-                isToday ? "text-foreground/70" : "text-muted-foreground/50"
+                "text-[10px] tabular-nums font-medium mt-0.5",
+                isToday ? "text-primary/70" : "text-muted-foreground/40"
               )}
             >
               {formatDate(date)}
             </p>
           </div>
           {isToday && (
-            <div className="w-1.5 h-1.5 rounded-full bg-foreground shrink-0" />
+            <Badge className="bg-primary text-[9px] h-4 px-1 px-1.5 animate-pulse">HOJE</Badge>
           )}
         </div>
 
-        {dayMinutes > 0 && (
-          <Badge
-            variant="secondary"
-            className="mt-1.5 h-4 text-[10px] px-1.5 font-mono"
-          >
-            {formatDuration(dayMinutes)}
-          </Badge>
+        {totalBlocks > 0 && (
+          <div className="mt-2 flex items-center gap-1.5 overflow-hidden">
+            <Badge
+              variant="secondary"
+              className="h-4 text-[9px] px-1 font-mono shrink-0 bg-muted/50 border-none"
+            >
+              {formatDuration(dayMinutes)}
+            </Badge>
+            <div className="flex items-center gap-1 min-w-0">
+              <div className="flex-1 h-1 bg-muted rounded-full min-w-[30px]">
+                <div 
+                  className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                  style={{ width: `${(doneBlocks.length / totalBlocks) * 100}%` }}
+                />
+              </div>
+              <span className="text-[9px] font-bold text-muted-foreground/60 shrink-0">
+                {doneBlocks.length}/{totalBlocks}
+              </span>
+            </div>
+          </div>
         )}
       </div>
 
       {/* Drop zone */}
       <div
         className={cn(
-          "flex-1 flex flex-col gap-2 rounded-lg p-1.5 min-h-[280px] transition-colors duration-150",
+          "flex-1 flex flex-col gap-3 rounded-xl p-2 min-h-[400px] transition-all duration-200",
           isDragOver
-            ? "bg-accent/60 ring-1 ring-border"
-            : "bg-muted/30"
+            ? "bg-primary/5 ring-2 ring-primary/20 scale-[1.02] z-10"
+            : "bg-muted/10 hover:bg-muted/20",
+          isToday && "bg-primary/5 border border-primary/10"
         )}
         onDragOver={(e) => {
           e.preventDefault();
@@ -103,31 +126,37 @@ export function DayColumn({
           if (blockId) onDrop(blockId, dayIndex);
         }}
       >
-        {blocks.length === 0 && (
-          <p className="text-[10px] text-muted-foreground/40 text-center pt-4 select-none">
-            Sem blocos
-          </p>
+        {blocks.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 opacity-20 pointer-events-none select-none">
+             <Calendar className="w-8 h-8 mb-2" />
+             <p className="text-[10px] font-medium">Vazio</p>
+          </div>
+        ) : (
+          blocks.map((block) => (
+            <StudyBlockCard
+              key={block.id}
+              block={block}
+              onDelete={onDeleteBlock}
+              onEdit={onEditBlock}
+              onResize={onResizeBlock}
+              onDragStart={onDragStart}
+              onToggleStatus={onToggleStatus}
+            />
+          ))
         )}
-
-        {blocks.map((block) => (
-          <StudyBlockCard
-            key={block.id}
-            block={block}
-            onDelete={onDeleteBlock}
-            onEdit={onEditBlock}
-            onResize={onResizeBlock}
-            onDragStart={onDragStart}
-          />
-        ))}
 
         <Button
           variant="ghost"
           size="sm"
-          className="mt-auto w-full h-7 text-[11px] text-muted-foreground/50 hover:text-muted-foreground border border-dashed border-border/50 hover:border-border hover:bg-background"
+          className={cn(
+            "mt-auto w-full h-8 text-[11px] font-bold tracking-tight rounded-lg",
+            "text-muted-foreground/40 hover:text-primary hover:bg-primary/10",
+            "border border-dashed border-border/50 hover:border-primary/50"
+          )}
           onClick={() => onAddBlock(dayIndex)}
         >
-          <Plus className="w-3 h-3 mr-1" />
-          Adicionar
+          <Plus className="w-3.5 h-3.5 mr-1.5" />
+          ADICIONAR
         </Button>
       </div>
     </div>

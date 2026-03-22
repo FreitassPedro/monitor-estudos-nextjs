@@ -7,7 +7,7 @@ import { getDay } from "date-fns";
 import { Clock, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMemo } from "react";
-import { MOCK_BLOCKS, StudyBlock } from "./mockData";
+import { MOCK_BLOCKS, StudyBlock, SubjectColor } from "./mockData";
 
 function getDayName(date: Date): string {
     const days = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
@@ -106,9 +106,12 @@ export function DayColumn({ date, dayIndex }: { date: Date; dayIndex: number }) 
 
             {/* Drop zone */}
             <div className="bg-muted/40 min-h-[280px] rounded-lg p-1.5 gap-2 flex flex-col">
-                {blocks.map((block) => (
+                
+                {blocks ? blocks.map((block) => (
                     <StudyBlockCard key={block.id} block={block} />
-                ))}
+                )) : (
+                    <p className="text-center text-sm text-muted-foreground mt-4">Nenhum bloco planejado</p>
+                )}
             </div>
             <Button variant="outline" size="sm" className="mt-2 w-full">Adicionar bloco</Button>
         </div>

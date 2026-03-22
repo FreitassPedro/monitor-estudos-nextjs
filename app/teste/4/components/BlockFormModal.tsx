@@ -1,6 +1,6 @@
 "use client";
 
-import { SubjectColor } from "./mock-data";
+import { SubjectColor, BlockType, BlockPriority, BlockStatus } from "./planner";
 import { NewBlockForm } from "./use-planner-state";
 import { COLOR_OPTIONS, DAY_NAMES, timeToMinutes } from "./planner-utils";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface BlockFormModalProps {
   open: boolean;
@@ -31,6 +32,13 @@ interface BlockFormModalProps {
   onSave: () => void;
   onClose: () => void;
 }
+
+const TYPE_LABELS: Record<BlockType, string> = {
+  study: "Estudo",
+  practice: "Prática",
+  revision: "Revisão",
+  exam: "Prova",
+};
 
 export function BlockFormModal({
   open,
@@ -48,7 +56,7 @@ export function BlockFormModal({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-base font-medium">
             {isEditing ? "Editar bloco" : "Novo bloco de estudo"}
@@ -59,18 +67,37 @@ export function BlockFormModal({
         </DialogHeader>
 
         <div className="flex flex-col gap-4 py-2">
-          {/* Subject */}
-          <div className="space-y-1.5">
-            <Label htmlFor="subject" className="text-xs">
-              Matéria <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="subject"
-              placeholder="Ex: Matemática"
-              value={form.subject}
-              onChange={(e) => onFormChange({ subject: e.target.value })}
-              className="h-8 text-sm"
-            />
+          {/* Subject & Status */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="col-span-2 space-y-1.5">
+              <Label htmlFor="subject" className="text-xs">
+                Matéria <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="subject"
+                placeholder="Ex: Matemática"
+                value={form.subject}
+                onChange={(e) => onFormChange({ subject: e.target.value })}
+                className="h-8 text-sm"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Status</Label>
+              <Select
+                value={form.status}
+                onValueChange={(v) => onFormChange({ status: v as BlockStatus })}
+              >
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todo">Pendente</SelectItem>
+                  <SelectItem value="in-progress">Em progresso</SelectItem>
+                  <SelectItem value="done">Concluído</SelectItem>
+                  <SelectItem value="missed">Não feito</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Topic */}
@@ -85,6 +112,40 @@ export function BlockFormModal({
               onChange={(e) => onFormChange({ topic: e.target.value })}
               className="h-8 text-sm"
             />
+          </div>
+
+          {/* Type & Priority */}
+          <div className="grid grid-cols-2 gap-3">
+             <div className="space-y-1.5">
+              <Label className="text-xs">Tipo</Label>
+              <Select
+                value={form.type}
+                onValueChange={(v) => onFormChange({ type: v as BlockType })}
+              >
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(TYPE_LABELS).map(([val, label]) => (
+                    <SelectItem key={val} value={val}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Prioridade</Label>
+              <Tabs 
+                value={String(form.priority)} 
+                onValueChange={(v) => onFormChange({ priority: Number(v) as BlockPriority })}
+                className="w-full"
+              >
+                <TabsList className="grid grid-cols-3 h-8 p-0.5 w-full">
+                  <TabsTrigger value="1" className="text-[10px] py-1">Baixa</TabsTrigger>
+                  <TabsTrigger value="2" className="text-[10px] py-1">Média</TabsTrigger>
+                  <TabsTrigger value="3" className="text-[10px] py-1">Alta</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
           </div>
 
           {/* Time range */}

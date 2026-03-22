@@ -94,11 +94,21 @@ export function formatDuration(minutes: number): string {
 
 export function computeWeekStats(blocks: StudyBlock[]): WeekStats {
   const totalMinutes = blocks.reduce((acc, b) => acc + blockDurationMinutes(b), 0);
+  const completedBlocks = blocks.filter((b) => b.status === "done");
+  const completedMinutes = completedBlocks.reduce((acc, b) => acc + blockDurationMinutes(b), 0);
+  
   const subjectBreakdown: Record<string, number> = {};
   blocks.forEach((b) => {
     subjectBreakdown[b.subject] = (subjectBreakdown[b.subject] ?? 0) + blockDurationMinutes(b);
   });
-  return { totalMinutes, totalBlocks: blocks.length, subjectBreakdown };
+  
+  return { 
+    totalMinutes, 
+    totalBlocks: blocks.length, 
+    completedMinutes,
+    completedBlocks: completedBlocks.length,
+    subjectBreakdown 
+  };
 }
 
 export function getMondayOfCurrentWeek(): Date {

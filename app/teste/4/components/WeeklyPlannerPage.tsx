@@ -1,9 +1,7 @@
 "use client";
 
-
-
 import { useMemo } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight, LayoutDashboard, Settings2, Share2, Printer } from "lucide-react";
 import { usePlannerState } from "./use-planner-state";
 import {
   getMondayOfCurrentWeek,
@@ -14,12 +12,15 @@ import {
 import { DayColumn } from "./DayColumn";
 import { BlockFormModal } from "./BlockFormModal";
 import { WeekStatsBar } from "./WeekStatsBar";
+import { SidebarTools } from "./SidebarTools";
 import { Button } from "@/components/ui/button";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Separator } from "@/components/ui/separator";
 
 export default function WeeklyPlannerPage() {
   const {
     blocks,
+    unscheduledBlocks,
     form,
     setForm,
     modalOpen,
@@ -34,13 +35,16 @@ export default function WeeklyPlannerPage() {
     resizeBlock,
     blocksForDay,
     setDraggedId,
+    toggleStatus,
+    addUnscheduled,
   } = usePlannerState();
 
   const monday = useMemo(() => getMondayOfCurrentWeek(), []);
   const weekDates = useMemo(() => getWeekDates(monday), [monday]);
+  
   const todayIndex = useMemo(() => {
-    const dateString = "2026-03-15T03:02:22.279Z";
-    const today = new Date(dateString);
+    // Current date for comparison: 2026-03-21T... (Saturday)
+    const today = new Date();
     const todayDay = today.getDay();
     // Convert: Sun=0 → 6, Mon=1 → 0, ..., Sat=6 → 5
     return todayDay === 0 ? 6 : todayDay - 1;
@@ -50,52 +54,96 @@ export default function WeeklyPlannerPage() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="flex flex-col h-screen bg-background text-foreground">
+      <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
         {/* ── Top header ── */}
-        <header className="flex items-center justify-between px-4 py-3 border-b shrink-0">
-          <div className="flex items-center gap-2">
-            <CalendarDays className="w-4 h-4 text-muted-foreground" />
-            <h1 className="text-sm font-semibold tracking-tight">
-              Planejador Semanal
-            </h1>
+        <header className="flex items-center justify-between px-6 py-4 border-b shrink-0 bg-background/80 backdrop-blur-md z-20">
+          <div className="flex items-center gap-4">
+            <div className="bg-primary/10 p-2 rounded-xl">
+              <CalendarDays className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold tracking-tight">
+                Organizador Semanal
+              </h1>
+              <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
+                Março 2026 • Monitor de Estudos
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <Button variant="ghost" size="icon" className="h-7 w-7" disabled>
-              <ChevronLeft className="w-3.5 h-3.5" />
-            </Button>
-            <span className="text-xs text-muted-foreground tabular-nums px-1">
-              {formatDate(weekDates[0])} — {formatDate(weekDates[6])}
-            </span>
-            <Button variant="ghost" size="icon" className="h-7 w-7" disabled>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center bg-muted/50 rounded-lg p-1 border">
+              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-background" disabled>
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <div className="px-4 py-1 flex flex-col items-center">
+                 <span className="text-[11px] font-bold tabular-nums">
+                    {formatDate(weekDates[0])} — {formatDate(weekDates[6])}
+                 </span>
+                 <span className="text-[9px] text-muted-foreground font-medium">Esta Semana</span>
+              </div>
+              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-background" disabled>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+            
+            <Separator orientation="vertical" className="h-8" />
+            
+            <div className="flex items-center gap-1.5">
+              <Button variant="outline" size="sm" className="h-9 gap-2 shadow-sm font-medium">
+                <Printer className="w-4 h-4" />
+                <span className="hidden md:inline">Imprimir</span>
+              </Button>
+              <Button variant="outline" size="sm" className="h-9 gap-2 shadow-sm font-medium">
+                <Share2 className="w-4 h-4" />
+                <span className="hidden md:inline">Compartilhar</span>
+              </Button>
+              <Button variant="default" size="sm" className="h-9 gap-2 shadow-md font-medium">
+                <Settings2 className="w-4 h-4" />
+                <span className="hidden md:inline">Ajustes</span>
+              </Button>
+            </div>
           </div>
         </header>
 
-        {/* ── Stats bar ── */}
-        <WeekStatsBar stats={stats} />
+        <div className="flex flex-1 overflow-hidden relative">
+          {/* ── Main Planner Section ── */}
+          <div className="flex-1 flex flex-col min-w-0 bg-muted/5">
+            {/* ── Stats bar ── */}
+            <WeekStatsBar stats={stats} />
 
-        {/* ── Week grid ── */}
-        <main className="flex-1 overflow-auto p-3">
-          <div className="grid grid-cols-7 gap-2 min-w-[560px] h-full">
-            {weekDates.map((date, dayIndex) => (
-              <DayColumn
-                key={dayIndex}
-                dayIndex={dayIndex}
-                date={date}
-                blocks={blocksForDay(dayIndex)}
-                isToday={dayIndex === todayIndex}
-                onAddBlock={openAddModal}
-                onEditBlock={openEditModal}
-                onDeleteBlock={deleteBlock}
-                onResizeBlock={resizeBlock}
-                onDragStart={setDraggedId}
-                onDrop={moveBlockToDay}
-              />
-            ))}
+            {/* ── Week grid ── */}
+            <main className="flex-1 overflow-auto p-6 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+              <div className="grid grid-cols-7 gap-4 min-w-[1000px] h-full pb-8">
+                {weekDates.map((date, dayIndex) => (
+                  <DayColumn
+                    key={dayIndex}
+                    dayIndex={dayIndex}
+                    date={date}
+                    blocks={blocksForDay(dayIndex)}
+                    isToday={dayIndex === todayIndex}
+                    onAddBlock={openAddModal}
+                    onEditBlock={openEditModal}
+                    onDeleteBlock={deleteBlock}
+                    onResizeBlock={resizeBlock}
+                    onDragStart={setDraggedId}
+                    onDrop={moveBlockToDay}
+                    onToggleStatus={toggleStatus}
+                  />
+                ))}
+              </div>
+            </main>
           </div>
-        </main>
+
+          {/* ── Tools Sidebar ── */}
+          <SidebarTools 
+             unscheduledBlocks={unscheduledBlocks}
+             onAddUnscheduled={addUnscheduled}
+             onRemoveUnscheduled={() => {}} // Not implemented yet
+             onDragStart={setDraggedId}
+             onQuickAdd={(data) => openAddModal(todayIndex, data)}
+          />
+        </div>
 
         {/* ── Add/Edit modal ── */}
         <BlockFormModal

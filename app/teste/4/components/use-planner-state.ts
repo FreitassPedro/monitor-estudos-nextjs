@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { StudyBlock, SubjectColor } from "./mock-data";
-import { MOCK_BLOCKS } from "./mock-data";
+import { StudyBlock, SubjectColor, BlockStatus, BlockType, BlockPriority } from "./planner";
+import { MOCK_BLOCKS, MOCK_UNSCHEDULED } from "./mock-data";
 import { generateId, timeToMinutes, minutesToTime, blockDurationMinutes } from "./planner-utils";
 
 export interface NewBlockForm {
@@ -11,6 +11,9 @@ export interface NewBlockForm {
   startTime: string;
   endTime: string;
   color: SubjectColor;
+  status: BlockStatus;
+  type: BlockType;
+  priority: BlockPriority;
 }
 
 const DEFAULT_FORM: NewBlockForm = {
@@ -19,20 +22,24 @@ const DEFAULT_FORM: NewBlockForm = {
   startTime: "09:00",
   endTime: "10:00",
   color: "blue",
+  status: "todo",
+  type: "study",
+  priority: 2,
 };
 
 export function usePlannerState() {
   const [blocks, setBlocks] = useState<StudyBlock[]>(MOCK_BLOCKS);
+  const [unscheduledBlocks, setUnscheduledBlocks] = useState<Partial<StudyBlock>[]>(MOCK_UNSCHEDULED);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingBlock, setEditingBlock] = useState<StudyBlock | null>(null);
   const [activeDay, setActiveDay] = useState<number>(0);
   const [form, setForm] = useState<NewBlockForm>(DEFAULT_FORM);
   const [draggedId, setDraggedId] = useState<string | null>(null);
 
-  const openAddModal = useCallback((dayIndex: number) => {
+  const openAddModal = useCallback((dayIndex: number, initialData?: Partial<NewBlockForm>) => {
     setActiveDay(dayIndex);
     setEditingBlock(null);
-    setForm(DEFAULT_FORM);
+    setForm({ ...DEFAULT_FORM, ...initialData });
     setModalOpen(true);
   }, []);
 
@@ -45,6 +52,9 @@ export function usePlannerState() {
       startTime: block.startTime,
       endTime: block.endTime,
       color: block.color,
+      status: block.status,
+      type: block.type,
+      priority: block.priority,
     });
     setModalOpen(true);
   }, []);
@@ -75,6 +85,9 @@ export function usePlannerState() {
         endTime: form.endTime,
         color: form.color,
         dayIndex: activeDay,
+        status: form.status,
+        type: form.type,
+        priority: form.priority,
       };
       setBlocks((prev) => [...prev, newBlock]);
     }
@@ -86,10 +99,30 @@ export function usePlannerState() {
   }, []);
 
   const moveBlockToDay = useCallback((blockId: string, targetDay: number) => {
+    // Check if it's from unscheduled
+    const unscheduled = unscheduledBlocks.find(b => b.id === blockId);
+    if (unscheduled) {
+      const newBlock: StudyBlock = {
+        id: generateId(),
+        subject: unscheduled.subject!,
+        topic: unscheduled.topic,
+        startTime: "09:00",
+        endTime: "10:00",
+        color: unscheduled.color || "blue",
+        dayIndex: targetDay,
+        status: "todo",
+        type: unscheduled.type || "study",
+        priority: unscheduled.priority || 2,
+      };
+      setBlocks(prev => [...prev, newBlock]);
+      setUnscheduledBlocks(prev => prev.filter(b => b.id !== blockId));
+      return;
+    }
+
     setBlocks((prev) =>
       prev.map((b) => (b.id === blockId ? { ...b, dayIndex: targetDay } : b))
     );
-  }, []);
+  }, [unscheduledBlocks]);
 
   const resizeBlock = useCallback((blockId: string, deltaMinutes: number) => {
     setBlocks((prev) =>
@@ -103,13 +136,35 @@ export function usePlannerState() {
     );
   }, []);
 
+  const toggleStatus = useCallback((blockId: string) => {
+    setBlocks(prev => prev.map(b => {
+      if (b.id !== blockId) return b;
+      const nextStatus: BlockStatus = b.status === 'done' ? 'todo' : 'done';
+      return { ...b, status: nextStatus };
+    }));
+  }, []);
+
   const blocksForDay = useCallback(
     (dayIndex: number) => blocks.filter((b) => b.dayIndex === dayIndex),
     [blocks]
   );
 
+  const addUnscheduled = useCallback((data: Partial<StudyBlock>) => {
+    const newUn: Partial<StudyBlock> = {
+      id: generateId(),
+      subject: "Nova Atividade",
+      ...data,
+    };
+    setUnscheduledBlocks(prev => [newUn, ...prev]);
+  }, []);
+
+  const removeUnscheduled = useCallback((id: string) => {
+    setUnscheduledBlocks(prev => prev.filter(b => b.id !== id));
+  }, []);
+
   return {
     blocks,
+    unscheduledBlocks,
     form,
     setForm,
     modalOpen,
@@ -125,5 +180,8 @@ export function usePlannerState() {
     moveBlockToDay,
     resizeBlock,
     blocksForDay,
+    toggleStatus,
+    addUnscheduled,
+    removeUnscheduled,
   };
 }

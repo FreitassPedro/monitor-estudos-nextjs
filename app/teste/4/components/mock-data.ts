@@ -1,23 +1,4 @@
-
-export interface StudyBlock {
-  id: string;
-  subject: string;
-  topic?: string;
-  startTime: string; // "HH:MM"
-  endTime: string;   // "HH:MM"
-  color: SubjectColor;
-  dayIndex: number; // 0=Monday, ..., 6=Sunday
-}
-
-export type SubjectColor =
-  | "blue"
-  | "amber"
-  | "rose"
-  | "teal"
-  | "emerald"
-  | "violet"
-  | "orange";
-
+import { StudyBlock, SubjectColor } from "./planner";
 
 export const MOCK_BLOCKS: StudyBlock[] = [
   // Monday
@@ -29,6 +10,9 @@ export const MOCK_BLOCKS: StudyBlock[] = [
     endTime: "10:00",
     color: "blue",
     dayIndex: 0,
+    status: "done",
+    type: "study",
+    priority: 3,
   },
   {
     id: "blk-2",
@@ -38,6 +22,9 @@ export const MOCK_BLOCKS: StudyBlock[] = [
     endTime: "15:30",
     color: "amber",
     dayIndex: 0,
+    status: "todo",
+    type: "practice",
+    priority: 2,
   },
 
   // Tuesday
@@ -49,6 +36,9 @@ export const MOCK_BLOCKS: StudyBlock[] = [
     endTime: "11:00",
     color: "rose",
     dayIndex: 1,
+    status: "todo",
+    type: "study",
+    priority: 2,
   },
   {
     id: "blk-4",
@@ -58,6 +48,9 @@ export const MOCK_BLOCKS: StudyBlock[] = [
     endTime: "16:00",
     color: "teal",
     dayIndex: 1,
+    status: "todo",
+    type: "practice",
+    priority: 1,
   },
 
   // Wednesday
@@ -69,6 +62,9 @@ export const MOCK_BLOCKS: StudyBlock[] = [
     endTime: "09:30",
     color: "blue",
     dayIndex: 2,
+    status: "todo",
+    type: "study",
+    priority: 3,
   },
   {
     id: "blk-6",
@@ -78,6 +74,9 @@ export const MOCK_BLOCKS: StudyBlock[] = [
     endTime: "12:00",
     color: "emerald",
     dayIndex: 2,
+    status: "todo",
+    type: "study",
+    priority: 2,
   },
   {
     id: "blk-7",
@@ -87,6 +86,9 @@ export const MOCK_BLOCKS: StudyBlock[] = [
     endTime: "15:00",
     color: "violet",
     dayIndex: 2,
+    status: "todo",
+    type: "revision",
+    priority: 1,
   },
 
   // Thursday
@@ -98,6 +100,9 @@ export const MOCK_BLOCKS: StudyBlock[] = [
     endTime: "11:30",
     color: "emerald",
     dayIndex: 3,
+    status: "todo",
+    type: "study",
+    priority: 2,
   },
   {
     id: "blk-9",
@@ -107,6 +112,9 @@ export const MOCK_BLOCKS: StudyBlock[] = [
     endTime: "16:00",
     color: "amber",
     dayIndex: 3,
+    status: "todo",
+    type: "practice",
+    priority: 3,
   },
 
   // Friday
@@ -118,6 +126,9 @@ export const MOCK_BLOCKS: StudyBlock[] = [
     endTime: "09:00",
     color: "orange",
     dayIndex: 4,
+    status: "todo",
+    type: "study",
+    priority: 2,
   },
   {
     id: "blk-11",
@@ -127,6 +138,9 @@ export const MOCK_BLOCKS: StudyBlock[] = [
     endTime: "11:00",
     color: "teal",
     dayIndex: 4,
+    status: "todo",
+    type: "practice",
+    priority: 1,
   },
   {
     id: "blk-12",
@@ -136,6 +150,9 @@ export const MOCK_BLOCKS: StudyBlock[] = [
     endTime: "17:00",
     color: "violet",
     dayIndex: 4,
+    status: "todo",
+    type: "revision",
+    priority: 3,
   },
 
   // Saturday
@@ -147,7 +164,37 @@ export const MOCK_BLOCKS: StudyBlock[] = [
     endTime: "12:00",
     color: "blue",
     dayIndex: 5,
+    status: "todo",
+    type: "practice",
+    priority: 3,
   },
 
   // Sunday — rest (no blocks)
+];
+
+export const MOCK_UNSCHEDULED: Partial<StudyBlock>[] = [
+  {
+    id: "un-1",
+    subject: "Redação",
+    topic: "Prática dissertativa",
+    color: "rose",
+    type: "practice",
+    priority: 3,
+  },
+  {
+    id: "un-2",
+    subject: "Literatura",
+    topic: "Modernismo Brasileiro",
+    color: "violet",
+    type: "study",
+    priority: 2,
+  },
+  {
+    id: "un-3",
+    subject: "Filosofia",
+    topic: "Ética Nicomaquéia",
+    color: "orange",
+    type: "study",
+    priority: 1,
+  },
 ];
