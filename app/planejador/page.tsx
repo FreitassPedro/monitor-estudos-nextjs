@@ -11,8 +11,7 @@ export default function Page() {
 
             <div className="grid grid-cols-7 gap-2">
                 {weekDates.map((date, dayIndex) => (
-
-                    <DayColumn key={dayIndex} date={date} />
+                    <DayColumn key={dayIndex} date={date} dayIndex={dayIndex} />
                 ))}
             </div>
         </main>
