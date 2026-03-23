@@ -3,13 +3,29 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Circle, ClockArrowUp, Plus } from "lucide-react";
+import {
+    Circle,
+    ClockArrowUp,
+    Plus,
+    Network,
+    Timer,
+    Play,
+    Square,
+    BookOpen,
+    RotateCcw,
+    Pencil,
+    FileText,
+
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Badge } from "@/components/ui/badge";
 import {
     Select,
     SelectContent,
@@ -75,7 +91,6 @@ const getFormSubmitError = (form: FormData): string | null => {
     return null;
 };
 
-// Helper para filtrar tópicos pela matéria selecionada
 const getTopicTreeForSubject = (
     topicsTree: TopicNode[],
     subjectId: string
@@ -104,24 +119,61 @@ const emptyForm: FormData = {
     end_time: undefined,
     notes: "",
 };
+
+type StudyMode = "leitura" | "revisao" | "exercicios" | "resumo";
+
+const STUDY_MODES: { value: StudyMode; label: string; icon: React.ReactNode }[] = [
+    { value: "leitura", label: "Leitura", icon: <BookOpen className="h-3.5 w-3.5" /> },
+    { value: "revisao", label: "Revisão", icon: <RotateCcw className="h-3.5 w-3.5" /> },
+    { value: "exercicios", label: "Exercícios", icon: <Pencil className="h-3.5 w-3.5" /> },
+    { value: "resumo", label: "Resumo", icon: <FileText className="h-3.5 w-3.5" /> },
+];
+
+function CronometerTitleSync() {
+    const isRunning = useSessionFormStore((state) => state.cronometer.isRunning);
+    const seconds = useSessionFormStore((state) => state.cronometer.seconds);
+
+    usePageTitleWithCronometer({
+        isRunning,
+        seconds,
+        baseTitle: "Nova Sessão de Estudo",
+    });
+
+    return null;
+}
+
+function CronometerTimeDisplay({ isRunning }: { isRunning: boolean }) {
+    const seconds = useSessionFormStore((state) => state.cronometer.seconds);
+
+    return (
+        <div className="relative flex flex-col items-center">
+            <span
+                className={`text-4xl font-mono font-semibold tracking-tight transition-colors ${isRunning ? "text-foreground" : "text-muted-foreground"
+                    }`}
+            >
+                {formatCronometerTime(seconds)}
+            </span>
+        </div>
+    );
+}
+
 // --- Component ---
 
 export function StudySessionForm() {
     const router = useRouter();
 
     const [form, setForm] = useState<FormData>(emptyForm);
-    const {
-        setSelectedSubject,
-        setSelectedTopic,
-        selectedSubject,
-        selectedTopic,
-        cronometer,
-        updateCronometer,
-        resetCronometer,
-        startTicking,
-        stopTicking,
-    } = useSessionFormStore();
-
+    const setSelectedSubject = useSessionFormStore((state) => state.setSelectedSubject);
+    const setSelectedTopic = useSessionFormStore((state) => state.setSelectedTopic);
+    const selectedSubject = useSessionFormStore((state) => state.selectedSubject);
+    const selectedTopic = useSessionFormStore((state) => state.selectedTopic);
+    const isCronometerRunning = useSessionFormStore((state) => state.cronometer.isRunning);
+    const cronometerStartTime = useSessionFormStore((state) => state.cronometer.startTime);
+    const cronometerEndTime = useSessionFormStore((state) => state.cronometer.endTime);
+    const updateCronometer = useSessionFormStore((state) => state.updateCronometer);
+    const resetCronometer = useSessionFormStore((state) => state.resetCronometer);
+    const startTicking = useSessionFormStore((state) => state.startTicking);
+    const stopTicking = useSessionFormStore((state) => state.stopTicking);
 
     const [timeRegisterType, setTimeRegisterType] = useState<"manual" | "cronometer">("manual");
     const { data: topicsTree = [] } = useTopicsTree();
@@ -130,23 +182,16 @@ export function StudySessionForm() {
     const [topicTreePopoverOpen, setTopicTreePopoverOpen] = useState(false);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
-
     const [endTimeError, setEndTimeError] = useState<string | null>(null);
+
+    // New UI-only state
+    const [studyMode, setStudyMode] = useState<StudyMode>("leitura");
 
     const { data: subjects = [], isLoading: loadingSubjects } = useSubjects();
     const { data: topics = [], isLoading: loadingTopics } = useTopicsBySubject(form?.subjectId);
 
-    // Filter topics tree for selected subject
     const currentSubjectTopics = getTopicTreeForSubject(topicsTree, form.subjectId);
-
     const createStudyLog = useCreateStudyLog();
-
-    usePageTitleWithCronometer
-        ({
-            isRunning: cronometer.isRunning,
-            seconds: cronometer.seconds,
-            baseTitle: "Nova Sessão de Estudo"
-        });
 
     // Warn on unsaved data
     useEffect(() => {
@@ -156,7 +201,7 @@ export function StudySessionForm() {
             !!form.notes ||
             !!form.start_time ||
             !!form.end_time ||
-            cronometer.isRunning;
+            isCronometerRunning;
 
         if (!isDirty) return;
 
@@ -166,39 +211,48 @@ export function StudySessionForm() {
         };
         window.addEventListener("beforeunload", handler);
         return () => window.removeEventListener("beforeunload", handler);
-    }, [form, cronometer.isRunning]);
+    }, [form, isCronometerRunning]);
 
     // Update Global State
     useEffect(() => {
         if (form.subjectId && form.subjectId !== selectedSubject?.id) {
-            const findSubject = subjects.find(s => s.id === form.subjectId);
+            const findSubject = subjects.find((s: { id: string }) => s.id === form.subjectId);
             setSelectedSubject(findSubject);
             setSelectedTopic(undefined);
         }
 
         if (form.topicId && form.topicId !== selectedTopic?.id) {
-            const findTopic = topics.find(t => t.id === form.topicId);
+            const findTopic = topics.find((t: { id: string }) => t.id === form.topicId);
             setSelectedTopic(findTopic);
         }
-
-    }, [form.subjectId, form.topicId, setSelectedSubject, setSelectedTopic, subjects, topics, selectedSubject?.id, selectedTopic?.id]);
+    }, [
+        form.subjectId,
+        form.topicId,
+        setSelectedSubject,
+        setSelectedTopic,
+        subjects,
+        topics,
+        selectedSubject?.id,
+        selectedTopic?.id,
+    ]);
 
     // --- Handlers ---
 
     const handleSubjectChange = (subjectId: string) => {
-        setForm(prev => ({ ...prev, subjectId, topicId: "" }));
+        setForm((prev) => ({ ...prev, subjectId, topicId: "" }));
     };
 
     const handleTopicChange = (topicId: string) => {
         setTopicTreePopoverOpen(false);
-        setForm(prev => ({ ...prev, topicId }));
+        setForm((prev) => ({ ...prev, topicId }));
     };
 
-    // Return selected topic name for display
     const getSelectedTopicName = (): string => {
         if (!form.topicId) return "Selecione um tópico";
 
-        const findTopicInTree = (nodes: typeof currentSubjectTopics): typeof currentSubjectTopics[0] | undefined => {
+        const findTopicInTree = (
+            nodes: typeof currentSubjectTopics
+        ): (typeof currentSubjectTopics)[0] | undefined => {
             for (const node of nodes) {
                 if (node.id === form.topicId) return node;
                 const found = findTopicInTree(node.children);
@@ -212,37 +266,39 @@ export function StudySessionForm() {
 
     const handleTimeInput = (field: "start_time" | "end_time", value: string) => {
         if (!value) {
-            setForm(prev => ({ ...prev, [field]: undefined }));
+            setForm((prev) => ({ ...prev, [field]: undefined }));
             return;
         }
         const [hours, minutes] = value.split(":");
         const date = new Date();
         date.setHours(+hours, +minutes, 0, 0);
-        setForm(prev => ({ ...prev, [field]: date }));
-
-        updateCronometer({ startTime: field === "start_time" ? date : cronometer.startTime, endTime: field === "end_time" ? date : cronometer.endTime });
+        setForm((prev) => ({ ...prev, [field]: date }));
+        updateCronometer({
+            startTime: field === "start_time" ? date : cronometerStartTime,
+            endTime: field === "end_time" ? date : cronometerEndTime,
+        });
     };
 
     const setCurrentTime = (field: "start_time" | "end_time") => {
-        setForm(prev => ({ ...prev, [field]: new Date() }));
+        setForm((prev) => ({ ...prev, [field]: new Date() }));
     };
 
     const toggleCronometer = () => {
         const now = new Date();
-        if (!cronometer.isRunning) {
+        if (!isCronometerRunning) {
             updateCronometer({ isRunning: true, startTime: now, endTime: null });
             startTicking();
-            setForm(prev => ({ ...prev, start_time: now, end_time: undefined }));
+            setForm((prev) => ({ ...prev, start_time: now, end_time: undefined }));
         } else {
             stopTicking();
             updateCronometer({ isRunning: false, endTime: now });
-            setForm(prev => ({ ...prev, end_time: now }));
+            setForm((prev) => ({ ...prev, end_time: now }));
         }
     };
 
     const handleResetCronometer = () => {
         resetCronometer();
-        setForm(prev => ({ ...prev, start_time: undefined, end_time: undefined }));
+        setForm((prev) => ({ ...prev, start_time: undefined, end_time: undefined }));
     };
 
     const onSubmit = async (e: React.FormEvent) => {
@@ -261,7 +317,6 @@ export function StudySessionForm() {
         const studyDate = form.study_date!;
         const startTime = form.start_time!;
         const endTime = form.end_time!;
-
         const durationMinutes = calcDurationMinutes(form.start_time, form.end_time);
 
         const data: StudyLogInput = {
@@ -273,17 +328,16 @@ export function StudySessionForm() {
             notes: form.notes || undefined,
         };
 
+
         try {
             setIsSubmitting(true);
             await createStudyLog.mutateAsync(data);
-
             toast.success("Sessão de estudo registrada!");
             setForm(emptyForm);
             resetCronometer();
             router.push("/");
         } catch {
             setIsSubmitting(false);
-
             toast.error("Erro ao registrar sessão.");
         } finally {
             setIsSubmitting(false);
@@ -293,312 +347,436 @@ export function StudySessionForm() {
     const duration = calcDurationMinutes(form.start_time, form.end_time);
     const isFormReadyToSubmit = !getFormSubmitError(form);
 
-
     return (
         <>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Nova Sessão de Estudo</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={onSubmit} className="space-y-6 w-full">
+            <CronometerTitleSync />
+            <div className="min-h-screen bg-linear-to-br from-background via-muted/20 to-background py-8 px-4">
+                <form onSubmit={onSubmit} className="max-w-5xl mx-auto space-y-6">
 
-                        {/* Matéria */}
-                        <div className="space-y-2">
-                            <Label>Matéria</Label>
-                            <div className="flex items-center gap-2">
-                                <Select value={form.subjectId} onValueChange={handleSubjectChange}>
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Selecione uma matéria" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {loadingSubjects ? (
-                                            <SelectItem value="loading" disabled>Carregando...</SelectItem>
-                                        ) : subjects.length === 0 ? (
-                                            <SelectItem value="empty" disabled>Nenhuma matéria cadastrada</SelectItem>
-                                        ) : (
-                                            subjects.map(subject => (
-                                                <SelectItem key={subject.id} value={subject.id}>
-                                                    <span className="flex items-center gap-2">
-                                                        <span
-                                                            className="w-3 h-3 rounded-full inline-block shrink-0"
-                                                            style={{ backgroundColor: subject.color }}
-                                                        />
-                                                        {subject.name}
-                                                    </span>
-                                                </SelectItem>
-                                            ))
-                                        )}
-                                    </SelectContent>
-                                </Select>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={() => router.push("/materias")}
-                                    title="Cadastrar matéria"
-                                    className="shrink-0"
-                                >
-                                    <Plus className="h-4 w-4" />
-                                </Button>
-                            </div>
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                                Nova Sessão de Estudo
+                            </h1>
+                            <p className="text-sm text-muted-foreground mt-0.5">
+                                Registre e acompanhe seu progresso de aprendizado
+                            </p>
                         </div>
+                        {isCronometerRunning && (
+                            <Badge variant="destructive" className="animate-pulse gap-1.5 px-3 py-1 text-xs font-medium">
+                                <span className="h-1.5 w-1.5 rounded-full bg-white inline-block" />
+                                Cronômetro ativo
+                            </Badge>
+                        )}
+                    </div>
 
-                        {/* Tópico */}
-                        <div className="space-y-2">
-                            <Label>Tópico Estudado</Label>
-                            <div className="flex items-center gap-2 flex-nowrap ">
-                                <Dialog
-                                    open={topicTreePopoverOpen}
-                                    onOpenChange={setTopicTreePopoverOpen}
-                                >
-                                    <DialogTrigger asChild>
-                                        <Button
-                                            variant="outline"
-                                            className={`w-full justify-start  font-normal ${!form.topicId
-                                                ? "text-muted-foreground"
-                                                : ""
-                                                }`}
-                                            disabled={!form.subjectId || loadingTopics}
-                                        >
-                                            {getSelectedTopicName()}
-                                        </Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="max-w-md">
-                                        <DialogHeader>
-                                            <DialogTitle>Selecione um tópico</DialogTitle>
-                                        </DialogHeader>
-                                        {loadingTopics ? (
-                                            <div className="p-4 text-center text-sm text-muted-foreground">
-                                                Carregando tópicos...
-                                            </div>
-                                        ) : currentSubjectTopics.length === 0 ? (
-                                            <div className="p-4 text-center text-sm text-muted-foreground">
-                                                Nenhum tópico cadastrado
-                                            </div>
-                                        ) : (
-                                            <div className="max-h-96 overflow-y-auto">
-                                                <TopicTreeSelector
-                                                    nodes={currentSubjectTopics}
-                                                    selectedTopicId={form.topicId}
-                                                    onTopicSelect={handleTopicChange}
-                                                />
-                                            </div>
-                                        )}
-                                    </DialogContent>
-                                </Dialog>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => setNewTopicDialogOpen(true)}
-                                    className="shrink-0"
-                                    disabled={!form.subjectId}
-                                >
-                                    <Plus className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </div>
+                    {/* Main Grid */}
+                    <div className="grid grid-cols-1  gap-6">
 
-                        {/* Tipo de material */}
-                        <div className="space-y-2">
-                            <Label htmlFor="material_type">Tipo de material (opcional)</Label>
-                            <Input
-                                id="material_type"
-                                placeholder="Ex: Livro, Vídeo, Artigo..."
-                                value={form.material_type}
-                                onChange={e => setForm(prev => ({ ...prev, material_type: e.target.value }))}
-                            />
-                        </div>
-
-                        {/* Modo de registro do tempo */}
-                        <div className="space-y-2">
-                            <Label>Registrar Tempo de Estudo</Label>
-                            <div className="grid grid-cols-2 gap-2">
-                                <Button
-                                    type="button"
-                                    variant={timeRegisterType === "manual" ? "default" : "outline"}
-                                    onClick={() => setTimeRegisterType("manual")}
-                                    disabled={cronometer.isRunning}
-                                    title={cronometer.isRunning ? "Pare o cronômetro para registrar manualmente" : undefined}
-                                >
-                                    Manualmente
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant={timeRegisterType === "cronometer" ? "default" : "outline"}
-                                    onClick={() => setTimeRegisterType("cronometer")}
-                                >
-                                    Cronometrar
-                                </Button>
-                            </div>
-                        </div>
-
-                        {/* Cronômetro */}
-                        {timeRegisterType === "cronometer" && (
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Cronômetro de Estudo</CardTitle>
+                        {/* LEFT COLUMN — Subject, Topic, Material, Notes */}
+                        <div className="space-y-5">
+                            <Card className="shadow-lg border-border/60 bg-card/80 backdrop-blur-sm">
+                                <CardHeader className="border-b border-border/40">
+                                    <CardTitle className="text-base font-semibold flex  items-center gap-2 text-foreground">
+                                        <BookOpen className="h-4 w-4 text-primary" />
+                                        Conteúdo Estudado
+                                    </CardTitle>
+                                    <CardDescription></CardDescription>
                                 </CardHeader>
-                                <CardContent>
-                                    <div className="flex flex-col items-center gap-4">
-                                        <div className="text-3xl font-mono">
-                                            {formatCronometerTime(cronometer.seconds)}
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <Button
-                                                type="button"
-                                                variant={cronometer.isRunning ? "outline" : "default"}
-                                                onClick={toggleCronometer}
-                                            >
-                                                {cronometer.isRunning ? "Parar" : "Iniciar"}
-                                            </Button>
+                                <CardContent className="space-y-5">
+
+                                    {/* Matéria */}
+                                    <div className="space-y-1.5">
+                                        <Label className="text-sm font-medium text-foreground/80">Matéria</Label>
+                                        <div className="flex items-center gap-2">
+                                            <Select value={form.subjectId} onValueChange={handleSubjectChange}>
+                                                <SelectTrigger className="w-full focus-visible:ring-primary/40 bg-background/60">
+                                                    <SelectValue placeholder="Selecione uma matéria" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {loadingSubjects ? (
+                                                        <SelectItem value="loading" disabled>
+                                                            Carregando...
+                                                        </SelectItem>
+                                                    ) : subjects.length === 0 ? (
+                                                        <SelectItem value="empty" disabled>
+                                                            Nenhuma matéria cadastrada
+                                                        </SelectItem>
+                                                    ) : (
+                                                        subjects.map((subject) => (
+                                                            <SelectItem key={subject.id} value={subject.id}>
+                                                                <span className="flex items-center gap-2">
+                                                                    <span
+                                                                        className="w-2.5 h-2.5 rounded-full inline-block shrink-0"
+                                                                        style={{ backgroundColor: subject.color }}
+                                                                    />
+                                                                    {subject.name}
+                                                                </span>
+                                                            </SelectItem>
+                                                        ))
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
                                             <Button
                                                 type="button"
                                                 variant="outline"
-                                                onClick={handleResetCronometer}
-                                                disabled={cronometer.isRunning}
+                                                size="icon"
+                                                onClick={() => router.push("/materias")}
+                                                title="Cadastrar matéria"
+                                                className="shrink-0 text-muted-foreground hover:text-foreground"
                                             >
-                                                Resetar
+                                                <Plus className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     </div>
+
+                                    {/* Tópico */}
+                                    <div className="space-y-1.5">
+                                        <Label className="text-sm font-medium text-foreground/80">Tópico Estudado</Label>
+                                        <div className="flex items-center gap-2">
+                                            <Dialog
+                                                open={topicTreePopoverOpen}
+                                                onOpenChange={setTopicTreePopoverOpen}
+                                            >
+                                                <DialogTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        type="button"
+                                                        className={`w-full justify-between font-normal bg-background/60 hover:bg-background/80 focus-visible:ring-primary/40 ${!form.topicId ? "text-muted-foreground" : "text-foreground"
+                                                            }`}
+                                                        disabled={!form.subjectId || loadingTopics}
+                                                    >
+                                                        <span className="truncate">{getSelectedTopicName()}</span>
+                                                        <Network className="h-3.5 w-3.5 ml-2 shrink-0 text-muted-foreground" />
+                                                    </Button>
+                                                </DialogTrigger>
+                                                <DialogContent className="max-w-md">
+                                                    <DialogHeader>
+                                                        <DialogTitle>Selecione um tópico</DialogTitle>
+                                                    </DialogHeader>
+                                                    {loadingTopics ? (
+                                                        <div className="p-4 text-center text-sm text-muted-foreground">
+                                                            Carregando tópicos...
+                                                        </div>
+                                                    ) : currentSubjectTopics.length === 0 ? (
+                                                        <div className="p-4 text-center text-sm text-muted-foreground">
+                                                            Nenhum tópico cadastrado
+                                                        </div>
+                                                    ) : (
+                                                        <div className="max-h-96 overflow-y-auto">
+                                                            <TopicTreeSelector
+                                                                nodes={currentSubjectTopics}
+                                                                selectedTopicId={form.topicId}
+                                                                onTopicSelect={handleTopicChange}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </DialogContent>
+                                            </Dialog>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="icon"
+                                                onClick={() => setNewTopicDialogOpen(true)}
+                                                className="shrink-0 text-muted-foreground hover:text-foreground"
+                                                disabled={!form.subjectId}
+                                                title="Novo tópico"
+                                            >
+                                                <Plus className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    {/* Tipo de material */}
+                                    <div className="space-y-3">
+                                        <Label className="text-sm font-medium text-foreground/80">
+                                            Modo de Estudo
+                                        </Label>
+                                        <RadioGroup
+                                            value={studyMode}
+                                            onValueChange={(v) => setStudyMode(v as StudyMode)}
+                                            className="grid grid-cols-2 sm:grid-cols-4 gap-2"
+                                        >
+                                            {STUDY_MODES.map((mode) => (
+                                                <div key={mode.value} className="relative">
+                                                    <RadioGroupItem
+                                                        value={mode.value}
+                                                        id={`mode-${mode.value}`}
+                                                        className="sr-only"
+                                                    />
+                                                    <Label
+                                                        htmlFor={`mode-${mode.value}`}
+                                                        className={`flex flex-col items-center justify-center gap-1.5 rounded-lg border-2 px-3 py-3 cursor-pointer text-xs font-medium transition-all select-none
+                                                            ${studyMode === mode.value
+                                                                ? "border-primary bg-primary/10 text-primary"
+                                                                : "border-border/60 bg-background/40 text-muted-foreground hover:border-border hover:text-foreground"
+                                                            }`}
+                                                    >
+                                                        {mode.icon}
+                                                        {mode.label}
+                                                    </Label>
+                                                </div>
+                                            ))}
+                                        </RadioGroup>
+                                    </div>
+
+                                    {/* Anotações */}
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="notes" className="text-sm font-medium text-foreground/80">
+                                            Anotações{" "}
+                                            <span className="text-muted-foreground font-normal">(opcional)</span>
+                                        </Label>
+                                        <Textarea
+                                            id="notes"
+                                            placeholder="Resumo, pontos-chave, dúvidas..."
+                                            rows={4}
+                                            value={form.notes}
+                                            className="bg-background/60 focus-visible:ring-primary/40 resize-none"
+                                            onChange={(e) =>
+                                                setForm((prev) => ({ ...prev, notes: e.target.value }))
+                                            }
+                                        />
+                                    </div>
                                 </CardContent>
                             </Card>
-                        )}
 
-                        {/* Data e Horários */}
-                        <div className="flex flex-col md:flex-row gap-4">
-                            <div className="w-full md:w-1/3 lg:w-1/4 space-y-2">
-                                <Label htmlFor="study_date">Data</Label>
-                                <Input
-                                    id="study_date"
-                                    type="date"
-                                    value={form.study_date ? formatDate(form.study_date) : ""}
-                                    onChange={e => {
-                                        // Parse como data local explicitamente
-                                        const [year, month, day] = e.target.value.split('-').map(Number);
-                                        const d = new Date(year, month - 1, day);
-                                        setForm(prev => ({ ...prev, study_date: d }));
-                                    }}
-                                />
-                            </div>
+                        </div>
 
-                            {/* Horários de início e fim */}
-                            <div className="flex-1 grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="start_time">Hora Início</Label>
-                                    <div className="flex items-center">
-                                        <Input
-                                            id="start_time"
-                                            type="time"
-                                            disabled={timeRegisterType === "cronometer"}
-                                            value={formatTime(form.start_time)}
-                                            onChange={e => handleTimeInput("start_time", e.target.value)}
-                                        />
-                                        {/* Definir hora atual */}
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="icon"
-                                            onClick={() => setCurrentTime("start_time")}
-                                            title="Definir Hora atual"
-                                            className="shrink-0"
-                                        >
-                                            <ClockArrowUp className="h-4 w-4" />
-                                        </Button>
+                        {/* Time tracking */}
+                        <div className="space-y-4">
+                            <Card className="shadow-lg border-border/60 bg-card/80 backdrop-blur-sm">
+
+                                <CardContent className="space-y-3">
+
+                                    {/* Time Mode Tabs */}
+                                    <Tabs
+                                        value={timeRegisterType}
+                                        onValueChange={(v) => setTimeRegisterType(v as "manual" | "cronometer")}
+                                    >
+                                        <TabsList className="w-full grid grid-cols-2 bg-muted/50">
+                                            <TabsTrigger
+                                                value="manual"
+                                                disabled={isCronometerRunning}
+                                                title={isCronometerRunning ? "Pare o cronômetro para registrar manualmente" : undefined}
+                                                className="gap-1.5 text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                                            >
+                                                <ClockArrowUp className="h-3.5 w-3.5" />
+                                                Manual
+                                            </TabsTrigger>
+                                            <TabsTrigger
+                                                value="cronometer"
+                                                className="gap-1.5 text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                                            >
+                                                <Timer className="h-3.5 w-3.5" />
+                                                Cronômetro
+                                            </TabsTrigger>
+                                        </TabsList>
+
+                                        {/* Cronometer Panel */}
+                                        <TabsContent value="cronometer" className="mt-4">
+                                            <div className={`flex flex-col items-center gap-5 py-4 rounded-xl transition-all ${isCronometerRunning
+                                                ? "ring-2 ring-primary/30 bg-primary/5"
+                                                : "bg-muted/20"
+                                                }`}>
+                                                {/* Time Display */}
+                                                <CronometerTimeDisplay isRunning={isCronometerRunning} />
+
+                                                {/* Controls */}
+                                                <div className="flex gap-2 w-full px-4">
+                                                    <Button
+                                                        type="button"
+
+                                                        onClick={toggleCronometer}
+                                                        className={`flex-1 gap-2 transition-all 
+                                                            ${isCronometerRunning ?
+                                                                "bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                                                                : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                                                            }`}
+                                                    >
+                                                        {isCronometerRunning ? (
+                                                            <>
+                                                                <Square className="fill-current" />
+                                                                Parar
+                                                            </>
+
+                                                        ) : (
+                                                            <>
+                                                                <Play className="fill-current" />
+                                                                Iniciar
+                                                            </>
+                                                        )}
+                                                    </Button>
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+
+                                                        onClick={handleResetCronometer}
+                                                        disabled={isCronometerRunning}
+                                                        title="Resetar"
+                                                        className="shrink-0 text-muted-foreground hover:text-foreground"
+                                                    >
+                                                        Resetar
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </TabsContent>
+
+                                        {/* Empty tab content for manual — times below are always shown */}
+                                        <TabsContent value="manual" className="mt-0" />
+                                    </Tabs>
+
+
+
+                                    {/* Start / End Time */}
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {/* Hora Início */}
+                                        <div className="space-y-1.5">
+                                            <Label htmlFor="start_time" className="text-sm font-medium text-foreground/80">
+                                                Início
+                                            </Label>
+                                            <div className="flex gap-1">
+                                                <Input
+                                                    id="start_time"
+                                                    type="time"
+                                                    disabled={timeRegisterType === "cronometer"}
+                                                    value={formatTime(form.start_time)}
+                                                    className="bg-background/60 focus-visible:ring-primary/40 min-w-0"
+                                                    onChange={(e) => handleTimeInput("start_time", e.target.value)}
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => setCurrentTime("start_time")}
+                                                    disabled={timeRegisterType === "cronometer"}
+                                                    title="Hora atual"
+                                                    className="shrink-0 h-9 w-9 text-muted-foreground hover:text-foreground"
+                                                >
+                                                    <ClockArrowUp className="h-3.5 w-3.5" />
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        {/* Hora Fim */}
+                                        <div className="space-y-1.5">
+                                            <Label htmlFor="end_time" className="text-sm font-medium text-foreground/80">
+                                                Fim
+                                            </Label>
+                                            <div className="flex gap-1">
+                                                <Input
+                                                    id="end_time"
+                                                    type="time"
+                                                    disabled={timeRegisterType === "cronometer"}
+                                                    value={formatTime(form.end_time)}
+                                                    className={`bg-background/60 focus-visible:ring-primary/40 min-w-0 ${endTimeError ? "border-destructive ring-destructive/30" : ""
+                                                        }`}
+                                                    onChange={(e) => handleTimeInput("end_time", e.target.value)}
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => setCurrentTime("end_time")}
+                                                    disabled={timeRegisterType === "cronometer"}
+                                                    title="Hora atual"
+                                                    className="shrink-0 h-9 w-9 text-muted-foreground hover:text-foreground"
+                                                >
+                                                    <ClockArrowUp className="h-3.5 w-3.5" />
+                                                </Button>
+                                            </div>
+                                            {endTimeError && (
+                                                <p className="text-xs text-destructive leading-tight">{endTimeError}</p>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="end_time">Hora Fim</Label>
-                                    <div className="flex items-center" aria-disabled={timeRegisterType === "cronometer"}>
-                                        <Input
-                                            id="end_time"
-                                            type="time"
-                                            disabled={timeRegisterType === "cronometer"}
-                                            value={formatTime(form.end_time)}
-                                            onChange={e => handleTimeInput("end_time", e.target.value)}
-                                        />
-                                        {/* Definir hora atual */}
-                                        <Button
-                                            type="button"
-                                            variant="outline"
-                                            size="icon"
-                                            onClick={() => setCurrentTime("end_time")}
-                                            title="Definir Hora atual"
-                                            className="shrink-0"
-                                        >
-                                            <ClockArrowUp className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                    {endTimeError && (
-                                        <p className="text-sm text-destructive">{endTimeError}</p>
+
+
+                                    {/* Duration Badge */}
+                                    {duration > 0 && (
+                                        <div className="flex items-center justify-between rounded-lg bg-primary/8 border border-primary/20 px-4 py-2.5">
+                                            <span className="text-xs text-muted-foreground font-medium">Duração calculada</span>
+                                            <span className="text-sm font-semibold text-primary tabular-nums">
+                                                {Math.floor(duration / 60) > 0 && `${Math.floor(duration / 60)}h `}
+                                                {duration % 60}min
+                                            </span>
+                                        </div>
                                     )}
-                                </div>
+
+                                    {/* Date */}
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="study_date" className="text-sm font-medium text-foreground/80">
+                                            Data
+                                        </Label>
+                                        <Input
+                                            id="study_date"
+                                            type="date"
+                                            value={form.study_date ? formatDate(form.study_date) : ""}
+                                            className="bg-background/60 focus-visible:ring-primary/40"
+                                            onChange={(e) => {
+                                                const [year, month, day] = e.target.value.split("-").map(Number);
+                                                const d = new Date(year, month - 1, day);
+                                                setForm((prev) => ({ ...prev, study_date: d }));
+                                            }}
+                                        />
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Action Buttons */}
+                            <div className="flex flex-col gap-2">
+                                <Button
+                                    type="submit"
+                                    disabled={createStudyLog.isPending || !isFormReadyToSubmit}
+                                    className="w-full font-semibold h-11 shadow-md"
+                                    size="lg"
+                                >
+                                    {createStudyLog.isPending ? (
+                                        <span className="flex items-center gap-2">
+                                            <Circle className="h-4 w-4 animate-spin" />
+                                            Salvando...
+                                        </span>
+                                    ) : (
+                                        "Registrar Sessão"
+                                    )}
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => router.back()}
+                                    className="w-full text-muted-foreground hover:text-foreground"
+                                >
+                                    Cancelar
+                                </Button>
                             </div>
                         </div>
+                    </div>
+                </form >
+            </div >
 
-                        {/* Duração calculada */}
-                        {duration > 0 && (
-                            <div className="p-3 bg-accent/50 rounded text-sm">
-                                <span className="text-muted-foreground">Duração: </span>
-                                <span className="font-medium text-foreground">
-                                    {Math.floor(duration / 60)}h {duration % 60}min
-                                </span>
-                            </div>
-                        )}
+            {/* Dialogs */}
+            {
+                form.subjectId && (
+                    <NewTopicDialog
+                        isOpen={newTopicDialogOpen}
+                        onOpenChange={setNewTopicDialogOpen}
+                        subjectId={form.subjectId}
+                        onTopicCreated={(topic) => {
+                            setForm((prev) => ({ ...prev, topicId: topic.id }));
+                        }}
+                    />
+                )
+            }
 
-                        {/* Anotações */}
-                        <div className="space-y-2">
-                            <Label htmlFor="notes">Anotações (opcional)</Label>
-                            <Textarea
-                                id="notes"
-                                placeholder="Resumo, pontos-chave, dúvidas..."
-                                rows={4}
-                                value={form.notes}
-                                onChange={e => setForm(prev => ({ ...prev, notes: e.target.value }))}
-                            />
-                        </div>
-
-                        {/* Ações */}
-                        <div className="flex gap-3">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => router.back()}
-                                className="flex-1"
-                            >
-                                Cancelar
-                            </Button>
-                            <Button
-                                type="submit"
-                                disabled={createStudyLog.isPending || !isFormReadyToSubmit}
-                                className="flex-1"
-                            >
-                                {createStudyLog.isPending ? "Salvando..." : "Registrar Sessão"}
-                            </Button>
-                        </div>
-                    </form>
-                </CardContent>
-            </Card>
-
-            {form.subjectId && (
-                <NewTopicDialog
-                    isOpen={newTopicDialogOpen}
-                    onOpenChange={setNewTopicDialogOpen}
-                    subjectId={form.subjectId}
-                    onTopicCreated={topic => {
-                        setForm(prev => ({ ...prev, topicId: topic.id }));
-                    }}
-                />
-            )}
+            {/* Submitting Overlay */}
             {
                 isSubmitting && (
-                    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 mx-auto flex items-center justify-center">
-                        <Card>
-                            <CardContent className="flex items-center">
-                                Registrando sessão...
-                                <Circle className="animate-spin ml-4" />
+                    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+                        <Card className="shadow-xl border-border/60">
+                            <CardContent className="flex items-center gap-3 px-8 py-5">
+                                <Circle className="animate-spin h-5 w-5 text-primary" />
+                                <span className="text-sm font-medium">Registrando sessão...</span>
                             </CardContent>
                         </Card>
                     </div>
@@ -607,4 +785,3 @@ export function StudySessionForm() {
         </>
     );
 }
-

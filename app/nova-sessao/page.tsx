@@ -10,17 +10,19 @@ export default function NovaSessaoPage() {
     const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
 
     return (
-        <div >
-            <div className="flex flex-row min-h-screen my-4">
-                <main className="flex-1 max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 px-4">
-                    <StudySessionForm />
-                    <Suspense fallback={<div className="p-4">Carregando timeline...</div>}>
-                        <TodayTimeline />
-                    </Suspense>
-                </main>
+        <div className="flex flex-col h-screen">
+            <div className="flex flex-1 relative">
+                <div className="flex-1 scroll-smooth overflow-auto">
+                    <main className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 px-4">
+                        <StudySessionForm />
+                        <Suspense fallback={<div className="p-4">Carregando timeline...</div>}>
+                            <TodayTimeline />
+                        </Suspense>
+                    </main>
+                </div>
                 {/* Sidebar - Hidden on mobile, visible on lg+ */}
                 <aside className={`
-                    fixed lg:static bottom-0 left-0 right-0 top-auto lg:top-auto
+                    fixed lg:static bottom-0 lg:top-auto
                     w-full lg:w-72 h-auto lg:h-screen
                     bg-card border-t lg:border-t-0 lg:border-l border-border
                     flex flex-col
