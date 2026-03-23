@@ -256,7 +256,7 @@ export async function getTodayStudyLogsAction(userId: string, todayDate?: Date) 
     });
 }
 
-export async function getRecentLogsByTopicAction(topicId: string) {
+export async function getRecentLogsByTopicAction(topicId: string, take = 3, skip = 0) {
     return prisma.studyLogs.findMany({
         where: {
             topicId: topicId,
@@ -271,11 +271,12 @@ export async function getRecentLogsByTopicAction(topicId: string) {
         orderBy: {
             study_date: 'desc',
         },
-        take: 3,
+        take,
+        skip,
     });
 }
 
-export async function getRecentLogsBySubjectAction(subjectId: string) {
+export async function getRecentLogsBySubjectAction(subjectId: string, take = 3, skip = 0) {
     return prisma.studyLogs.findMany({
         where: {
             topic: {
@@ -292,7 +293,8 @@ export async function getRecentLogsBySubjectAction(subjectId: string) {
         orderBy: {
             study_date: 'desc',
         },
-        take: 3,
+        take,
+        skip,
     });
 }
 

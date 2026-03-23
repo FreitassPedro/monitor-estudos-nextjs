@@ -10,6 +10,8 @@ import { parseDateAsLocal } from "@/lib/utils";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTopicsBySubject } from "@/hooks/useTopics";
 import { Topic } from "@/types/types";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const diffInDays = (date1: Date, date2: Date) => {
     const diffTime = Math.abs(date2.getTime() - date1.getTime());
@@ -70,6 +72,7 @@ export const LogsList = ({ logs }: LogsListProps) => {
     )
 }
 export const LogSection = ({ type }: { type: 'topic' | 'subject' }) => {
+    const PAGE_SIZE = 3;
 
     const [isOpen, setIsOpen] = React.useState(true);
     const { selectedSubject, selectedTopic } = useSessionFormStore();
@@ -77,16 +80,20 @@ export const LogSection = ({ type }: { type: 'topic' | 'subject' }) => {
     const { data: topics = [] } = useTopicsBySubject(selectedSubject?.id);
     const [sidebarTopic, setSidebarTopic] = React.useState<Topic | null>(null);
 
+    const [logsHistory, setLogsHistory] = React.useState<Array<{ id: string; study_date: Date; notes: string | null; topic: { name: string } }>>([]);
+    const [isLoadingMore, setIsLoadingMore] = React.useState(false);
+    const [hasMoreLogs, setHasMoreLogs] = React.useState(true);
+
 
     const recentLogs = useQuery({
         queryKey: ['studyLogs', type, 'recent', type === 'topic' ? sidebarTopic?.id : selectedSubject?.id],
         queryFn: () => {
             switch (type) {
                 case 'topic':
-                    return sidebarTopic?.id ? getRecentLogsByTopicAction(sidebarTopic.id) : Promise.resolve([]);
+                    return sidebarTopic?.id ? getRecentLogsByTopicAction(sidebarTopic.id, PAGE_SIZE, 0) : Promise.resolve([]);
 
                 case 'subject':
-                    return selectedSubject?.id ? getRecentLogsBySubjectAction(selectedSubject.id) : Promise.resolve([]);
+                    return selectedSubject?.id ? getRecentLogsBySubjectAction(selectedSubject.id, PAGE_SIZE, 0) : Promise.resolve([]);
 
                 default:
                     return Promise.resolve([]);
@@ -95,6 +102,51 @@ export const LogSection = ({ type }: { type: 'topic' | 'subject' }) => {
         enabled: type === 'subject' ? !!selectedSubject : !!sidebarTopic,
         staleTime: 1000 * 60 * 4, // 4 minuto
     });
+
+    const getLoadMoreLogs = React.useCallback(async () => {
+        if (isLoadingMore || !hasMoreLogs) return;
+
+        const currentCount = logsHistory.length;
+        setIsLoadingMore(true);
+
+        try {
+            let nextLogs: Array<{ id: string; study_date: Date; notes: string | null; topic: { name: string } }> = [];
+
+            if (type === 'topic' && sidebarTopic?.id) {
+                nextLogs = await getRecentLogsByTopicAction(sidebarTopic.id, PAGE_SIZE, currentCount);
+            }
+
+            if (type === 'subject' && selectedSubject?.id) {
+                nextLogs = await getRecentLogsBySubjectAction(selectedSubject.id, PAGE_SIZE, currentCount);
+            }
+
+            if (nextLogs.length === 0) {
+                setHasMoreLogs(false);
+                return;
+            }
+
+            setLogsHistory((prev) => {
+                const existingIds = new Set(prev.map((log) => log.id));
+                const uniqueNextLogs = nextLogs.filter((log) => !existingIds.has(log.id));
+                return [...prev, ...uniqueNextLogs];
+            });
+
+            if (nextLogs.length < PAGE_SIZE) {
+                setHasMoreLogs(false);
+            }
+        } finally {
+            setIsLoadingMore(false);
+        }
+    }, [PAGE_SIZE, hasMoreLogs, isLoadingMore, logsHistory.length, selectedSubject?.id, sidebarTopic?.id, type]);
+
+    React.useEffect(() => {
+        const initialLogs = recentLogs.data ?? [];
+        setLogsHistory(initialLogs);
+        setHasMoreLogs(initialLogs.length === PAGE_SIZE);
+    }, [PAGE_SIZE, recentLogs.data]);
+
+
+
 
     // Atualiza o tópico do sidebar quando o tópico selecionado na sessão mudar
     React.useEffect(() => {
@@ -135,55 +187,97 @@ export const LogSection = ({ type }: { type: 'topic' | 'subject' }) => {
     }
 
     return (
-        <div className="space-y-3 transition-all duration-300 ease-in-out">
+        <>
+            <div className="space-y-3 transition-all duration-300 ease-in-out">
 
-            <div className="flex flex-col items-center gap-2 text-sm font-semibold text-foreground">
-                <div className="flex flex-row justify-between w-full items-center">
-                    <BookOpen className="w-4 h-4 text-muted-foreground" />
-                    <span>Recentes: {type === "subject" ? selectedSubject?.name : ''}</span>
-                    <div className="p-1.5 bg-primary/10 rounded-md text-primary">
-                        <ChevronRight
-                            size={18}
-                            onClick={() => setIsOpen(!isOpen)}
-                            className={`${isOpen ? "rotate-90" : "rotate-0"
-                                } transition-transform duration-300 ease-in-out`}
+                <div className="flex flex-col items-center gap-2 text-sm font-semibold text-foreground">
+                    <div className="flex flex-row justify-between w-full items-center">
+                        <BookOpen className="w-4 h-4 text-muted-foreground" />
+                        <span>Recentes: {type === "subject" ? selectedSubject?.name : ''}</span>
 
-                        />
+                        <div className="p-1.5 bg-primary/10 rounded-md text-primary">
+                            <ChevronRight
+                                size={18}
+                                onClick={() => setIsOpen(!isOpen)}
+                                className={`${isOpen ? "rotate-90" : "rotate-0"
+                                    } transition-transform duration-300 ease-in-out`}
+
+                            />
+                        </div>
+
                     </div>
-                </div>
-                {type === 'topic' && (
-                    <Select value={sidebarTopic?.id} defaultValue={sidebarTopic?.id} onValueChange={(value) => {
-                        const selected = topics.find(t => t.id === value);
-                        setSidebarTopic(selected || null);
-                    }}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Selecione" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                {topics?.map(topic => (
-                                    <SelectItem key={topic.id} value={topic.id}>{topic.name}</SelectItem>
-                                ))}
-                            </SelectGroup>
-                        </SelectContent>
+                    {selectedSubject && recentLogs.data && (
+                        <Dialog>
+                            <DialogTrigger asChild>
+                                <Button className="w-full" size={"sm"}>Ver todos</Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Logs Recentes de {selectedSubject.name}</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-2 overflow-y-auto max-h-[400px]">
+                                    {logsHistory.map(log => (
+                                        <div key={log.id} className="p-2 border-b">
+                                            <h2 className="font-semibold">{log.topic.name}</h2>
+                                            
+                                            <span className="text-muted-foreground text-sm">{log.study_date.toLocaleDateString()} - {daysAgo(log.study_date)}</span>
+                                            {log.notes && <p className="text-sm mt-1 whitespace-pre-line text-muted-foreground ">{log.notes}</p>}
+                                        </div>
+                                    ))}
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    className="mt-4"
+                                    onClick={getLoadMoreLogs}
+                                    disabled={isLoadingMore || !hasMoreLogs}
+                                >
+                                    {isLoadingMore ? 'Carregando...' : hasMoreLogs ? 'Ver mais' : 'Sem mais logs'}
+                                </Button>
+                                <DialogFooter>
+                                    <DialogClose asChild>
+                                        <Button type="button" variant="outline" className="mt-4" onClick={() => setIsOpen(false)}>Fechar</Button>
+                                    </DialogClose>
+                                </DialogFooter>
+                            </DialogContent>
 
-                    </Select>
+                        </Dialog>
+                    )}
+                    {type === 'topic' && (
+                        <Select value={sidebarTopic?.id} defaultValue={sidebarTopic?.id} onValueChange={(value) => {
+                            const selected = topics.find(t => t.id === value);
+                            setSidebarTopic(selected || null);
+                        }}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecione" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectGroup>
+                                    {topics?.map(topic => (
+                                        <SelectItem key={topic.id} value={topic.id}>{topic.name}</SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            </SelectContent>
+
+                        </Select>
+                    )}
+                </div>
+                <Separator className="my-2" />
+
+                {recentLogs.data && recentLogs.data.length > 0 ? (
+                    <LogsList
+                        logs={recentLogs.data.map(log => ({
+                            id: log.id,
+                            name: log.topic.name,
+                            date: log.study_date,
+                            notes: log.notes ?? undefined,
+                        }))}
+                    />
+                ) : (
+                    <EmptyLog />
                 )}
             </div>
-            <Separator className="my-2" />
 
-            {recentLogs.data && recentLogs.data.length > 0 ? (
-                <LogsList
-                    logs={recentLogs.data.map(log => ({
-                        id: log.id,
-                        name: log.topic.name,
-                        date: log.study_date,
-                        notes: log.notes ?? undefined,
-                    }))}
-                />
-            ) : (
-                <EmptyLog />
-            )}
-        </div>
+        </>
     )
+
 }
