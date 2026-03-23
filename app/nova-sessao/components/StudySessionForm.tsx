@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -42,7 +42,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { useSubjects } from "@/hooks/useSubjects";
-import { useTopicsBySubject, useTopicsTree } from "@/hooks/useTopics";
+import { useTopicsTree } from "@/hooks/useTopics";
 import { useCreateStudyLog } from "@/hooks/useStudyLogs";
 import { StudyLogInput } from "@/server/actions/studyLogs.action";
 import { NewTopicDialog } from "./NewTopicDialog";
@@ -96,6 +96,18 @@ const getTopicTreeForSubject = (
     subjectId: string
 ): TopicNode[] => {
     return topicsTree?.filter((node) => node.subjectId === subjectId) || [];
+};
+
+const findTopicInTreeById = (
+    nodes: TopicNode[],
+    topicId: string
+): TopicNode | undefined => {
+    for (const node of nodes) {
+        if (node.id === topicId) return node;
+        const found = findTopicInTreeById(node.children, topicId);
+        if (found) return found;
+    }
+    return undefined;
 };
 
 // --- Form State ---
@@ -176,7 +188,7 @@ export function StudySessionForm() {
     const stopTicking = useSessionFormStore((state) => state.stopTicking);
 
     const [timeRegisterType, setTimeRegisterType] = useState<"manual" | "cronometer">("manual");
-    const { data: topicsTree = [] } = useTopicsTree();
+    const { data: topicsTree = [], isLoading: loadingTopicsTree } = useTopicsTree();
 
     const [newTopicDialogOpen, setNewTopicDialogOpen] = useState(false);
     const [topicTreePopoverOpen, setTopicTreePopoverOpen] = useState(false);
@@ -188,9 +200,11 @@ export function StudySessionForm() {
     const [studyMode, setStudyMode] = useState<StudyMode>("leitura");
 
     const { data: subjects = [], isLoading: loadingSubjects } = useSubjects();
-    const { data: topics = [], isLoading: loadingTopics } = useTopicsBySubject(form?.subjectId);
 
-    const currentSubjectTopics = getTopicTreeForSubject(topicsTree, form.subjectId);
+    const currentSubjectTopics = useMemo(
+        () => getTopicTreeForSubject(topicsTree, form.subjectId),
+        [topicsTree, form.subjectId]
+    );
     const createStudyLog = useCreateStudyLog();
 
     // Warn on unsaved data
@@ -215,26 +229,51 @@ export function StudySessionForm() {
 
     // Update Global State
     useEffect(() => {
-        if (form.subjectId && form.subjectId !== selectedSubject?.id) {
-            const findSubject = subjects.find((s: { id: string }) => s.id === form.subjectId);
-            setSelectedSubject(findSubject);
-            setSelectedTopic(undefined);
+        if (!form.subjectId) {
+            if (selectedSubject) setSelectedSubject(undefined);
+            if (selectedTopic) setSelectedTopic(undefined);
+            return;
         }
 
-        if (form.topicId && form.topicId !== selectedTopic?.id) {
-            const findTopic = topics.find((t: { id: string }) => t.id === form.topicId);
-            setSelectedTopic(findTopic);
+        const foundSubject = subjects.find((s: { id: string }) => s.id === form.subjectId);
+
+        if (foundSubject && foundSubject.id !== selectedSubject?.id) {
+            setSelectedSubject(foundSubject);
+            if (selectedTopic) setSelectedTopic(undefined);
+            return;
+        }
+
+        if (!foundSubject && selectedSubject) {
+            setSelectedSubject(undefined);
         }
     }, [
         form.subjectId,
-        form.topicId,
         setSelectedSubject,
         setSelectedTopic,
         subjects,
-        topics,
+        selectedSubject,
         selectedSubject?.id,
+        selectedTopic,
         selectedTopic?.id,
     ]);
+
+    // 
+    useEffect(() => {
+        if (!form.topicId) {
+            if (selectedTopic) setSelectedTopic(undefined);
+            return;
+        }
+
+        const foundTopic = findTopicInTreeById(currentSubjectTopics, form.topicId);
+        if (foundTopic && foundTopic.id !== selectedTopic?.id) {
+            setSelectedTopic(foundTopic);
+            return;
+        }
+
+        if (!foundTopic && selectedTopic) {
+            setSelectedTopic(undefined);
+        }
+    }, [form.topicId, currentSubjectTopics, selectedTopic, selectedTopic?.id, setSelectedTopic]);
 
     // --- Handlers ---
 
@@ -445,7 +484,7 @@ export function StudySessionForm() {
                                                         type="button"
                                                         className={`w-full justify-between font-normal bg-background/60 hover:bg-background/80 focus-visible:ring-primary/40 ${!form.topicId ? "text-muted-foreground" : "text-foreground"
                                                             }`}
-                                                        disabled={!form.subjectId || loadingTopics}
+                                                        disabled={!form.subjectId || loadingTopicsTree}
                                                     >
                                                         <span className="truncate">{getSelectedTopicName()}</span>
                                                         <Network className="h-3.5 w-3.5 ml-2 shrink-0 text-muted-foreground" />
@@ -455,7 +494,7 @@ export function StudySessionForm() {
                                                     <DialogHeader>
                                                         <DialogTitle>Selecione um tópico</DialogTitle>
                                                     </DialogHeader>
-                                                    {loadingTopics ? (
+                                                    {loadingTopicsTree ? (
                                                         <div className="p-4 text-center text-sm text-muted-foreground">
                                                             Carregando tópicos...
                                                         </div>
