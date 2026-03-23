@@ -17,12 +17,21 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
 
 import { useSubjects } from "@/hooks/useSubjects";
-import { useTopicsBySubject } from "@/hooks/useTopics";
+import { useTopicsBySubject, useTopicsTree } from "@/hooks/useTopics";
 import { useCreateStudyLog } from "@/hooks/useStudyLogs";
 import { StudyLogInput } from "@/server/actions/studyLogs.action";
 import { NewTopicDialog } from "./NewTopicDialog";
+import { TopicTreeSelector } from "./TopicTreeSelector";
+import { TopicNode } from "@/types/types";
 import useSessionFormStore from "@/store/useSessionFormStore";
 import { usePageTitleWithCronometer } from "@/hooks/usePageTitleWithCronometer";
 import { getLocalDateForToday } from "@/lib/utils";
@@ -66,6 +75,14 @@ const getFormSubmitError = (form: FormData): string | null => {
     return null;
 };
 
+// Helper para filtrar tópicos pela matéria selecionada
+const getTopicTreeForSubject = (
+    topicsTree: TopicNode[],
+    subjectId: string
+): TopicNode[] => {
+    return topicsTree?.filter((node) => node.subjectId === subjectId) || [];
+};
+
 // --- Form State ---
 
 interface FormData {
@@ -107,11 +124,10 @@ export function StudySessionForm() {
 
 
     const [timeRegisterType, setTimeRegisterType] = useState<"manual" | "cronometer">("manual");
+    const { data: topicsTree = [] } = useTopicsTree();
 
     const [newTopicDialogOpen, setNewTopicDialogOpen] = useState(false);
-
-    const [topicSelectOpen, setTopicSelectOpen] = useState(false);
-    const [pendingTopicAutoOpen, setPendingTopicAutoOpen] = useState(false);
+    const [topicTreePopoverOpen, setTopicTreePopoverOpen] = useState(false);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -119,6 +135,9 @@ export function StudySessionForm() {
 
     const { data: subjects = [], isLoading: loadingSubjects } = useSubjects();
     const { data: topics = [], isLoading: loadingTopics } = useTopicsBySubject(form?.subjectId);
+
+    // Filter topics tree for selected subject
+    const currentSubjectTopics = getTopicTreeForSubject(topicsTree, form.subjectId);
 
     const createStudyLog = useCreateStudyLog();
 
@@ -164,25 +183,31 @@ export function StudySessionForm() {
 
     }, [form.subjectId, form.topicId, setSelectedSubject, setSelectedTopic, subjects, topics, selectedSubject?.id, selectedTopic?.id]);
 
-    const shouldAutoOpenTopicSelect =
-        pendingTopicAutoOpen &&
-        !!form.subjectId &&
-        !loadingTopics &&
-        topics.length > 0;
-
-
     // --- Handlers ---
 
     const handleSubjectChange = (subjectId: string) => {
-        if (subjectId !== form.subjectId) {
-            setPendingTopicAutoOpen(true);
-        }
         setForm(prev => ({ ...prev, subjectId, topicId: "" }));
     };
 
     const handleTopicChange = (topicId: string) => {
-        setPendingTopicAutoOpen(false);
+        setTopicTreePopoverOpen(false);
         setForm(prev => ({ ...prev, topicId }));
+    };
+
+    // Return selected topic name for display
+    const getSelectedTopicName = (): string => {
+        if (!form.topicId) return "Selecione um tópico";
+
+        const findTopicInTree = (nodes: typeof currentSubjectTopics): typeof currentSubjectTopics[0] | undefined => {
+            for (const node of nodes) {
+                if (node.id === form.topicId) return node;
+                const found = findTopicInTree(node.children);
+                if (found) return found;
+            }
+            return undefined;
+        };
+
+        return findTopicInTree(currentSubjectTopics)?.name || "Tópico selecionado";
     };
 
     const handleTimeInput = (field: "start_time" | "end_time", value: string) => {
@@ -250,7 +275,7 @@ export function StudySessionForm() {
 
         try {
             setIsSubmitting(true);
-            const result = await createStudyLog.mutateAsync(data);
+            await createStudyLog.mutateAsync(data);
 
             toast.success("Sessão de estudo registrada!");
             setForm(emptyForm);
@@ -276,7 +301,7 @@ export function StudySessionForm() {
                     <CardTitle>Nova Sessão de Estudo</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={onSubmit} className="space-y-6">
+                    <form onSubmit={onSubmit} className="space-y-6 w-full">
 
                         {/* Matéria */}
                         <div className="space-y-2">
@@ -322,42 +347,46 @@ export function StudySessionForm() {
                         {/* Tópico */}
                         <div className="space-y-2">
                             <Label>Tópico Estudado</Label>
-                            <div className="flex items-center gap-2">
-                                <Select
-                                    value={form.topicId}
-                                    onValueChange={handleTopicChange}
-                                    disabled={!form.subjectId || topics.length === 0}
-                                    open={topicSelectOpen || shouldAutoOpenTopicSelect}
-                                    onOpenChange={(nextOpen) => {
-                                        if (!nextOpen) {
-                                            setPendingTopicAutoOpen(false);
-                                        }
-                                        setTopicSelectOpen(nextOpen);
-                                    }}
+                            <div className="flex items-center gap-2 flex-nowrap ">
+                                <Dialog
+                                    open={topicTreePopoverOpen}
+                                    onOpenChange={setTopicTreePopoverOpen}
                                 >
-                                    <SelectTrigger className="w-full" disabled={!form.subjectId}>
-                                        <SelectValue
-                                            placeholder={
-                                                !form.subjectId
-                                                    ? "Selecione uma matéria primeiro"
-                                                    : (topics.length === 0 ? "Nenhum tópico cadastrado" : "Selecione um tópico")
-                                            }
-                                        />
-                                    </SelectTrigger>
-                                    <SelectContent>
+                                    <DialogTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            className={`w-full justify-start  font-normal ${!form.topicId
+                                                ? "text-muted-foreground"
+                                                : ""
+                                                }`}
+                                            disabled={!form.subjectId || loadingTopics}
+                                        >
+                                            {getSelectedTopicName()}
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-md">
+                                        <DialogHeader>
+                                            <DialogTitle>Selecione um tópico</DialogTitle>
+                                        </DialogHeader>
                                         {loadingTopics ? (
-                                            <SelectItem value="loading" disabled>Carregando...</SelectItem>
-                                        ) : topics.length === 0 ? (
-                                            <SelectItem value="empty" disabled>Nenhum tópico cadastrado</SelectItem>
+                                            <div className="p-4 text-center text-sm text-muted-foreground">
+                                                Carregando tópicos...
+                                            </div>
+                                        ) : currentSubjectTopics.length === 0 ? (
+                                            <div className="p-4 text-center text-sm text-muted-foreground">
+                                                Nenhum tópico cadastrado
+                                            </div>
                                         ) : (
-                                            topics.map(topic => (
-                                                <SelectItem key={topic.id} value={topic.id}>
-                                                    {topic.name}
-                                                </SelectItem>
-                                            ))
+                                            <div className="max-h-96 overflow-y-auto">
+                                                <TopicTreeSelector
+                                                    nodes={currentSubjectTopics}
+                                                    selectedTopicId={form.topicId}
+                                                    onTopicSelect={handleTopicChange}
+                                                />
+                                            </div>
                                         )}
-                                    </SelectContent>
-                                </Select>
+                                    </DialogContent>
+                                </Dialog>
                                 <Button
                                     type="button"
                                     variant="outline"
