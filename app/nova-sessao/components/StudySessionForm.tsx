@@ -428,9 +428,9 @@ export function StudySessionForm() {
                                     {/* Matéria */}
                                     <div className="space-y-1.5">
                                         <Label className="text-sm font-medium text-foreground/80">Matéria</Label>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 min-w-0">
                                             <Select value={form.subjectId} onValueChange={handleSubjectChange}>
-                                                <SelectTrigger className="w-full focus-visible:ring-primary/40 bg-background/60">
+                                                <SelectTrigger className="min-w-0 flex-1 focus-visible:ring-primary/40 bg-background/60">
                                                     <SelectValue placeholder="Selecione uma matéria" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -473,46 +473,48 @@ export function StudySessionForm() {
                                     {/* Tópico */}
                                     <div className="space-y-1.5">
                                         <Label className="text-sm font-medium text-foreground/80">Tópico Estudado</Label>
-                                        <div className="flex items-center gap-2">
-                                            <Dialog
-                                                open={topicTreePopoverOpen}
-                                                onOpenChange={setTopicTreePopoverOpen}
-                                            >
-                                                <DialogTrigger asChild>
-                                                    <Button
-                                                        variant="outline"
-                                                        type="button"
-                                                        className={`w-full justify-between font-normal bg-background/60 hover:bg-background/80 focus-visible:ring-primary/40 ${!form.topicId ? "text-muted-foreground" : "text-foreground"
-                                                            }`}
-                                                        disabled={!form.subjectId || loadingTopicsTree}
-                                                    >
-                                                        <span className="truncate">{getSelectedTopicName()}</span>
-                                                        <Network className="h-3.5 w-3.5 ml-2 shrink-0 text-muted-foreground" />
-                                                    </Button>
-                                                </DialogTrigger>
-                                                <DialogContent className="max-w-md">
-                                                    <DialogHeader>
-                                                        <DialogTitle>Selecione um tópico</DialogTitle>
-                                                    </DialogHeader>
-                                                    {loadingTopicsTree ? (
-                                                        <div className="p-4 text-center text-sm text-muted-foreground">
-                                                            Carregando tópicos...
-                                                        </div>
-                                                    ) : currentSubjectTopics.length === 0 ? (
-                                                        <div className="p-4 text-center text-sm text-muted-foreground">
-                                                            Nenhum tópico cadastrado
-                                                        </div>
-                                                    ) : (
-                                                        <div className="max-h-96 overflow-y-auto">
-                                                            <TopicTreeSelector
-                                                                nodes={currentSubjectTopics}
-                                                                selectedTopicId={form.topicId}
-                                                                onTopicSelect={handleTopicChange}
-                                                            />
-                                                        </div>
-                                                    )}
-                                                </DialogContent>
-                                            </Dialog>
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <div className="flex-1 min-w-0">
+                                                <Dialog
+                                                    open={topicTreePopoverOpen}
+                                                    onOpenChange={setTopicTreePopoverOpen}
+                                                >
+                                                    <DialogTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            type="button"
+                                                            className={`w-full  justify-between font-normal bg-background/60 hover:bg-background/80 focus-visible:ring-primary/40 ${!form.topicId ? "text-muted-foreground" : "text-foreground"
+                                                                }`}
+                                                            disabled={!form.subjectId || loadingTopicsTree}
+                                                        >
+                                                            <span className="truncate">{getSelectedTopicName()}</span>
+                                                            <Network className="h-3.5 w-3.5 ml-2 shrink-0 text-muted-foreground" />
+                                                        </Button>
+                                                    </DialogTrigger>
+                                                    <DialogContent className="max-w-md">
+                                                        <DialogHeader>
+                                                            <DialogTitle>Selecione um tópico</DialogTitle>
+                                                        </DialogHeader>
+                                                        {loadingTopicsTree ? (
+                                                            <div className="p-4 text-center text-sm text-muted-foreground">
+                                                                Carregando tópicos...
+                                                            </div>
+                                                        ) : currentSubjectTopics.length === 0 ? (
+                                                            <div className="p-4 text-center text-sm text-muted-foreground">
+                                                                Nenhum tópico cadastrado
+                                                            </div>
+                                                        ) : (
+                                                            <div className="max-h-96 overflow-y-auto">
+                                                                <TopicTreeSelector
+                                                                    nodes={currentSubjectTopics}
+                                                                    selectedTopicId={form.topicId}
+                                                                    onTopicSelect={handleTopicChange}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </DialogContent>
+                                                </Dialog>
+                                            </div>
                                             <Button
                                                 type="button"
                                                 variant="outline"
