@@ -251,7 +251,7 @@ export const LogSection = ({ type }: { type: 'topic' | 'subject' }) => {
                         </Dialog>
                     )}
                     {type === 'topic' && (
-                        <Select value={sidebarTopic?.id} defaultValue={sidebarTopic?.id} onValueChange={(value) => {
+                        <Select value={sidebarTopic?.id ?? ""} onValueChange={(value) => {
                             const selected = topics.find(t => t.id === value);
                             setSidebarTopic(selected || null);
                         }}>

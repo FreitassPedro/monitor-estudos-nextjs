@@ -81,6 +81,7 @@ export function Cronometer() {
     };
 
     const handleTimeInput = (field: "start_time" | "end_time", value: string) => {
+
         if (!value) {
             updateForm({ [field]: undefined });
             return;

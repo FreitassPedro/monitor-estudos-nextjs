@@ -116,6 +116,7 @@ export function StudySessionForm() {
     const createStudyLog = useCreateStudyLog();
 
     const topicsMap = useTopicsMap();
+    const sessionForm = useSessionFormStore((state) => state.form);
 
     const updateSelectionForm = useSessionFormStore((state) => state.updateForm);
     const resetSelectionForm = useSessionFormStore((state) => state.resetForm);
@@ -140,6 +141,17 @@ export function StudySessionForm() {
     const currentSubjectTopics = useMemo(
         () => getTopicTreeForSubject(topicsTree, selectionForm.subjectId),
         [topicsTree, selectionForm.subjectId]
+    );
+
+    // Time/date fields are controlled by Cronometer via Zustand store.
+    const submitForm = useMemo<FormData>(
+        () => ({
+            ...selectionForm,
+            start_time: sessionForm.start_time,
+            end_time: sessionForm.end_time,
+            study_date: sessionForm.study_date ?? selectionForm.study_date,
+        }),
+        [selectionForm, sessionForm.start_time, sessionForm.end_time, sessionForm.study_date]
     );
 
 
@@ -195,26 +207,26 @@ export function StudySessionForm() {
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("Submitting form:", selectionForm);
+        console.log("Submitting form:", submitForm);
 
-        const submitError = getFormSubmitError(selectionForm);
+        const submitError = getFormSubmitError(submitForm);
         if (submitError) {
             toast.error(submitError);
             return;
         }
 
-        const studyDate = selectionForm.study_date!;
-        const startTime = selectionForm.start_time!;
-        const endTime = selectionForm.end_time!;
-        const durationMinutes = calcDurationMinutes(selectionForm.start_time, selectionForm.end_time);
+        const studyDate = submitForm.study_date!;
+        const startTime = submitForm.start_time!;
+        const endTime = submitForm.end_time!;
+        const durationMinutes = calcDurationMinutes(submitForm.start_time, submitForm.end_time);
 
         const data: StudyLogInput = {
-            topic_id: selectionForm.topicId,
+            topic_id: submitForm.topicId,
             study_date: studyDate,
             start_time: startTime,
             end_time: endTime,
             duration_minutes: durationMinutes,
-            notes: selectionForm.notes || undefined,
+            notes: submitForm.notes || undefined,
         };
 
 
@@ -234,7 +246,7 @@ export function StudySessionForm() {
         }
     };
 
-    const isFormReadyToSubmit = !getFormSubmitError(selectionForm);
+    const isFormReadyToSubmit = !getFormSubmitError(submitForm);
 
     return (
         <>
