@@ -1,6 +1,7 @@
 import { postCreateTopic, getTopicsAction, getTopicsBySubjectAction, deleteTopicAction, updateTopicAction, getTopicsTreeAction } from "@/server/actions/topic.action";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/store/useAuthStore";
+import { Topic } from "@/types/types";
 
 /*
 keyss
@@ -44,7 +45,7 @@ export function useTopicsBySubject(subjectId?: string) {
 
 export function useTopicsMap() {
     const { data } = useTopics();
-    return (data?.topicsMap ?? {}) as Record<string, { id: string; name: string }>;
+    return (data?.topicsMap ?? {}) as Record<string, Topic>;
 }
 
 export function useTopicsTree() {

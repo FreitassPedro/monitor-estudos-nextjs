@@ -71,7 +71,7 @@ export function Cronometer() {
     const updateForm = useSessionFormStore((state) => state.updateForm);
 
     const [timeRegisterType, setTimeRegisterType] = useState<"manual" | "cronometer">("manual");
-    const [endTimeError, setEndTimeError] = useState<string | null>(null);
+    const [endTimeError] = useState<string | null>(null);
     const duration = calcDurationMinutes(form.start_time, form.end_time);
 
 

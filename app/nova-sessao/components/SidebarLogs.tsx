@@ -223,7 +223,7 @@ export const LogSection = ({ type }: { type: 'topic' | 'subject' }) => {
                                 <DialogHeader>
                                     <DialogTitle>Logs Recentes de {selectedSubject.name}</DialogTitle>
                                 </DialogHeader>
-                                <div className="space-y-2 overflow-y-auto max-h-[400px]">
+                                <div className="space-y-2 overflow-y-auto max-h-100">
                                     {logsHistory.map(log => (
                                         <div key={log.id} className="p-2 border-b">
                                             <h2 className="font-semibold">{log.topic.name}</h2>
