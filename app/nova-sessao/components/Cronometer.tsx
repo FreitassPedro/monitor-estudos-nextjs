@@ -4,10 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePageTitleWithCronometer } from "@/hooks/usePageTitleWithCronometer";
+import { cn } from "@/lib/utils";
 import useCronometerStore from "@/store/useCronometerStore";
 import useSessionFormStore from "@/store/useSessionFormStore";
-import { ClockArrowUp, Maximize2, Play, Square, Timer } from "lucide-react";
-import { useState } from "react";
+import { ClockArrowUp, Maximize2, Minimize2, Play, Square, Timer } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const padTwo = (n: number) => n.toString().padStart(2, "0");
 
@@ -60,6 +61,7 @@ function CronometerTimeDisplay({ isRunning }: { isRunning: boolean }) {
 export function Cronometer() {
 
     const isCronometerRunning = useCronometerStore((state) => state.cronometer.isRunning);
+    const cronometerSeconds = useCronometerStore((state) => state.cronometer.seconds);
     const cronometerStartTime = useCronometerStore((state) => state.cronometer.startTime);
     const cronometerEndTime = useCronometerStore((state) => state.cronometer.endTime);
     const updateCronometer = useCronometerStore((state) => state.updateCronometer);
@@ -72,13 +74,38 @@ export function Cronometer() {
 
     const [timeRegisterType, setTimeRegisterType] = useState<"manual" | "cronometer">("manual");
     const [endTimeError] = useState<string | null>(null);
+    const [isFocusModeOpen, setIsFocusModeOpen] = useState(false);
     const duration = calcDurationMinutes(form.start_time, form.end_time);
-
-
 
     const setCurrentTime = (field: "start_time" | "end_time") => {
         updateForm({ [field]: new Date() });
     };
+
+    useEffect(() => {
+        const today = new Date();
+        if (!form.study_date) {
+            updateForm({ study_date: today });
+        }
+    }, [updateForm, form.study_date]);
+
+    useEffect(() => {
+        if (!isFocusModeOpen) return;
+
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                setIsFocusModeOpen(false);
+            }
+        };
+
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        window.addEventListener("keydown", onKeyDown);
+
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            window.removeEventListener("keydown", onKeyDown);
+        };
+    }, [isFocusModeOpen]);
 
     const handleTimeInput = (field: "start_time" | "end_time", value: string) => {
 
@@ -125,8 +152,15 @@ export function Cronometer() {
             <Card className="shadow-lg border-border/60 bg-card/80 backdrop-blur-sm">
                 <CardContent className="space-y-3">
 
-                    <Button type={"button"} variant="outline" size="icon" className="absolute top-0 left-0 z-10 rounded-full">
-                        <Maximize2 className="h-4 w-4 text-primary" />
+                    <Button
+                        type={"button"}
+                        variant="outline"
+                        
+                        className={cn("rounded-full w-full text-muted-foreground hover:text-foreground focus-visible:ring-primary/40")}
+                        onClick={() => setIsFocusModeOpen(true)}
+                        title="Entrar no modo focado"
+                    >
+                        Modo foco <Maximize2 className="h-4 w-4 text-primary" />
                     </Button>
 
                     {/* Time Mode Tabs */}
@@ -300,6 +334,86 @@ export function Cronometer() {
                     </div>
                 </CardContent>
             </Card>
+
+            {isFocusModeOpen && (
+                <div className="fixed inset-0 z-50 bg-background/65 backdrop-blur-md">
+                    <Card className="h-screen w-screen rounded-none border-none bg-background/70">
+                        <CardContent className="h-full relative flex items-center justify-center p-6">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="lg"
+                                className="absolute top-5 right-5"
+                                onClick={() => setIsFocusModeOpen(false)}
+                                title="Sair do modo focado"
+                            >
+                               Minimizar <Minimize2 size={128} />
+                            </Button>
+
+                            <div>
+                                <div className="text-center select-none">
+                                    <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-5">Modo focado</p>
+                                    <span className={`font-mono font-semibold tabular-nums text-[min(18vw,11rem)] leading-none ${isCronometerRunning ? "text-foreground" : "text-muted-foreground"}`}>
+                                        {formatCronometerTime(cronometerSeconds)}
+                                    </span>
+                                </div>
+                                {/* Display Materia and Topico if available */}
+                                <div className="text-center mt-4">
+
+                                    <p className="text-lg font-semibold text-foreground">
+                                        {form.subjectId ?? "Matéria não selecionada"}
+                                    </p>
+
+
+                                    <p className="text-md text-muted-foreground">
+                                        {form.topicId ?? "Tópico não selecionado"}
+                                    </p>
+
+                                </div>
+
+                                <div className="w-full flex items-center justify-center gap-4">
+                                    <Button
+                                        type="button"
+                                        onClick={toggleCronometer}
+                                        className={`gap-2 transition-all 
+                                        ${isCronometerRunning ?
+                                                "bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                                                : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                                            }`}
+                                    >
+                                        {isCronometerRunning ? (
+                                            <>
+                                                <Square className="fill-current" />
+                                                Parar
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Play className="fill-current" />
+                                                Iniciar
+                                            </>
+                                        )}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={handleResetCronometer}
+                                        disabled={isCronometerRunning}
+                                        title="Resetar"
+                                        className="text-muted-foreground hover:text-foreground"
+                                    >
+                                        Resetar
+                                    </Button>
+                                </div>
+                            </div>
+
+
+
+
+
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
         </>
     )
 }
