@@ -2,10 +2,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTodayStudyLogs } from "@/hooks/useStudyLogs";
 import { useSubjectsMap } from "@/hooks/useSubjects";
-import { useTopicsTree } from "@/hooks/useTopics";
+import { useTopicsMap } from "@/hooks/useTopics";
 import useSessionFormStore from "@/store/useSessionFormStore";
 import useCronometerStore from "@/store/useCronometerStore";
-import { TopicNode } from "@/types/types";
 import { Clock } from "lucide-react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { getLocalDateForToday } from "@/lib/utils";
@@ -119,34 +118,24 @@ const formatTimeFromTimestamp = (time: Date | string | undefined | null, include
     return `${hours}:${minutes}`;
 };
 
-const findTopicNameInTree = (
-    nodes: TopicNode[],
-    topicId: string
-): string | undefined => {
-    for (const node of nodes) {
-        if (node.id === topicId) return node.name;
-        const found = findTopicNameInTree(node.children, topicId);
-        if (found) return found;
-    }
-    return undefined;
-};
 
 const RenderCurrentSessionCard = () => {
     const { currentTime } = useTimelineNow();
 
     const startTime = useCronometerStore((state) => state.cronometer.startTime);
     const endTime = useCronometerStore((state) => state.cronometer.endTime);
+
     const isRunning = useCronometerStore((state) => state.cronometer.isRunning);
-    const selectedSubjectId = useSessionFormStore((state) => state.form.subjectId);
-    const selectedTopicId = useSessionFormStore((state) => state.form.topicId);
-    const { data: subjectsMap } = useSubjectsMap();
-    const { data: topicsTree = [] } = useTopicsTree();
+    const formSubjectId = useSessionFormStore((state) => state.form.subjectId);
+    const formTopicId = useSessionFormStore((state) => state.form.topicId);
 
-    const selectedSubject = selectedSubjectId ? subjectsMap?.[selectedSubjectId] : undefined;
-    const selectedTopicName = selectedTopicId
-        ? findTopicNameInTree(topicsTree, selectedTopicId)
-        : undefined;
+    const topics = useTopicsMap();
+    const { data: subjectsMapData = {} } = useSubjectsMap();
 
+    const subject = subjectsMapData[formSubjectId];
+    const topic = topics[formTopicId];
+
+  
     const currentCard = useMemo(() => {
         if (!startTime) return null;
 
@@ -166,7 +155,7 @@ const RenderCurrentSessionCard = () => {
 
     return (
         <div
-            key={selectedSubject?.id ?? "pendingId" + '_current'}
+            key={subject?.id ?? "pendingId" + '_current'}
             className={`absolute z-10 left-2 right-2 rounded-lg p-2 border-l-4 overflow-hidden cursor-pointer hover:scale-[1.01] hover:z-20 transition-all
             ${isRunning ? 'border-red-500 animate-pulse duration-3000 border-b border-dotted' : 'border-green-500'}
     `}
@@ -179,10 +168,10 @@ const RenderCurrentSessionCard = () => {
         >
             <div className="flex justify-between h-full">
                 <div className="flex flex-col items-center justify-between gap-1">
-                    <h4 className="font-semibold text-xs text-slate-900 truncate">{selectedTopicName ?? 'Topic not selected'}</h4>
-                    <span className="text-xs text-slate-600 truncate">{selectedSubject?.name ?? 'Subject not selected'}</span>
+                    <h4 className="font-semibold text-xs text-foreground truncate">{topic?.name ?? 'Topic not selected'}</h4>
+                    <span className="text-xs text-foreground truncate">{subject?.name ?? 'Subject not selected'}</span>
                 </div>
-                <div className="text-xs text-slate-600 flex items-center gap-1 flex-row justify-between">
+                <div className="text-xs text-foreground flex items-center gap-1 flex-row justify-between">
                     <div className='flex flex-row items-center gap-1'>
                         <Clock className="w-3 h-3" />
                         {formatTimeFromTimestamp(currentCard?.startTime)}

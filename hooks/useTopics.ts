@@ -44,7 +44,7 @@ export function useTopicsBySubject(subjectId?: string) {
 
 export function useTopicsMap() {
     const { data } = useTopics();
-    return { data: data?.topicsMap };
+    return (data?.topicsMap ?? {}) as Record<string, { id: string; name: string }>;
 }
 
 export function useTopicsTree() {

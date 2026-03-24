@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { useSubjects } from "@/hooks/useSubjects";
-import { useTopicsTree } from "@/hooks/useTopics";
+import { useTopicsMap, useTopicsTree } from "@/hooks/useTopics";
 import { useCreateStudyLog } from "@/hooks/useStudyLogs";
 import { StudyLogInput } from "@/server/actions/studyLogs.action";
 import { NewTopicDialog } from "./NewTopicDialog";
@@ -113,20 +113,20 @@ const STUDY_MODES: { value: StudyMode; label: string; icon: React.ReactNode }[] 
 
 export function StudySessionForm() {
     const router = useRouter();
+    const createStudyLog = useCreateStudyLog();
 
-    const selectionForm = useSessionFormStore((state) => state.form);
+    const topicsMap = useTopicsMap();
+
     const updateSelectionForm = useSessionFormStore((state) => state.updateForm);
     const resetSelectionForm = useSessionFormStore((state) => state.resetForm);
-    const [form, setForm] = useState<FormData>(() => ({
-        ...emptyForm,
-        subjectId: selectionForm.subjectId,
-        topicId: selectionForm.topicId,
-    }));
+
+    const [selectionForm, setSelectionForm] = useState<FormData>(emptyForm);
 
     const isCronometerRunning = useCronometerStore((state) => state.cronometer.isRunning);
     const resetCronometer = useCronometerStore((state) => state.resetCronometer);
 
     const { data: topicsTree = [], isLoading: loadingTopicsTree } = useTopicsTree();
+    const { data: subjects = [], isLoading: loadingSubjects } = useSubjects();
 
     const [newTopicDialogOpen, setNewTopicDialogOpen] = useState(false);
     const [topicTreePopoverOpen, setTopicTreePopoverOpen] = useState(false);
@@ -136,22 +136,21 @@ export function StudySessionForm() {
     // New UI-only state
     const [studyMode, setStudyMode] = useState<StudyMode>("leitura");
 
-    const { data: subjects = [], isLoading: loadingSubjects } = useSubjects();
 
     const currentSubjectTopics = useMemo(
-        () => getTopicTreeForSubject(topicsTree, form.subjectId),
-        [topicsTree, form.subjectId]
+        () => getTopicTreeForSubject(topicsTree, selectionForm.subjectId),
+        [topicsTree, selectionForm.subjectId]
     );
-    const createStudyLog = useCreateStudyLog();
+
 
     // Warn on unsaved data
     useEffect(() => {
         const isDirty =
-            !!form.subjectId ||
-            !!form.topicId ||
-            !!form.notes ||
-            !!form.start_time ||
-            !!form.end_time ||
+            !!selectionForm.subjectId ||
+            !!selectionForm.topicId ||
+            !!selectionForm.notes ||
+            !!selectionForm.start_time ||
+            !!selectionForm.end_time ||
             isCronometerRunning;
 
         if (!isDirty) return;
@@ -162,69 +161,60 @@ export function StudySessionForm() {
         };
         window.addEventListener("beforeunload", handler);
         return () => window.removeEventListener("beforeunload", handler);
-    }, [form, isCronometerRunning]);
+    }, [selectionForm, isCronometerRunning]);
 
     // Keep store IDs as the single global source for subject/topic selection.
     useEffect(() => {
         updateSelectionForm({
-            subjectId: form.subjectId,
-            topicId: form.topicId,
+            subjectId: selectionForm.subjectId,
+            topicId: selectionForm.topicId,
         });
-    }, [form.subjectId, form.topicId, updateSelectionForm]);
+    }, [selectionForm.subjectId, selectionForm.topicId, updateSelectionForm]);
 
     // --- Handlers ---
 
     const handleSubjectChange = (subjectId: string) => {
-        setForm((prev) => ({ ...prev, subjectId, topicId: "" }));
+        setSelectionForm((prev) => ({ ...prev, subjectId, topicId: "" }));
         updateSelectionForm({ subjectId, topicId: "" });
     };
 
     const handleTopicChange = (topicId: string) => {
         setTopicTreePopoverOpen(false);
-        setForm((prev) => ({ ...prev, topicId }));
+        setSelectionForm((prev) => ({ ...prev, topicId }));
         updateSelectionForm({ topicId });
     };
 
     const getSelectedTopicName = (): string => {
-        if (!form.topicId) return "Selecione um tópico";
+        if (!selectionForm.topicId) return "Selecione um tópico";
 
-        const findTopicInTree = (
-            nodes: typeof currentSubjectTopics
-        ): (typeof currentSubjectTopics)[0] | undefined => {
-            for (const node of nodes) {
-                if (node.id === form.topicId) return node;
-                const found = findTopicInTree(node.children);
-                if (found) return found;
-            }
-            return undefined;
-        };
+        const topic = topicsMap[selectionForm?.topicId];
 
-        return findTopicInTree(currentSubjectTopics)?.name || "Tópico selecionado";
+        return topic ? topic.name : "Tópico desconhecido";
     };
 
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("Submitting form:", form);
+        console.log("Submitting form:", selectionForm);
 
-        const submitError = getFormSubmitError(form);
+        const submitError = getFormSubmitError(selectionForm);
         if (submitError) {
             toast.error(submitError);
             return;
         }
 
-        const studyDate = form.study_date!;
-        const startTime = form.start_time!;
-        const endTime = form.end_time!;
-        const durationMinutes = calcDurationMinutes(form.start_time, form.end_time);
+        const studyDate = selectionForm.study_date!;
+        const startTime = selectionForm.start_time!;
+        const endTime = selectionForm.end_time!;
+        const durationMinutes = calcDurationMinutes(selectionForm.start_time, selectionForm.end_time);
 
         const data: StudyLogInput = {
-            topic_id: form.topicId,
+            topic_id: selectionForm.topicId,
             study_date: studyDate,
             start_time: startTime,
             end_time: endTime,
             duration_minutes: durationMinutes,
-            notes: form.notes || undefined,
+            notes: selectionForm.notes || undefined,
         };
 
 
@@ -232,7 +222,7 @@ export function StudySessionForm() {
             setIsSubmitting(true);
             await createStudyLog.mutateAsync(data);
             toast.success("Sessão de estudo registrada!");
-            setForm(emptyForm);
+            setSelectionForm(emptyForm);
             resetSelectionForm();
             resetCronometer();
             router.push("/");
@@ -244,7 +234,7 @@ export function StudySessionForm() {
         }
     };
 
-    const isFormReadyToSubmit = !getFormSubmitError(form);
+    const isFormReadyToSubmit = !getFormSubmitError(selectionForm);
 
     return (
         <>
@@ -288,7 +278,7 @@ export function StudySessionForm() {
                                     <div className="space-y-1.5">
                                         <Label className="text-sm font-medium text-foreground/80">Matéria</Label>
                                         <div className="flex items-center gap-2 min-w-0">
-                                            <Select value={form.subjectId} onValueChange={handleSubjectChange}>
+                                            <Select value={selectionForm.subjectId} onValueChange={handleSubjectChange}>
                                                 <SelectTrigger className="min-w-0 flex-1 focus-visible:ring-primary/40 bg-background/60">
                                                     <SelectValue placeholder="Selecione uma matéria" />
                                                 </SelectTrigger>
@@ -342,9 +332,9 @@ export function StudySessionForm() {
                                                         <Button
                                                             variant="outline"
                                                             type="button"
-                                                            className={`w-full  justify-between font-normal bg-background/60 hover:bg-background/80 focus-visible:ring-primary/40 ${!form.topicId ? "text-muted-foreground" : "text-foreground"
+                                                            className={`w-full  justify-between font-normal bg-background/60 hover:bg-background/80 focus-visible:ring-primary/40 ${!selectionForm.topicId ? "text-muted-foreground" : "text-foreground"
                                                                 }`}
-                                                            disabled={!form.subjectId || loadingTopicsTree}
+                                                            disabled={!selectionForm.subjectId || loadingTopicsTree}
                                                         >
                                                             <span className="truncate">{getSelectedTopicName()}</span>
                                                             <Network className="h-3.5 w-3.5 ml-2 shrink-0 text-muted-foreground" />
@@ -366,7 +356,7 @@ export function StudySessionForm() {
                                                             <div className="max-h-96 overflow-y-auto">
                                                                 <TopicTreeSelector
                                                                     nodes={currentSubjectTopics}
-                                                                    selectedTopicId={form.topicId}
+                                                                    selectedTopicId={selectionForm.topicId}
                                                                     onTopicSelect={handleTopicChange}
                                                                 />
                                                             </div>
@@ -380,7 +370,7 @@ export function StudySessionForm() {
                                                 size="icon"
                                                 onClick={() => setNewTopicDialogOpen(true)}
                                                 className="shrink-0 text-muted-foreground hover:text-foreground"
-                                                disabled={!form.subjectId}
+                                                disabled={!selectionForm.subjectId}
                                                 title="Novo tópico"
                                             >
                                                 <Plus className="h-4 w-4" />
@@ -431,10 +421,10 @@ export function StudySessionForm() {
                                             id="notes"
                                             placeholder="Resumo, pontos-chave, dúvidas..."
                                             rows={4}
-                                            value={form.notes}
+                                            value={selectionForm.notes}
                                             className="bg-background/60 focus-visible:ring-primary/40 resize-none"
                                             onChange={(e) =>
-                                                setForm((prev) => ({ ...prev, notes: e.target.value }))
+                                                setSelectionForm((prev) => ({ ...prev, notes: e.target.value }))
                                             }
                                         />
                                     </div>
@@ -480,13 +470,13 @@ export function StudySessionForm() {
 
             {/* Dialogs */}
             {
-                form.subjectId && (
+                selectionForm.subjectId && (
                     <NewTopicDialog
                         isOpen={newTopicDialogOpen}
                         onOpenChange={setNewTopicDialogOpen}
-                        subjectId={form.subjectId}
+                        subjectId={selectionForm.subjectId}
                         onTopicCreated={(topic) => {
-                            setForm((prev) => ({ ...prev, topicId: topic.id }));
+                            setSelectionForm((prev) => ({ ...prev, topicId: topic.id }));
                         }}
                     />
                 )

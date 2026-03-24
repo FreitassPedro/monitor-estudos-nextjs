@@ -22,7 +22,7 @@ function NodeRow({
     node: TopicNode;
     level: number;
 }) {
-    const { data: topicsMap } = useTopicsMap();
+    const topicsMap = useTopicsMap();
     const createTopic = useCreateTopic();
 
     const hasChildren = node.children && node.children.length > 0;
