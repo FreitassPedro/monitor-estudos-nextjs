@@ -1,83 +1,39 @@
-import { Subject, Topic } from '@/types/types';
 import { create } from 'zustand';
 
-interface Cronometer {
-    isRunning: boolean;
-    seconds: number;
-    // Datas UTC para evitar problemas de timezone com @db.Date do Prisma
-    startTime: Date | null;
-    endTime: Date | null;
+interface FormData {
+    subjectId: string;
+    topicId: string;
+    start_time?: Date;
+    end_time?: Date;
+    study_date?: Date;
 }
 
 interface SessionFormState {
-    selectedSubject?: Subject | undefined;
-    selectedTopic?: Topic | undefined;
-    cronometer: Cronometer;
-    
-    setSelectedSubject: (selectedSubject: Subject | undefined) => void;
-    setSelectedTopic: (selectedTopic: Topic | undefined) => void;
-    setCronometer: (cronometer: Cronometer) => void;
-    updateCronometer: (partial: Partial<Cronometer>) => void;
-    startTicking: () => void;
-    stopTicking: () => void;
-    resetCronometer: () => void;
-    clearCronometer: () => void;
+    form: FormData;
+
+    setForm: (form: FormData) => void;
+    updateForm: (partial: Partial<FormData>) => void;
+    resetForm: () => void;
 }
 
-let tickIntervalId: ReturnType<typeof setInterval> | null = null;
+const initialFormData: FormData = {
+    subjectId: '',
+    topicId: '',
+    start_time: undefined,
+    end_time: undefined
 
-const useSessionFormStore = create<SessionFormState>((set, get) => ({
-    selectedSubject: undefined,
-    selectedTopic: undefined,
-    cronometer: { isRunning: false, seconds: 0, startTime: null, endTime: null },
-    
-    setSelectedSubject: (selectedSubject) => set({ selectedSubject }),
-    setSelectedTopic: (selectedTopic) => set({ selectedTopic }),
-    setCronometer: (cronometer) => set({ cronometer }),
-    updateCronometer: (partial) => set((state) => ({
-        cronometer: { ...state.cronometer, ...partial }
+};
+
+const useSessionFormStore = create<SessionFormState>((set) => ({
+    form: initialFormData,
+
+    setForm: (form) => set({ form }),
+    updateForm: (partial) => set((state) => ({
+        form: { ...state.form, ...partial }
     })),
-    startTicking: () => {
-        if (tickIntervalId) return;
-
-        const tick = () => {
-            const { cronometer } = get();
-            if (!cronometer.startTime) return;
-            const elapsed = Math.floor(
-                (Date.now() - new Date(cronometer.startTime).getTime()) / 1000
-            );
-            set((state) => ({
-                cronometer: { ...state.cronometer, seconds: elapsed }
-            }));
-        };
-
-        tick();
-        tickIntervalId = setInterval(tick, 1000);
-    },
-    stopTicking: () => {
-        if (tickIntervalId) {
-            clearInterval(tickIntervalId);
-            tickIntervalId = null;
-        }
-    },
-    resetCronometer: () => {
-        if (tickIntervalId) {
-            clearInterval(tickIntervalId);
-            tickIntervalId = null;
-        }
-        set({
-            cronometer: { isRunning: false, seconds: 0, startTime: null, endTime: null }
-        });
-    },
-    clearCronometer: () => {
-        if (tickIntervalId) {
-            clearInterval(tickIntervalId);
-            tickIntervalId = null;
-        }
-        set({
-            cronometer: { isRunning: false, seconds: 0, startTime: null, endTime: null }
-        });
-    }
+    resetForm: () => set({
+        form: initialFormData
+    })
 }));
 
 export default useSessionFormStore;

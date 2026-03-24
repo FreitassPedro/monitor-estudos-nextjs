@@ -9,6 +9,7 @@ import React from "react";
 import { parseDateAsLocal } from "@/lib/utils";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTopicsBySubject } from "@/hooks/useTopics";
+import { useSubjects } from "@/hooks/useSubjects";
 import { Topic } from "@/types/types";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -75,9 +76,16 @@ export const LogSection = ({ type }: { type: 'topic' | 'subject' }) => {
     const PAGE_SIZE = 3;
 
     const [isOpen, setIsOpen] = React.useState(true);
-    const { selectedSubject, selectedTopic } = useSessionFormStore();
+    const selectedSubjectId = useSessionFormStore((state) => state.form.subjectId);
+    const selectedTopicId = useSessionFormStore((state) => state.form.topicId);
 
-    const { data: topics = [] } = useTopicsBySubject(selectedSubject?.id);
+    const { data: subjects = [] } = useSubjects();
+    const selectedSubject = React.useMemo(
+        () => subjects.find((subject) => subject.id === selectedSubjectId),
+        [selectedSubjectId, subjects]
+    );
+
+    const { data: topics = [] } = useTopicsBySubject(selectedSubjectId || undefined);
     const [sidebarTopic, setSidebarTopic] = React.useState<Topic | null>(null);
 
     const [logsHistory, setLogsHistory] = React.useState<Array<{ id: string; study_date: Date; notes: string | null; topic: { name: string } }>>([]);
@@ -151,14 +159,14 @@ export const LogSection = ({ type }: { type: 'topic' | 'subject' }) => {
     // Atualiza o tópico do sidebar quando o tópico selecionado na sessão mudar
     React.useEffect(() => {
         if (type !== 'topic') return;
-        if (!selectedTopic) {
+        if (!selectedTopicId) {
             setSidebarTopic(null);
             return;
         }
 
-        setSidebarTopic(topics.find(topic => topic.id === selectedTopic.id) || null);
-    }, [selectedTopic, topics, type]);
-    if (type === 'topic' && !selectedTopic) {
+        setSidebarTopic(topics.find(topic => topic.id === selectedTopicId) || null);
+    }, [selectedTopicId, topics, type]);
+    if (type === 'topic' && !selectedTopicId) {
         return null; // Não renderiza nada se for seção de tópico e nenhum tópico estiver selecionado
     }
 

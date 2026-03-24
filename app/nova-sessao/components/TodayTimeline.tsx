@@ -2,7 +2,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTodayStudyLogs } from "@/hooks/useStudyLogs";
 import { useSubjectsMap } from "@/hooks/useSubjects";
+import { useTopicsTree } from "@/hooks/useTopics";
 import useSessionFormStore from "@/store/useSessionFormStore";
+import useCronometerStore from "@/store/useCronometerStore";
+import { TopicNode } from "@/types/types";
 import { Clock } from "lucide-react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { getLocalDateForToday } from "@/lib/utils";
@@ -116,14 +119,33 @@ const formatTimeFromTimestamp = (time: Date | string | undefined | null, include
     return `${hours}:${minutes}`;
 };
 
+const findTopicNameInTree = (
+    nodes: TopicNode[],
+    topicId: string
+): string | undefined => {
+    for (const node of nodes) {
+        if (node.id === topicId) return node.name;
+        const found = findTopicNameInTree(node.children, topicId);
+        if (found) return found;
+    }
+    return undefined;
+};
+
 const RenderCurrentSessionCard = () => {
     const { currentTime } = useTimelineNow();
 
-    const startTime = useSessionFormStore((state) => state.cronometer.startTime);
-    const endTime = useSessionFormStore((state) => state.cronometer.endTime);
-    const isRunning = useSessionFormStore((state) => state.cronometer.isRunning);
-    const selectedSubject = useSessionFormStore((state) => state.selectedSubject);
-    const selectedTopic = useSessionFormStore((state) => state.selectedTopic);
+    const startTime = useCronometerStore((state) => state.cronometer.startTime);
+    const endTime = useCronometerStore((state) => state.cronometer.endTime);
+    const isRunning = useCronometerStore((state) => state.cronometer.isRunning);
+    const selectedSubjectId = useSessionFormStore((state) => state.form.subjectId);
+    const selectedTopicId = useSessionFormStore((state) => state.form.topicId);
+    const { data: subjectsMap } = useSubjectsMap();
+    const { data: topicsTree = [] } = useTopicsTree();
+
+    const selectedSubject = selectedSubjectId ? subjectsMap?.[selectedSubjectId] : undefined;
+    const selectedTopicName = selectedTopicId
+        ? findTopicNameInTree(topicsTree, selectedTopicId)
+        : undefined;
 
     const currentCard = useMemo(() => {
         if (!startTime) return null;
@@ -157,7 +179,7 @@ const RenderCurrentSessionCard = () => {
         >
             <div className="flex justify-between h-full">
                 <div className="flex flex-col items-center justify-between gap-1">
-                    <h4 className="font-semibold text-xs text-slate-900 truncate">{selectedTopic?.name ?? 'Topic not selected'}</h4>
+                    <h4 className="font-semibold text-xs text-slate-900 truncate">{selectedTopicName ?? 'Topic not selected'}</h4>
                     <span className="text-xs text-slate-600 truncate">{selectedSubject?.name ?? 'Subject not selected'}</span>
                 </div>
                 <div className="text-xs text-slate-600 flex items-center gap-1 flex-row justify-between">
@@ -267,7 +289,7 @@ const NowLine = () => {
 }
 
 const RealtimeTimelineLayer = () => {
-    const isRunning = useSessionFormStore((state) => state.cronometer.isRunning);
+    const isRunning = useCronometerStore((state) => state.cronometer.isRunning);
     // Deterministic first render to prevent SSR/client hydration mismatch.
     const [currentTime, setCurrentTime] = useState(() => new Date(2000, 0, 1, 12, 0, 0));
 

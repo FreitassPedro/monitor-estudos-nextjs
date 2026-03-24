@@ -5,12 +5,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
     Circle,
-    ClockArrowUp,
     Plus,
     Network,
-    Timer,
-    Play,
-    Square,
     BookOpen,
     RotateCcw,
     Pencil,
@@ -20,10 +16,9 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -49,28 +44,11 @@ import { NewTopicDialog } from "./NewTopicDialog";
 import { TopicTreeSelector } from "./TopicTreeSelector";
 import { TopicNode } from "@/types/types";
 import useSessionFormStore from "@/store/useSessionFormStore";
-import { usePageTitleWithCronometer } from "@/hooks/usePageTitleWithCronometer";
+import useCronometerStore from "@/store/useCronometerStore";
 import { getLocalDateForToday } from "@/lib/utils";
+import { Cronometer } from "./Cronometer";
 
 // --- Helpers ---
-
-const padTwo = (n: number) => n.toString().padStart(2, "0");
-
-const formatCronometerTime = (seconds: number) => {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${padTwo(hrs)}:${padTwo(mins)}:${padTwo(secs)}`;
-};
-
-const formatDate = (date: Date) => {
-    return `${date.getFullYear()}-${padTwo(date.getMonth() + 1)}-${padTwo(date.getDate())}`;
-};
-
-const formatTime = (date?: Date) => {
-    if (!date || isNaN(date.getTime())) return "";
-    return `${padTwo(date.getHours())}:${padTwo(date.getMinutes())}`;
-};
 
 const calcDurationMinutes = (start?: Date, end?: Date): number => {
     if (!start || !end) return 0;
@@ -78,6 +56,7 @@ const calcDurationMinutes = (start?: Date, end?: Date): number => {
 };
 
 const getFormSubmitError = (form: FormData): string | null => {
+    console.log("Validating form:", form);
     if (!form.subjectId) return "Selecione uma matéria.";
     if (!form.topicId) return "Selecione um tópico.";
     if (!form.study_date) return "Informe a data de estudo.";
@@ -96,18 +75,6 @@ const getTopicTreeForSubject = (
     subjectId: string
 ): TopicNode[] => {
     return topicsTree?.filter((node) => node.subjectId === subjectId) || [];
-};
-
-const findTopicInTreeById = (
-    nodes: TopicNode[],
-    topicId: string
-): TopicNode | undefined => {
-    for (const node of nodes) {
-        if (node.id === topicId) return node;
-        const found = findTopicInTreeById(node.children, topicId);
-        if (found) return found;
-    }
-    return undefined;
 };
 
 // --- Form State ---
@@ -141,60 +108,30 @@ const STUDY_MODES: { value: StudyMode; label: string; icon: React.ReactNode }[] 
     { value: "resumo", label: "Resumo", icon: <FileText className="h-3.5 w-3.5" /> },
 ];
 
-function CronometerTitleSync() {
-    const isRunning = useSessionFormStore((state) => state.cronometer.isRunning);
-    const seconds = useSessionFormStore((state) => state.cronometer.seconds);
-
-    usePageTitleWithCronometer({
-        isRunning,
-        seconds,
-        baseTitle: "Nova Sessão de Estudo",
-    });
-
-    return null;
-}
-
-function CronometerTimeDisplay({ isRunning }: { isRunning: boolean }) {
-    const seconds = useSessionFormStore((state) => state.cronometer.seconds);
-
-    return (
-        <div className="relative flex flex-col items-center">
-            <span
-                className={`text-4xl font-mono font-semibold tracking-tight transition-colors ${isRunning ? "text-foreground" : "text-muted-foreground"
-                    }`}
-            >
-                {formatCronometerTime(seconds)}
-            </span>
-        </div>
-    );
-}
 
 // --- Component ---
 
 export function StudySessionForm() {
     const router = useRouter();
 
-    const [form, setForm] = useState<FormData>(emptyForm);
-    const setSelectedSubject = useSessionFormStore((state) => state.setSelectedSubject);
-    const setSelectedTopic = useSessionFormStore((state) => state.setSelectedTopic);
-    const selectedSubject = useSessionFormStore((state) => state.selectedSubject);
-    const selectedTopic = useSessionFormStore((state) => state.selectedTopic);
-    const isCronometerRunning = useSessionFormStore((state) => state.cronometer.isRunning);
-    const cronometerStartTime = useSessionFormStore((state) => state.cronometer.startTime);
-    const cronometerEndTime = useSessionFormStore((state) => state.cronometer.endTime);
-    const updateCronometer = useSessionFormStore((state) => state.updateCronometer);
-    const resetCronometer = useSessionFormStore((state) => state.resetCronometer);
-    const startTicking = useSessionFormStore((state) => state.startTicking);
-    const stopTicking = useSessionFormStore((state) => state.stopTicking);
+    const selectionForm = useSessionFormStore((state) => state.form);
+    const updateSelectionForm = useSessionFormStore((state) => state.updateForm);
+    const resetSelectionForm = useSessionFormStore((state) => state.resetForm);
+    const [form, setForm] = useState<FormData>(() => ({
+        ...emptyForm,
+        subjectId: selectionForm.subjectId,
+        topicId: selectionForm.topicId,
+    }));
 
-    const [timeRegisterType, setTimeRegisterType] = useState<"manual" | "cronometer">("manual");
+    const isCronometerRunning = useCronometerStore((state) => state.cronometer.isRunning);
+    const resetCronometer = useCronometerStore((state) => state.resetCronometer);
+
     const { data: topicsTree = [], isLoading: loadingTopicsTree } = useTopicsTree();
 
     const [newTopicDialogOpen, setNewTopicDialogOpen] = useState(false);
     const [topicTreePopoverOpen, setTopicTreePopoverOpen] = useState(false);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [endTimeError, setEndTimeError] = useState<string | null>(null);
 
     // New UI-only state
     const [studyMode, setStudyMode] = useState<StudyMode>("leitura");
@@ -227,63 +164,25 @@ export function StudySessionForm() {
         return () => window.removeEventListener("beforeunload", handler);
     }, [form, isCronometerRunning]);
 
-    // Update Global State
+    // Keep store IDs as the single global source for subject/topic selection.
     useEffect(() => {
-        if (!form.subjectId) {
-            if (selectedSubject) setSelectedSubject(undefined);
-            if (selectedTopic) setSelectedTopic(undefined);
-            return;
-        }
-
-        const foundSubject = subjects.find((s: { id: string }) => s.id === form.subjectId);
-
-        if (foundSubject && foundSubject.id !== selectedSubject?.id) {
-            setSelectedSubject(foundSubject);
-            if (selectedTopic) setSelectedTopic(undefined);
-            return;
-        }
-
-        if (!foundSubject && selectedSubject) {
-            setSelectedSubject(undefined);
-        }
-    }, [
-        form.subjectId,
-        setSelectedSubject,
-        setSelectedTopic,
-        subjects,
-        selectedSubject,
-        selectedSubject?.id,
-        selectedTopic,
-        selectedTopic?.id,
-    ]);
-
-    // 
-    useEffect(() => {
-        if (!form.topicId) {
-            if (selectedTopic) setSelectedTopic(undefined);
-            return;
-        }
-
-        const foundTopic = findTopicInTreeById(currentSubjectTopics, form.topicId);
-        if (foundTopic && foundTopic.id !== selectedTopic?.id) {
-            setSelectedTopic(foundTopic);
-            return;
-        }
-
-        if (!foundTopic && selectedTopic) {
-            setSelectedTopic(undefined);
-        }
-    }, [form.topicId, currentSubjectTopics, selectedTopic, selectedTopic?.id, setSelectedTopic]);
+        updateSelectionForm({
+            subjectId: form.subjectId,
+            topicId: form.topicId,
+        });
+    }, [form.subjectId, form.topicId, updateSelectionForm]);
 
     // --- Handlers ---
 
     const handleSubjectChange = (subjectId: string) => {
         setForm((prev) => ({ ...prev, subjectId, topicId: "" }));
+        updateSelectionForm({ subjectId, topicId: "" });
     };
 
     const handleTopicChange = (topicId: string) => {
         setTopicTreePopoverOpen(false);
         setForm((prev) => ({ ...prev, topicId }));
+        updateSelectionForm({ topicId });
     };
 
     const getSelectedTopicName = (): string => {
@@ -303,52 +202,13 @@ export function StudySessionForm() {
         return findTopicInTree(currentSubjectTopics)?.name || "Tópico selecionado";
     };
 
-    const handleTimeInput = (field: "start_time" | "end_time", value: string) => {
-        if (!value) {
-            setForm((prev) => ({ ...prev, [field]: undefined }));
-            return;
-        }
-        const [hours, minutes] = value.split(":");
-        const date = new Date();
-        date.setHours(+hours, +minutes, 0, 0);
-        setForm((prev) => ({ ...prev, [field]: date }));
-        updateCronometer({
-            startTime: field === "start_time" ? date : cronometerStartTime,
-            endTime: field === "end_time" ? date : cronometerEndTime,
-        });
-    };
-
-    const setCurrentTime = (field: "start_time" | "end_time") => {
-        setForm((prev) => ({ ...prev, [field]: new Date() }));
-    };
-
-    const toggleCronometer = () => {
-        const now = new Date();
-        if (!isCronometerRunning) {
-            updateCronometer({ isRunning: true, startTime: now, endTime: null });
-            startTicking();
-            setForm((prev) => ({ ...prev, start_time: now, end_time: undefined }));
-        } else {
-            stopTicking();
-            updateCronometer({ isRunning: false, endTime: now });
-            setForm((prev) => ({ ...prev, end_time: now }));
-        }
-    };
-
-    const handleResetCronometer = () => {
-        resetCronometer();
-        setForm((prev) => ({ ...prev, start_time: undefined, end_time: undefined }));
-    };
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setEndTimeError(null);
+        console.log("Submitting form:", form);
 
         const submitError = getFormSubmitError(form);
         if (submitError) {
-            if (submitError === "A hora de fim deve ser maior que a hora de início.") {
-                setEndTimeError(submitError);
-            }
             toast.error(submitError);
             return;
         }
@@ -373,6 +233,7 @@ export function StudySessionForm() {
             await createStudyLog.mutateAsync(data);
             toast.success("Sessão de estudo registrada!");
             setForm(emptyForm);
+            resetSelectionForm();
             resetCronometer();
             router.push("/");
         } catch {
@@ -383,12 +244,10 @@ export function StudySessionForm() {
         }
     };
 
-    const duration = calcDurationMinutes(form.start_time, form.end_time);
     const isFormReadyToSubmit = !getFormSubmitError(form);
 
     return (
         <>
-            <CronometerTitleSync />
             <div className="min-h-screen bg-linear-to-br from-background via-muted/20 to-background py-8 px-4">
                 <form onSubmit={onSubmit} className="max-w-5xl mx-auto space-y-6">
 
@@ -586,184 +445,7 @@ export function StudySessionForm() {
 
                         {/* Time tracking */}
                         <div className="space-y-4">
-                            <Card className="shadow-lg border-border/60 bg-card/80 backdrop-blur-sm">
-
-                                <CardContent className="space-y-3">
-
-                                    {/* Time Mode Tabs */}
-                                    <Tabs
-                                        value={timeRegisterType}
-                                        onValueChange={(v) => setTimeRegisterType(v as "manual" | "cronometer")}
-                                    >
-                                        <TabsList className="w-full grid grid-cols-2 bg-muted/50">
-                                            <TabsTrigger
-                                                value="manual"
-                                                disabled={isCronometerRunning}
-                                                title={isCronometerRunning ? "Pare o cronômetro para registrar manualmente" : undefined}
-                                                className="gap-1.5 text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                                            >
-                                                <ClockArrowUp className="h-3.5 w-3.5" />
-                                                Manual
-                                            </TabsTrigger>
-                                            <TabsTrigger
-                                                value="cronometer"
-                                                className="gap-1.5 text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                                            >
-                                                <Timer className="h-3.5 w-3.5" />
-                                                Cronômetro
-                                            </TabsTrigger>
-                                        </TabsList>
-
-                                        {/* Cronometer Panel */}
-                                        <TabsContent value="cronometer" className="mt-4">
-                                            <div className={`flex flex-col items-center gap-5 py-4 rounded-xl transition-all ${isCronometerRunning
-                                                ? "ring-2 ring-primary/30 bg-primary/5"
-                                                : "bg-muted/20"
-                                                }`}>
-                                                {/* Time Display */}
-                                                <CronometerTimeDisplay isRunning={isCronometerRunning} />
-
-                                                {/* Controls */}
-                                                <div className="flex gap-2 w-full px-4">
-                                                    <Button
-                                                        type="button"
-
-                                                        onClick={toggleCronometer}
-                                                        className={`flex-1 gap-2 transition-all 
-                                                            ${isCronometerRunning ?
-                                                                "bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                                                                : "bg-emerald-600 hover:bg-emerald-700 text-white"
-                                                            }`}
-                                                    >
-                                                        {isCronometerRunning ? (
-                                                            <>
-                                                                <Square className="fill-current" />
-                                                                Parar
-                                                            </>
-
-                                                        ) : (
-                                                            <>
-                                                                <Play className="fill-current" />
-                                                                Iniciar
-                                                            </>
-                                                        )}
-                                                    </Button>
-                                                    <Button
-                                                        type="button"
-                                                        variant="outline"
-
-                                                        onClick={handleResetCronometer}
-                                                        disabled={isCronometerRunning}
-                                                        title="Resetar"
-                                                        className="shrink-0 text-muted-foreground hover:text-foreground"
-                                                    >
-                                                        Resetar
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </TabsContent>
-
-                                        {/* Empty tab content for manual — times below are always shown */}
-                                        <TabsContent value="manual" className="mt-0" />
-                                    </Tabs>
-
-
-
-                                    {/* Start / End Time */}
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {/* Hora Início */}
-                                        <div className="space-y-1.5">
-                                            <Label htmlFor="start_time" className="text-sm font-medium text-foreground/80">
-                                                Início
-                                            </Label>
-                                            <div className="flex gap-1">
-                                                <Input
-                                                    id="start_time"
-                                                    type="time"
-                                                    disabled={timeRegisterType === "cronometer"}
-                                                    value={formatTime(form.start_time)}
-                                                    className="bg-background/60 focus-visible:ring-primary/40 min-w-0"
-                                                    onChange={(e) => handleTimeInput("start_time", e.target.value)}
-                                                />
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => setCurrentTime("start_time")}
-                                                    disabled={timeRegisterType === "cronometer"}
-                                                    title="Hora atual"
-                                                    className="shrink-0 h-9 w-9 text-muted-foreground hover:text-foreground"
-                                                >
-                                                    <ClockArrowUp className="h-3.5 w-3.5" />
-                                                </Button>
-                                            </div>
-                                        </div>
-
-                                        {/* Hora Fim */}
-                                        <div className="space-y-1.5">
-                                            <Label htmlFor="end_time" className="text-sm font-medium text-foreground/80">
-                                                Fim
-                                            </Label>
-                                            <div className="flex gap-1">
-                                                <Input
-                                                    id="end_time"
-                                                    type="time"
-                                                    disabled={timeRegisterType === "cronometer"}
-                                                    value={formatTime(form.end_time)}
-                                                    className={`bg-background/60 focus-visible:ring-primary/40 min-w-0 ${endTimeError ? "border-destructive ring-destructive/30" : ""
-                                                        }`}
-                                                    onChange={(e) => handleTimeInput("end_time", e.target.value)}
-                                                />
-                                                <Button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => setCurrentTime("end_time")}
-                                                    disabled={timeRegisterType === "cronometer"}
-                                                    title="Hora atual"
-                                                    className="shrink-0 h-9 w-9 text-muted-foreground hover:text-foreground"
-                                                >
-                                                    <ClockArrowUp className="h-3.5 w-3.5" />
-                                                </Button>
-                                            </div>
-                                            {endTimeError && (
-                                                <p className="text-xs text-destructive leading-tight">{endTimeError}</p>
-                                            )}
-                                        </div>
-                                    </div>
-
-
-
-                                    {/* Duration Badge */}
-                                    {duration > 0 && (
-                                        <div className="flex items-center justify-between rounded-lg bg-primary/8 border border-primary/20 px-4 py-2.5">
-                                            <span className="text-xs text-muted-foreground font-medium">Duração calculada</span>
-                                            <span className="text-sm font-semibold text-primary tabular-nums">
-                                                {Math.floor(duration / 60) > 0 && `${Math.floor(duration / 60)}h `}
-                                                {duration % 60}min
-                                            </span>
-                                        </div>
-                                    )}
-
-                                    {/* Date */}
-                                    <div className="space-y-1.5">
-                                        <Label htmlFor="study_date" className="text-sm font-medium text-foreground/80">
-                                            Data
-                                        </Label>
-                                        <Input
-                                            id="study_date"
-                                            type="date"
-                                            value={form.study_date ? formatDate(form.study_date) : ""}
-                                            className="bg-background/60 focus-visible:ring-primary/40"
-                                            onChange={(e) => {
-                                                const [year, month, day] = e.target.value.split("-").map(Number);
-                                                const d = new Date(year, month - 1, day);
-                                                setForm((prev) => ({ ...prev, study_date: d }));
-                                            }}
-                                        />
-                                    </div>
-                                </CardContent>
-                            </Card>
+                            <Cronometer />
 
                             {/* Action Buttons */}
                             <div className="flex flex-col gap-2">

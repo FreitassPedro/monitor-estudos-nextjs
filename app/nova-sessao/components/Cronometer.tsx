@@ -1,0 +1,304 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { usePageTitleWithCronometer } from "@/hooks/usePageTitleWithCronometer";
+import useCronometerStore from "@/store/useCronometerStore";
+import useSessionFormStore from "@/store/useSessionFormStore";
+import { ClockArrowUp, Maximize2, Play, Square, Timer } from "lucide-react";
+import { useState } from "react";
+
+const padTwo = (n: number) => n.toString().padStart(2, "0");
+
+const calcDurationMinutes = (start?: Date, end?: Date): number => {
+    if (!start || !end) return 0;
+    return Math.max(0, Math.floor((end.getTime() - start.getTime()) / 60000));
+};
+
+const formatTime = (date?: Date) => {
+    if (!date || isNaN(date.getTime())) return "";
+    return `${padTwo(date.getHours())}:${padTwo(date.getMinutes())}`;
+};
+
+const formatCronometerTime = (seconds: number) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${padTwo(hrs)}:${padTwo(mins)}:${padTwo(secs)}`;
+};
+
+function CronometerTitleSync() {
+    const isRunning = useCronometerStore((state) => state.cronometer.isRunning);
+    const seconds = useCronometerStore((state) => state.cronometer.seconds);
+
+    usePageTitleWithCronometer({
+        isRunning,
+        seconds,
+        baseTitle: "Nova Sessão de Estudo",
+    });
+
+    return null;
+}
+
+function CronometerTimeDisplay({ isRunning }: { isRunning: boolean }) {
+    const seconds = useCronometerStore((state) => state.cronometer.seconds);
+
+    return (
+        <div className="relative flex flex-col items-center">
+            <span
+                className={`text-4xl font-mono font-semibold tracking-tight transition-colors ${isRunning ? "text-foreground" : "text-muted-foreground"
+                    }`}
+            >
+                {formatCronometerTime(seconds)}
+            </span>
+        </div>
+    );
+};
+
+
+export function Cronometer() {
+
+    const isCronometerRunning = useCronometerStore((state) => state.cronometer.isRunning);
+    const cronometerStartTime = useCronometerStore((state) => state.cronometer.startTime);
+    const cronometerEndTime = useCronometerStore((state) => state.cronometer.endTime);
+    const updateCronometer = useCronometerStore((state) => state.updateCronometer);
+    const resetCronometer = useCronometerStore((state) => state.resetCronometer);
+    const startTicking = useCronometerStore((state) => state.startTicking);
+    const stopTicking = useCronometerStore((state) => state.stopTicking);
+
+    const form = useSessionFormStore((state) => state.form);
+    const updateForm = useSessionFormStore((state) => state.updateForm);
+
+    const [timeRegisterType, setTimeRegisterType] = useState<"manual" | "cronometer">("manual");
+    const [endTimeError, setEndTimeError] = useState<string | null>(null);
+    const duration = calcDurationMinutes(form.start_time, form.end_time);
+
+
+
+    const setCurrentTime = (field: "start_time" | "end_time") => {
+        updateForm({ [field]: new Date() });
+    };
+
+    const handleTimeInput = (field: "start_time" | "end_time", value: string) => {
+        if (!value) {
+            updateForm({ [field]: undefined });
+            return;
+        }
+        const [hours, minutes] = value.split(":");
+        const date = new Date();
+        date.setHours(+hours, +minutes, 0, 0);
+        updateForm({ [field]: date });
+        updateCronometer({
+            startTime: field === "start_time" ? date : cronometerStartTime,
+            endTime: field === "end_time" ? date : cronometerEndTime,
+        });
+    };
+
+    const handleStudyDateChange = (date: Date) => {
+        const [year, month, day] = date.toISOString().split("T")[0].split("-").map(Number);
+        updateForm({ study_date: new Date(year, month - 1, day) });
+    };
+    const toggleCronometer = () => {
+        const now = new Date();
+        if (!isCronometerRunning) {
+            updateCronometer({ isRunning: true, startTime: now, endTime: null });
+            startTicking();
+            updateForm({ start_time: now, end_time: undefined });
+        } else {
+            stopTicking();
+            updateCronometer({ isRunning: false, endTime: now });
+            updateForm({ end_time: now });
+        }
+    };
+
+    const handleResetCronometer = () => {
+        resetCronometer();
+        updateForm({ start_time: undefined, end_time: undefined });
+    };
+
+    return (
+        <>
+            <CronometerTitleSync />
+
+            <Card className="shadow-lg border-border/60 bg-card/80 backdrop-blur-sm">
+                <CardContent className="space-y-3">
+
+                    <Button type={"button"} variant="outline" size="icon" className="absolute top-0 left-0 z-10 rounded-full">
+                        <Maximize2 className="h-4 w-4 text-primary" />
+                    </Button>
+
+                    {/* Time Mode Tabs */}
+                    <Tabs
+                        value={timeRegisterType}
+                        onValueChange={(v) => setTimeRegisterType(v as "manual" | "cronometer")}
+                    >
+
+                        <TabsList className="w-full grid grid-cols-2 bg-muted/50">
+                            <TabsTrigger
+                                value="manual"
+                                disabled={isCronometerRunning}
+                                title={isCronometerRunning ? "Pare o cronômetro para registrar manualmente" : undefined}
+                                className="gap-1.5 text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                            >
+                                <ClockArrowUp className="h-3.5 w-3.5" />
+                                Manual
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value="cronometer"
+                                className="gap-1.5 text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                            >
+                                <Timer className="h-3.5 w-3.5" />
+                                Cronômetro
+                            </TabsTrigger>
+                        </TabsList>
+
+                        {/* Cronometer Panel */}
+                        <TabsContent value="cronometer" className="mt-4">
+                            <div className={`flex flex-col items-center gap-5 py-4 rounded-xl transition-all ${isCronometerRunning
+                                ? "ring-2 ring-primary/30 bg-primary/5"
+                                : "bg-muted/20"
+                                }`}>
+                                {/* Time Display */}
+                                <CronometerTimeDisplay isRunning={isCronometerRunning} />
+
+                                {/* Controls */}
+                                <div className="flex gap-2 w-full px-4">
+                                    <Button
+                                        type="button"
+
+                                        onClick={toggleCronometer}
+                                        className={`flex-1 gap-2 transition-all 
+                                                            ${isCronometerRunning ?
+                                                "bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                                                : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                                            }`}
+                                    >
+                                        {isCronometerRunning ? (
+                                            <>
+                                                <Square className="fill-current" />
+                                                Parar
+                                            </>
+
+                                        ) : (
+                                            <>
+                                                <Play className="fill-current" />
+                                                Iniciar
+                                            </>
+                                        )}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+
+                                        onClick={handleResetCronometer}
+                                        disabled={isCronometerRunning}
+                                        title="Resetar"
+                                        className="shrink-0 text-muted-foreground hover:text-foreground"
+                                    >
+                                        Resetar
+                                    </Button>
+                                </div>
+                            </div>
+                        </TabsContent>
+
+                        {/* Empty tab content for manual — times below are always shown */}
+                        <TabsContent value="manual" className="mt-0" />
+                    </Tabs>
+
+
+
+                    {/* Start / End Time */}
+                    <div className="grid grid-cols-2 gap-3">
+                        {/* Hora Início */}
+                        <div className="space-y-1.5">
+                            <Label htmlFor="start_time" className="text-sm font-medium text-foreground/80">
+                                Início
+                            </Label>
+                            <div className="flex gap-1">
+                                <Input
+                                    id="start_time"
+                                    type="time"
+                                    disabled={timeRegisterType === "cronometer"}
+                                    value={formatTime(form.start_time)}
+                                    className="bg-background/60 focus-visible:ring-primary/40 min-w-0"
+                                    onChange={(e) => handleTimeInput("start_time", e.target.value)}
+                                />
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setCurrentTime("start_time")}
+                                    disabled={timeRegisterType === "cronometer"}
+                                    title="Hora atual"
+                                    className="shrink-0 h-9 w-9 text-muted-foreground hover:text-foreground"
+                                >
+                                    <ClockArrowUp className="h-3.5 w-3.5" />
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* Hora Fim */}
+                        <div className="space-y-1.5">
+                            <Label htmlFor="end_time" className="text-sm font-medium text-foreground/80">
+                                Fim
+                            </Label>
+                            <div className="flex gap-1">
+                                <Input
+                                    id="end_time"
+                                    type="time"
+                                    disabled={timeRegisterType === "cronometer"}
+                                    value={formatTime(form.end_time)}
+                                    className={`bg-background/60 focus-visible:ring-primary/40 min-w-0 ${endTimeError ? "border-destructive ring-destructive/30" : ""
+                                        }`}
+                                    onChange={(e) => handleTimeInput("end_time", e.target.value)}
+                                />
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setCurrentTime("end_time")}
+                                    disabled={timeRegisterType === "cronometer"}
+                                    title="Hora atual"
+                                    className="shrink-0 h-9 w-9 text-muted-foreground hover:text-foreground"
+                                >
+                                    <ClockArrowUp className="h-3.5 w-3.5" />
+                                </Button>
+                            </div>
+                            {endTimeError && (
+                                <p className="text-xs text-destructive leading-tight">{endTimeError}</p>
+                            )}
+                        </div>
+                    </div>
+
+
+
+                    {/* Duration Badge */}
+                    {duration > 0 && (
+                        <div className="flex items-center justify-between rounded-lg bg-primary/8 border border-primary/20 px-4 py-2.5">
+                            <span className="text-xs text-muted-foreground font-medium">Duração calculada</span>
+                            <span className="text-sm font-semibold text-primary tabular-nums">
+                                {Math.floor(duration / 60) > 0 && `${Math.floor(duration / 60)}h `}
+                                {duration % 60}min
+                            </span>
+                        </div>
+                    )}
+
+                    {/* Date */}
+                    <div className="space-y-1.5">
+                        <Label htmlFor="study_date" className="text-sm font-medium text-foreground/80">
+                            Data
+                        </Label>
+                        <Input
+                            id="study_date"
+                            type="date"
+                            value={form.study_date ? form.study_date.toISOString().split("T")[0] : ""}
+                            className="bg-background/60 focus-visible:ring-primary/40"
+                            onChange={(e) => handleStudyDateChange(new Date(e.target.value))}
+                        />
+                    </div>
+                </CardContent>
+            </Card>
+        </>
+    )
+}
