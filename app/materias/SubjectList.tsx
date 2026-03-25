@@ -95,7 +95,7 @@ function NodeRow({
     return (
         <>
             <tr className="group border-b border-muted hover:bg-muted/30 transition-colors animate-in fade-in-0 slide-in-from-top-1 duration-200">
-                <td className="">
+                <td>
                     {hasChildren && (
                         <button onClick={toggleCollapse}
                             className={`flex items-center justify-center h-5 w-5 rounded hover:bg-accent text-muted-foreground transition-colors `}
@@ -271,14 +271,29 @@ function SubjectItem({ subjectTree }: {
                 </td>
             </tr>
             {
-                !isCollapsed &&
-                subjectTree.topics.map((topic) => (
-                    <NodeRow
-                        key={topic.id}
-                        node={topic}
-                        level={1}
-                    />
-                ))
+                !isCollapsed && (
+                    subjectTree.topics.length > 0 ? (
+                        subjectTree.topics.map((topic) => (
+                            <NodeRow
+                                key={topic.id}
+                                node={topic}
+                                level={1}
+                            />
+                        ))
+                    )
+                        : (
+                            <tr>
+                                <td colSpan={4} className="py-2 px-4 ">
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <Folder size={13} className="shrink-0" />
+                                        <span>Nenhum tópico cadastrado</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        )
+                )
+
+
             }
 
 

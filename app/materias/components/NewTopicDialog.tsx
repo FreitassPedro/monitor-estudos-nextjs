@@ -22,7 +22,7 @@ interface Props {
     onTopicCreated?: (topic: Topic) => void;
     isOpen?: boolean;
     onOpenChange?: (open: boolean) => void;
-    children: React.ReactNode;
+    children?: React.ReactNode;
 }
 export function NewTopicDialog({
     isOpen,
@@ -61,7 +61,7 @@ export function NewTopicDialog({
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
+            {children ? <DialogTrigger asChild>{children}</DialogTrigger> : null}
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Novo tópico em &quot;{subject.name}&quot;</DialogTitle>
