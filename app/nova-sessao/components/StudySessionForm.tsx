@@ -40,7 +40,7 @@ import { useSubjects } from "@/hooks/useSubjects";
 import { useTopicsMap, useTopicsTree } from "@/hooks/useTopics";
 import { useCreateStudyLog } from "@/hooks/useStudyLogs";
 import { StudyLogInput } from "@/server/actions/studyLogs.action";
-import { NewTopicDialog } from "./NewTopicDialog";
+import { NewTopicDialog } from "../../materias/components/NewTopicDialog";
 import { TopicTreeSelector } from "./TopicTreeSelector";
 import { TopicNode } from "@/types/types";
 import useSessionFormStore from "@/store/useSessionFormStore";

@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useDeleteSubject, useSubjectTree } from "@/hooks/useSubjects";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronRight, FileText, Folder, FolderOpen, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronRight, FileText, Folder, FolderOpen, Plus, Settings, Trash2 } from "lucide-react";
 import { useCreateTopic, useDeleteTopic, useTopicsMap } from "@/hooks/useTopics";
 import { SubjectTree, Topic, TopicNode } from "@/types/types";
 import { ChangeEvent, FormEvent, Fragment, useState } from "react";
@@ -11,7 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { NewTopicDialog } from "../nova-sessao/components/NewTopicDialog";
+import { NewTopicDialog } from "./components/NewTopicDialog";
+import { EditSubjectDialog } from "./components/EditSubjectDialog";
 
 
 
@@ -224,7 +225,6 @@ function SubjectItem({ subjectTree }: {
                         <button onClick={() => setIsCollapsed(!isCollapsed)}
                             className={`flex items-center justify-center h-5 w-5 rounded hover:bg-accent text-muted-foreground transition-colors `}
                         >
-
                             <ChevronRight size={24} className={` ${isCollapsed ? "rotate-0" : "rotate-90"} transition-transform ease-in-out`} />
                         </button>
                         <div className="flex items-center gap-3">
@@ -237,17 +237,15 @@ function SubjectItem({ subjectTree }: {
                         <div className="ml-6 flex items-center gap-2">
                             <NewTopicDialog
                                 subjectId={subjectTree.subject.id}
-                                parentId={null}
-                                trigger={
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-9 w-9"
-                                    >
-                                        <Plus className="h-4 w-4 text-muted-foreground" />
-                                    </Button>
-                                }
-                            />
+                            >
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-9 w-9"
+                                >
+                                    <Plus className="h-4 w-4 text-muted-foreground" />
+                                </Button>
+                            </NewTopicDialog>
                             <Button
                                 variant="ghost"
                                 size="icon"
@@ -256,11 +254,24 @@ function SubjectItem({ subjectTree }: {
                             >
                                 <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
+
+                            {/* Edit Subject */}
+                            <EditSubjectDialog subjectId={subjectTree.subject.id}>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-9 w-9"
+                                >
+                                    <Settings className="h-4 w-4 text-muted-foreground" />
+                                </Button>
+                            </EditSubjectDialog>
+
                         </div>
                     </div>
                 </td>
             </tr>
-            {!isCollapsed &&
+            {
+                !isCollapsed &&
                 subjectTree.topics.map((topic) => (
                     <NodeRow
                         key={topic.id}
@@ -269,7 +280,12 @@ function SubjectItem({ subjectTree }: {
                     />
                 ))
             }
-        </Fragment>
+
+
+
+
+
+        </Fragment >
     );
 };
 
@@ -307,5 +323,9 @@ export default function SubjectList() {
                 </tbody>
             </table>
         </div>
+
+
+
+
     );
 }
