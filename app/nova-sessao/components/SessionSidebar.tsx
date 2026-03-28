@@ -4,7 +4,7 @@ import { LogSection } from "./SidebarLogs";
 export function SessionSidebar() {
 
     return (
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden h-full border-l border-border">
             {/* Header - Hidden on mobile (shown in toggle) */}
             <div className="hidden lg:block p-6 border-b border-border">
                 <h2 className="text-lg font-semibold text-foreground">Histórico da Matéria</h2>

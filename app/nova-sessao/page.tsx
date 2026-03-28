@@ -22,8 +22,8 @@ export default function NovaSessaoPage() {
                 </div>
                 {/* Sidebar - Hidden on mobile, visible on lg+ */}
                 <aside className={`
-                    fixed lg:static bottom-0 lg:top-auto
-                    w-full lg:w-72 h-auto lg:h-screen
+                    fixed lg:static bottom-0 lg:top-auto lg:h-full
+                    w-full lg:w-72 h-auto 
                     bg-card border-t lg:border-t-0 lg:border-l border-border
                     flex flex-col
                     transform transition-transform duration-300
