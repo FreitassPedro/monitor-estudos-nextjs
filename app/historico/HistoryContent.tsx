@@ -5,8 +5,8 @@ import { TimelineLogs } from "./components/TimelineLogs";
 import { LogsHistory } from "./components/LogsHistory";
 import { SummaryCards } from "./components/SummaryCards";
 import { HistoryCharts } from "./components/HistoryCharts";
-import { StudyBarChart } from "./components/charts/StudyBarChart";
 import { StudyHeatmap } from "./components/charts/StudyHeatmap";
+import { Suspense } from "react";
 
 
 export function HistoryContent() {
@@ -24,7 +24,9 @@ export function HistoryContent() {
       </div>
       <HistoryCharts />
       <TimelineLogs />
+      <Suspense fallback={<div>Loading logs...</div>}>
       <LogsHistory />
+      </Suspense>
     </div>
   )
 }

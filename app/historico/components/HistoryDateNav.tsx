@@ -23,14 +23,16 @@ export function HistoryDateNav() {
     const [isOpenPicker, setIsOpenPicker] = useState(false);
     const [pickingRange, setPickingRange] = useState<CalendarDateRange>({ from: startDate, to: endDate });
     const [customOptions, setCustomOptions] = useState<'last7days' | 'last30days' | 'calendar' | ''>('');
+    const todayRef = useRef<Date>(startDate);
     const calendarRef = useRef<HTMLDivElement>(null);
 
     // Definir rangeType para 'day' (hoje) quando o componente carregar
     useEffect(() => {
         const today = getLocalDateForToday();
+        todayRef.current = today;
         setRange({ startDate: today, endDate: today });
         setRangeType('day');
-    }, []);
+    }, [setRange, setRangeType]);
 
     const handleRangeTypeChange = (type: string) => {
         const newType = type as RangeType;
@@ -174,15 +176,6 @@ export function HistoryDateNav() {
         }
     };
     */
-
-
-    const isToday = () => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const start = new Date(startDate);
-        start.setHours(0, 0, 0, 0);
-        return start.getTime() === today.getTime() && rangeType === 'day';
-    };
 
     const handleOpenCalendarPicker = () => {
         setCustomOptions('calendar');
@@ -334,21 +327,7 @@ export function HistoryDateNav() {
                     <ChevronRight className="h-4 w-4" />
                 </Button>
 
-                {!isToday() && (
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="ml-1 h-7 text-xs shrink-0"
-                        onClick={() => {
-                            const today = new Date();
-                            today.setHours(0, 0, 0, 0);
-                            setRange({ startDate: today, endDate: today });
-                            setRangeType('day');
-                        }}
-                    >
-                        <span className="hidden sm:inline">Retornar</span> Hoje
-                    </Button>
-                )}
+                
             </div>
         </div >
     );

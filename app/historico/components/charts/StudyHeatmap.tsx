@@ -96,8 +96,8 @@ export function StudyHeatmap() {
 
 
   const userId = useAuthStore((state) => state.user?.id);
-  const [currentMonth, setCurrentMonth] = useState(() => new Date());
-  const [currentYear, setCurrentYear] = useState(() => new Date().getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(() => new Date(startDate));
+  const [currentYear, setCurrentYear] = useState(() => startDate.getFullYear());
 
   // Query para dados do mês (visualização de dia)
   const { data: heatmapMonthData, isLoading: isLoadingMonth } = useQuery({
@@ -180,16 +180,6 @@ export function StudyHeatmap() {
     return s.getTime() === rangeStart.getTime() && e.getTime() === rangeEnd.getTime();
   };
 
-  const isToday = (date: Date | null) => {
-    if (!date) return false;
-    const today = new Date();
-    return (
-      date.getDate() === today.getDate() &&
-      date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear()
-    );
-  };
-
   const monthTotal = heatmapData?.monthTotalMinutes ?? 0;
 
   // Renderiza visualização de dia (calendário mensal)
@@ -220,7 +210,6 @@ export function StudyHeatmap() {
         {days.map((date, index) => {
           const minutes = getMinutesForDate(date);
           const inRange = isInRange(date);
-          const today = isToday(date);
 
           return (
             <button
@@ -233,7 +222,6 @@ export function StudyHeatmap() {
                 ${date ? getHeatmapColor(minutes) : 'bg-transparent'}
                 ${date ? getHeatmapTextColor(minutes) : ''}
                 ${inRange ? 'ring-2 ring-primary ring-offset-1 ring-offset-background' : ''}
-                ${today ? 'ring-2 ring-amber-500 ring-offset-1 ring-offset-background' : ''}
                 ${date ? 'hover:scale-110 cursor-pointer' : ''}
               `}
               title={date ? `${date.getDate()}/${date.getMonth() + 1} — ${formatTime(minutes)}` : ''}

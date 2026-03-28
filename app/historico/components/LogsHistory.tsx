@@ -38,6 +38,133 @@ const formatMinutes = (minutes: number) => {
     return `${hours}h ${mins}m`;
 };
 
+
+
+const EditLogForm = ({
+    logDetails,
+    onOpenChange,
+}: {
+    logDetails: StudyLogFeedItem;
+    onOpenChange: (isOpen: boolean) => void;
+}) => {
+
+    const start = new Date(logDetails.start_time);
+    const end = new Date(logDetails.end_time);
+
+    const [startTime, setStartTime] = useState(`${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`);
+
+    const [endTime, setEndTime] = useState(`${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`);
+    const [notes, setNotes] = useState(logDetails.notes ?? "");
+    const [topicId, setTopicId] = useState(logDetails.topic.id);
+
+    const { data: topics } = useTopicsBySubject(logDetails.topic.subjectId);
+    const updateMutation = useUpdateStudyLog();
+
+    const handleSave = async () => {
+
+        const [startHour, startMin] = startTime.split(':').map(Number);
+        const [endHour, endMin] = endTime.split(':').map(Number);
+        const studyDate = new Date(logDetails.study_date);
+
+        const newStartTime = new Date(studyDate);
+        newStartTime.setHours(startHour, startMin, 0, 0);
+        const newEndTime = new Date(studyDate);
+        newEndTime.setHours(endHour, endMin, 0, 0);
+        const duration = Math.round((newEndTime.getTime() - newStartTime.getTime()) / 60000);
+
+        try {
+            await updateMutation.mutateAsync({
+                id: logDetails.id,
+                topic_id: topicId,
+                start_time: newStartTime,
+                end_time: newEndTime,
+                duration_minutes: duration,
+                notes: notes,
+            });
+            onOpenChange(false);
+        }
+        catch (error) {
+            console.error("Erro ao atualizar log:", error);
+        }
+    };
+
+    return (
+        <>
+            <div className="space-y-4 py-4">
+                {/* Tópico */}
+                <div className="space-y-2">
+                    <Label htmlFor="topic">Tópico</Label>
+                    <Select value={topicId} onValueChange={setTopicId}>
+                        <SelectTrigger id="topic">
+                            <SelectValue placeholder="Selecione um tópico" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {topics?.map((topic) => (
+                                <SelectItem key={topic.id} value={topic.id}>
+                                    {topic.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {/* Horário de Início */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="startTime">Início</Label>
+                        <Input
+                            id="startTime"
+                            type="time"
+                            value={startTime}
+                            onChange={(e) => setStartTime(e.target.value)}
+                        />
+                    </div>
+
+                    {/* Horário de Término */}
+                    <div className="space-y-2">
+                        <Label htmlFor="endTime">Término</Label>
+                        <Input
+                            id="endTime"
+                            type="time"
+                            value={endTime}
+                            onChange={(e) => setEndTime(e.target.value)}
+                        />
+                    </div>
+                </div>
+
+                {/* Anotações */}
+                <div className="space-y-2">
+                    <Label htmlFor="notes">Anotações</Label>
+                    <Textarea
+                        id="notes"
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        placeholder="Adicione suas anotações aqui..."
+                        className="min-h-25"
+                    />
+                </div>
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => onOpenChange(false)}>
+                    Cancelar
+                </Button>
+                <Button
+                    onClick={handleSave}
+                    disabled={updateMutation.isPending}
+                >
+                    {updateMutation.isPending ? (
+                        <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Salvando...
+                        </>
+                    ) : (
+                        "Salvar"
+                    )}
+                </Button>
+            </DialogFooter>
+        </>
+    )
+};
 const EditLogDialog = ({
     logId,
     isOpen,
@@ -47,61 +174,12 @@ const EditLogDialog = ({
     isOpen: boolean;
     onOpenChange: (isOpen: boolean) => void;
 }) => {
-    const [startTime, setStartTime] = useState("");
-    const [endTime, setEndTime] = useState("");
-    const [notes, setNotes] = useState("");
-    const [topicId, setTopicId] = useState("");
 
     const { data: logDetails, isLoading } = useQuery({
         queryKey: ["studyLogs", "details", logId],
         queryFn: () => getStudyLogDetailsAction(logId),
         enabled: !!logId && isOpen,
     });
-
-    const { data: topics } = useTopicsBySubject(logDetails?.topic.subjectId ?? "");
-    const updateMutation = useUpdateStudyLog();
-
-    // Preencher formulário quando os dados carregarem
-    useEffect(() => {
-        if (logDetails) {
-            const start = new Date(logDetails.start_time);
-            const end = new Date(logDetails.end_time);
-            setStartTime(`${String(start.getHours()).padStart(2, '0')}:${String(start.getMinutes()).padStart(2, '0')}`);
-            setEndTime(`${String(end.getHours()).padStart(2, '0')}:${String(end.getMinutes()).padStart(2, '0')}`);
-            setNotes(logDetails.notes || "");
-            setTopicId(logDetails.topicId);
-        }
-    }, [logDetails]);
-
-    const handleSave = async () => {
-        if (!logDetails) return;
-
-        const [startHour, startMin] = startTime.split(':').map(Number);
-        const [endHour, endMin] = endTime.split(':').map(Number);
-
-        const studyDate = new Date(logDetails.study_date);
-        const newStartTime = new Date(studyDate);
-        newStartTime.setHours(startHour, startMin, 0, 0);
-
-        const newEndTime = new Date(studyDate);
-        newEndTime.setHours(endHour, endMin, 0, 0);
-
-        const duration = Math.round((newEndTime.getTime() - newStartTime.getTime()) / 60000);
-
-        try {
-            await updateMutation.mutateAsync({
-                id: logId,
-                topic_id: topicId,
-                start_time: newStartTime,
-                end_time: newEndTime,
-                duration_minutes: duration,
-                notes: notes,
-            });
-            onOpenChange(false);
-        } catch (error) {
-            console.error("Erro ao atualizar log:", error);
-        }
-    };
 
     if (!logId) return null;
 
@@ -120,80 +198,13 @@ const EditLogDialog = ({
                         <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                     </div>
                 ) : logDetails ? (
-                    <div className="space-y-4 py-4">
-                        {/* Tópico */}
-                        <div className="space-y-2">
-                            <Label htmlFor="topic">Tópico</Label>
-                            <Select value={topicId} onValueChange={setTopicId}>
-                                <SelectTrigger id="topic">
-                                    <SelectValue placeholder="Selecione um tópico" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {topics?.map((topic) => (
-                                        <SelectItem key={topic.id} value={topic.id}>
-                                            {topic.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
+                    <EditLogForm logDetails={logDetails} onOpenChange={onOpenChange} />
+                ) : (
+                    <p className="text-sm text-muted-foreground">Detalhes do log não encontrados.</p>
+                )}
 
-                        {/* Horário de Início */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="startTime">Início</Label>
-                                <Input
-                                    id="startTime"
-                                    type="time"
-                                    value={startTime}
-                                    onChange={(e) => setStartTime(e.target.value)}
-                                />
-                            </div>
 
-                            {/* Horário de Término */}
-                            <div className="space-y-2">
-                                <Label htmlFor="endTime">Término</Label>
-                                <Input
-                                    id="endTime"
-                                    type="time"
-                                    value={endTime}
-                                    onChange={(e) => setEndTime(e.target.value)}
-                                />
-                            </div>
-                        </div>
 
-                        {/* Anotações */}
-                        <div className="space-y-2">
-                            <Label htmlFor="notes">Anotações</Label>
-                            <Textarea
-                                id="notes"
-                                value={notes}
-                                onChange={(e) => setNotes(e.target.value)}
-                                placeholder="Adicione suas anotações aqui..."
-                                className="min-h-25"
-                            />
-                        </div>
-                    </div>
-                ) : null}
-
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>
-                        Cancelar
-                    </Button>
-                    <Button
-                        onClick={handleSave}
-                        disabled={updateMutation.isPending || isLoading}
-                    >
-                        {updateMutation.isPending ? (
-                            <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Salvando...
-                            </>
-                        ) : (
-                            "Salvar"
-                        )}
-                    </Button>
-                </DialogFooter>
             </DialogContent>
         </Dialog>
     );
@@ -339,8 +350,16 @@ export function LogCard({ log }: { log: StudyLogFeedItem }) {
                 </div>
             </div>
 
-            <LogDetailsDialog logId={log.id} isOpen={isDetailsOpen} isOpenChange={setIsDetailsOpen} />
-            <EditLogDialog logId={log.id} isOpen={isEditOpen} onOpenChange={setIsEditOpen} />
+            <LogDetailsDialog
+                logId={log.id}
+                isOpen={isDetailsOpen}
+                isOpenChange={setIsDetailsOpen}
+            />
+            <EditLogDialog
+                logId={log.id}
+                isOpen={isEditOpen}
+                onOpenChange={setIsEditOpen}
+            />
 
             {/* Delete Confirmation Dialog */}
             <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
