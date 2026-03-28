@@ -7,7 +7,7 @@ import { usePageTitleWithCronometer } from "@/hooks/usePageTitleWithCronometer";
 import { cn } from "@/lib/utils";
 import useCronometerStore from "@/store/useCronometerStore";
 import useSessionFormStore from "@/store/useSessionFormStore";
-import { ClockArrowUp, Maximize2, Minimize2, Play, Square, Timer } from "lucide-react";
+import { ClockArrowUp, Eye, EyeOff, Maximize2, Minimize2, Play, Square, Timer } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const padTwo = (n: number) => n.toString().padStart(2, "0");
@@ -44,15 +44,32 @@ function CronometerTitleSync() {
 
 function CronometerTimeDisplay({ isRunning }: { isRunning: boolean }) {
     const seconds = useCronometerStore((state) => state.cronometer.seconds);
+    const [isTimeHidden, setIsTimeHidden] = useState(false);
+
+    const displayTime = isTimeHidden ? "--:--:--" : formatCronometerTime(seconds);
 
     return (
-        <div className="relative flex flex-col items-center">
+        <div className="relative flex  items-center gap-3">
             <span
                 className={`text-4xl font-mono font-semibold tracking-tight transition-colors ${isRunning ? "text-foreground" : "text-muted-foreground"
                     }`}
             >
-                {formatCronometerTime(seconds)}
+                {displayTime}
             </span>
+            <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsTimeHidden(!isTimeHidden)}
+                title={isTimeHidden ? "Mostrar tempo" : "Ocultar tempo"}
+                className="h-8 w-8 text-muted-foreground hover:text-foreground transition-colors"
+            >
+                {isTimeHidden ? (
+                    <EyeOff className="h-4 w-4" />
+                ) : (
+                    <Eye className="h-4 w-4" />
+                )}
+            </Button>
         </div>
     );
 };
@@ -75,6 +92,7 @@ export function Cronometer() {
     const [timeRegisterType, setTimeRegisterType] = useState<"manual" | "cronometer">("manual");
     const [endTimeError] = useState<string | null>(null);
     const [isFocusModeOpen, setIsFocusModeOpen] = useState(false);
+    const [isTimeHiddenFocus, setIsTimeHiddenFocus] = useState(false);
     const duration = calcDurationMinutes(form.start_time, form.end_time);
 
     const setCurrentTime = (field: "start_time" | "end_time") => {
@@ -155,7 +173,7 @@ export function Cronometer() {
                     <Button
                         type={"button"}
                         variant="outline"
-                        
+
                         className={cn("rounded-full w-full text-muted-foreground hover:text-foreground focus-visible:ring-primary/40")}
                         onClick={() => setIsFocusModeOpen(true)}
                         title="Entrar no modo focado"
@@ -347,15 +365,31 @@ export function Cronometer() {
                                 onClick={() => setIsFocusModeOpen(false)}
                                 title="Sair do modo focado"
                             >
-                               Minimizar <Minimize2 size={128} />
+                                Minimizar <Minimize2 size={128} />
                             </Button>
 
                             <div>
-                                <div className="text-center select-none">
-                                    <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-5">Modo focado</p>
-                                    <span className={`font-mono font-semibold tabular-nums text-[min(18vw,11rem)] leading-none ${isCronometerRunning ? "text-foreground" : "text-muted-foreground"}`}>
-                                        {formatCronometerTime(cronometerSeconds)}
-                                    </span>
+                                <div className="text-center select-none space-y-3">
+                                    <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Modo focado</p>
+                                    <div className="flex flex-col items-center gap-2">
+                                        <span className={`font-mono font-semibold tabular-nums text-[min(18vw,11rem)] leading-none ${isCronometerRunning ? "text-foreground" : "text-muted-foreground"}`}>
+                                            {isTimeHiddenFocus ? "••:••:••" : formatCronometerTime(cronometerSeconds)}
+                                        </span>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => setIsTimeHiddenFocus(!isTimeHiddenFocus)}
+                                            title={isTimeHiddenFocus ? "Mostrar tempo" : "Ocultar tempo"}
+                                            className="h-8 w-8 text-muted-foreground hover:text-foreground transition-colors"
+                                        >
+                                            {isTimeHiddenFocus ? (
+                                                <EyeOff className="h-5 w-5" />
+                                            ) : (
+                                                <Eye className="h-5 w-5" />
+                                            )}
+                                        </Button>
+                                    </div>
                                 </div>
                                 {/* Display Materia and Topico if available */}
                                 <div className="text-center mt-4">
