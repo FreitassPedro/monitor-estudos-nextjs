@@ -1,4 +1,5 @@
 "use client";
+
 import React, { Suspense } from "react";
 import { SessionSidebar } from "./components/SessionSidebar";
 import { StudySessionForm } from "./components/StudySessionForm";

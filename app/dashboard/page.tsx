@@ -17,15 +17,13 @@ export default function DashboardPage() {
 
                 {/* O Ditador (Coluna 1): Dita a altura matemática da linha inteira no desktop */}
                 <div className="h-full">
-                    <Suspense fallback={<RecentSessionsSkeleton />}>
-                        <RecentSessions />
-                    </Suspense>
+                    <RecentSessions />
                 </div>
 
                 {/* O Seguidor (Coluna 2): Um container invisível que apenas acompanha a altura da linha */}
                 <div className="relative md:h-full">
                     {/* A Mágica: absolute inset-0 força a div a ter exatamente o tamanho do pai (Coluna 2),
-            mas esconde seu tamanho real do Grid. overflow-y-auto permite rolar os dados em excesso. */}
+                      mas esconde seu tamanho real do Grid. overflow-y-auto permite rolar os dados em excesso. */}
                     <div className="md:absolute md:inset-0 md:overflow-y-auto [&>*]:min-h-full">
                         <Suspense fallback={<RecentSessionsSkeleton />}>
                             <TodayTimeline />

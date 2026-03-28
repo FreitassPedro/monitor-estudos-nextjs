@@ -100,7 +100,7 @@ function RecentSessionsSkeleton() {
 }
 
 export function RecentSessions() {
-    const { data: todayLogs = [], isLoading } = useTodayStudyLogs();
+    const { data: todayLogs, isLoading } = useTodayStudyLogs();
 
     return (
         <Card className="h-auto md:flex md:h-full md:min-h-0 md:flex-col md:overflow-hidden">
@@ -108,7 +108,7 @@ export function RecentSessions() {
                 <CardTitle className="text-lg font-medium">Sessões de Hoje</CardTitle>
             </CardHeader>
             <CardContent className="md:flex-1 md:min-h-0 md:overflow-y-auto">
-                {isLoading ? (
+                {isLoading || !todayLogs ? (
                     <RecentSessionsSkeleton />
                 ) : todayLogs.length === 0 ? (
                     <div className='flex flex-col items-center'>
