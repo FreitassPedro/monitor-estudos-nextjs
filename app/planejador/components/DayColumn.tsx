@@ -10,70 +10,31 @@ import { useMemo } from "react";
 import { MOCK_BLOCKS, StudyBlock, SubjectColor } from "./mockData";
 import { formatDuration } from "../page";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { COLOR_MAP, getDayName } from "../utils";
 
-function getDayName(date: Date): string {
-    const days = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
-    return days[getDay(date)];
+export function BlockFormModal({
+    open,
+}: {
+    open: boolean;
+}) {
+
+    console.log("Modal open:", open);
+    return (
+        <Dialog open={open} onOpenChange={() => { }}>
+            <DialogContent>
+                <p>Modal content goes here</p>
+            </DialogContent>
+        </Dialog>
+    )
 }
-export const COLOR_MAP: Record<
-    SubjectColor,
-    { bg: string; text: string; border: string; badge: string }
-> = {
-    emerald: {
-        bg: "bg-emerald-50 dark:bg-emerald-950/40",
-        text: "text-emerald-800 dark:text-emerald-200",
-        border: "border-emerald-200 dark:border-emerald-800",
-        badge: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
-    },
-    blue: {
-        bg: "bg-blue-50 dark:bg-blue-950/40",
-        text: "text-blue-800 dark:text-blue-200",
-        border: "border-blue-200 dark:border-blue-800",
-        badge: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
-    },
-    amber: {
-        bg: "bg-amber-50 dark:bg-amber-950/40",
-        text: "text-amber-800 dark:text-amber-200",
-        border: "border-amber-200 dark:border-amber-800",
-        badge: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
-    },
-    rose: {
-        bg: "bg-rose-50 dark:bg-rose-950/40",
-        text: "text-rose-800 dark:text-rose-200",
-        border: "border-rose-200 dark:border-rose-800",
-        badge: "bg-rose-100 text-rose-700 dark:bg-rose-900 dark:text-rose-300",
-    },
-    violet: {
-        bg: "bg-violet-50 dark:bg-violet-950/40",
-        text: "text-violet-800 dark:text-violet-200",
-        border: "border-violet-200 dark:border-violet-800",
-        badge: "bg-violet-100 text-violet-700 dark:bg-violet-900 dark:text-violet-300",
-    },
-    orange: {
-        bg: "bg-orange-50 dark:bg-orange-950/40",
-        text: "text-orange-800 dark:text-orange-200",
-        border: "border-orange-200 dark:border-orange-800",
-        badge: "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
-    },
-    teal: {
-        bg: "bg-teal-50 dark:bg-teal-950/40",
-        text: "text-teal-800 dark:text-teal-200",
-        border: "border-teal-200 dark:border-teal-800",
-        badge: "bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300",
-    },
-    pink: {
-        bg: "bg-pink-50 dark:bg-pink-950/40",
-        text: "text-pink-800 dark:text-pink-200",
-        border: "border-pink-200 dark:border-pink-800",
-        badge: "bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300",
-    },
-};
 
 
 
 export function StudyBlockCard({ block }: { block: StudyBlock }) {
     const colors = COLOR_MAP[block.color];
     const size = 120; // Example size, you can calculate this based on duration
+
     return (
         <div
             className={cn(
@@ -93,7 +54,12 @@ export function StudyBlockCard({ block }: { block: StudyBlock }) {
         </div>
     );
 };
-export function DayColumn({ date, dayIndex }: { date: Date; dayIndex: number }) {
+
+export function DayColumn({
+    date,
+    dayIndex,
+    onAddBlock
+}: { date: Date; dayIndex: number, onAddBlock: (dayIndex: number) => void }) {
 
     const blocks = useMemo(() => {
         return MOCK_BLOCKS.filter((block) => block.dayIndex === dayIndex)
@@ -119,14 +85,21 @@ export function DayColumn({ date, dayIndex }: { date: Date; dayIndex: number }) 
             <Separator className="my-2" />
 
             {/* Drop zone */}
-            <div className="bg-muted/40 min-h-[280px] rounded-lg p-1.5 gap-2 flex flex-col h-full">
+            <div className="bg-muted/40 min-h-70 rounded-lg p-1.5 gap-2 flex flex-col h-full">
                 {blocks ? blocks.map((block) => (
                     <StudyBlockCard key={block.id} block={block} />
                 )) : (
                     <p className="text-center text-sm text-muted-foreground mt-4">Nenhum bloco planejado</p>
                 )}
             </div>
-            <Button variant="outline" size="sm" className="mt-2 w-full">Adicionar bloco</Button>
+            <Button
+                variant="outline"
+                size="sm"
+                className="mt-2 w-full"
+                onClick={() => onAddBlock(dayIndex)}
+            >
+                Adicionar bloco
+            </Button>
         </div>
 
     )
