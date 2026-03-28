@@ -1,8 +1,11 @@
+"use client";
+
 import { useMemo } from "react";
-import { DayColumn } from "./components/DayColumn";
+import { BlockFormModal, DayColumn } from "./components/DayColumn";
 import { getMondayOfCurrentWeek, getWeekDates } from "../teste/4/components/planner-utils";
 import { Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePlannerState } from "./usePlannerState";
 
 export function formatDuration(minutes: number): string {
     const h = Math.floor(minutes / 60);
@@ -28,6 +31,13 @@ function ProgressBar({ progress }: { progress: number }) {
 }
 
 export default function Page() {
+
+    const {
+        modalOpen,
+        openAddModal,
+        closeModal,
+    } = usePlannerState();
+
     const monday = useMemo(() => getMondayOfCurrentWeek(), []);
     const weekDates = useMemo(() => getWeekDates(monday), [monday]);
 
@@ -58,7 +68,12 @@ export default function Page() {
             </div>
             <div className="grid grid-cols-7 gap-5 h-full px-6">
                 {weekDates.map((date, dayIndex) => (
-                    <DayColumn key={dayIndex} date={date} dayIndex={dayIndex} />
+                    <DayColumn
+                        key={dayIndex}
+                        date={date}
+                        dayIndex={dayIndex}
+                        onAddBlock={openAddModal}
+                    />
                 ))}
             </div>
 
@@ -87,6 +102,10 @@ export default function Page() {
 
                 </div>
             </aside>
+            <BlockFormModal
+                open={modalOpen}
+                onCloseModal={closeModal}
+            />
         </main>
     )
 }

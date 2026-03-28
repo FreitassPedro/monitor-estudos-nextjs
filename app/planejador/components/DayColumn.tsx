@@ -15,13 +15,15 @@ import { COLOR_MAP, getDayName } from "../utils";
 
 export function BlockFormModal({
     open,
+    onCloseModal,
 }: {
     open: boolean;
+    onCloseModal: () => void;
 }) {
 
     console.log("Modal open:", open);
-    return (
-        <Dialog open={open} onOpenChange={() => { }}>
+    return (            
+        <Dialog open={open} onOpenChange={(v) => !v && onCloseModal()}>
             <DialogContent>
                 <p>Modal content goes here</p>
             </DialogContent>

@@ -12,9 +12,15 @@ export function usePlannerState() {
         setModalOpen(true);
     }, []);
 
+    const closeModal = useCallback(() => {
+        setModalOpen(false);
+        setEditingBlock(null);
+    }, []);
 
     return {
         modalOpen,
         openAddModal,
+        closeModal,
+
     }
 }
