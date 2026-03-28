@@ -24,6 +24,17 @@ export function usePlannerState() {
         setModalOpen(true);
     }, []);
 
+    const openEditBlock = useCallback((block: StudyBlock) => {
+        setEditingBlock(block);
+        setForm({
+            subject: block.subject,
+            topic: block.topic ?? "",
+            startTime: block.startTime,
+            endTime: block.endTime,
+        });
+        setModalOpen(true);
+    }, []);
+
     const closeModal = useCallback(() => {
         setModalOpen(false);
         setEditingBlock(null);
@@ -32,8 +43,10 @@ export function usePlannerState() {
     return {
         form,
         setForm,
+        editingBlock,
         modalOpen,
         openAddModal,
+        openEditBlock,
         closeModal,
 
     }

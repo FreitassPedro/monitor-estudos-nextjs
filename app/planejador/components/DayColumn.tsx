@@ -3,11 +3,11 @@
 import { cn } from "@/lib/utils";
 
 import { Separator } from "@/components/ui/separator";
-import { getDay } from "date-fns";
+
 import { Clock, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMemo } from "react";
-import { MOCK_BLOCKS, StudyBlock, SubjectColor } from "./mockData";
+import { MOCK_BLOCKS, StudyBlock } from "./mockData";
 import { formatDuration } from "../page";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader } from "@/components/ui/dialog";
@@ -87,7 +87,11 @@ export function BlockFormModal({
 
 
 
-export function StudyBlockCard({ block }: { block: StudyBlock }) {
+export function StudyBlockCard({
+    block,
+    onEdit
+}: { block: StudyBlock; onEdit: (block: StudyBlock) => void }) {
+
     const colors = COLOR_MAP[block.color];
     const size = 120; // Example size, you can calculate this based on duration
 
@@ -102,7 +106,13 @@ export function StudyBlockCard({ block }: { block: StudyBlock }) {
         >
             <h3 className="text-sm font-semibold">{block.subject}</h3>
             <h3 className="text-xs text-muted-foreground">{block.topic}</h3>
-            <Pencil className="absolute top-1 right-1 w-3 h-3 text-muted-foreground" />
+            <Button
+                variant="ghost" size="icon"
+                className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={(e) => { e.stopPropagation(); onEdit(block); }}
+            >
+                <Pencil className="absolute top-1 right-1 w-3 h-3 text-muted-foreground" />
+            </Button>
             <div className="flex items-center mt-1 text-muted-foreground">
                 <Clock className="w-3 h-3 " />
                 <p className="text-xs ">{block.startTime}-{block.endTime}</p>
@@ -114,8 +124,9 @@ export function StudyBlockCard({ block }: { block: StudyBlock }) {
 export function DayColumn({
     date,
     dayIndex,
-    onAddBlock
-}: { date: Date; dayIndex: number, onAddBlock: (dayIndex: number) => void }) {
+    onAddBlock,
+    onEditBlock,
+}: { date: Date; dayIndex: number, onAddBlock: (dayIndex: number) => void, onEditBlock: (block: StudyBlock) => void }) {
 
     const blocks = useMemo(() => {
         return MOCK_BLOCKS.filter((block) => block.dayIndex === dayIndex)
@@ -142,8 +153,12 @@ export function DayColumn({
 
             {/* Drop zone */}
             <div className="bg-muted/40 min-h-70 rounded-lg p-1.5 gap-2 flex flex-col h-full">
-                {blocks ? blocks.map((block) => (
-                    <StudyBlockCard key={block.id} block={block} />
+                {blocks ? blocks.map((block: StudyBlock) => (
+                    <StudyBlockCard
+                        key={block.id}
+                        block={block}
+                        onEdit={onEditBlock}
+                    />
                 )) : (
                     <p className="text-center text-sm text-muted-foreground mt-4">Nenhum bloco planejado</p>
                 )}

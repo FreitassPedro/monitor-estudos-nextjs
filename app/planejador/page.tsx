@@ -38,6 +38,7 @@ export default function Page() {
         modalOpen,
         openAddModal,
         closeModal,
+        openEditBlock
     } = usePlannerState();
 
     const monday = useMemo(() => getMondayOfCurrentWeek(), []);
@@ -75,6 +76,7 @@ export default function Page() {
                         date={date}
                         dayIndex={dayIndex}
                         onAddBlock={openAddModal}
+                        onEditBlock={openEditBlock}
                     />
                 ))}
             </div>
