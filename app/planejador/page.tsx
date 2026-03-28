@@ -38,7 +38,8 @@ export default function Page() {
         modalOpen,
         openAddModal,
         closeModal,
-        openEditBlock
+        openEditBlock,
+        saveBlock,
     } = usePlannerState();
 
     const monday = useMemo(() => getMondayOfCurrentWeek(), []);
@@ -110,7 +111,7 @@ export default function Page() {
                 open={modalOpen}
                 form={form}
                 onFormChange={(patch) => setForm({ ...form, ...patch })}
-                onSave={() => { }} // Implement save logic
+                onSave={saveBlock}
                 onCloseModal={closeModal}
             />
         </main>

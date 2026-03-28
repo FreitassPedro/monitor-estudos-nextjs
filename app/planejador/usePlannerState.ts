@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { StudyBlock } from "./components/mockData";
+import { generateId } from "../teste/4/components/planner-utils";
 
 export interface NewBlockForm {
     subject: string;
@@ -11,6 +12,7 @@ export interface NewBlockForm {
 }
 
 export function usePlannerState() {
+    const [blocks, setBlocks] = useState<StudyBlock[]>([]);
     const [editingBlock, setEditingBlock] = useState<StudyBlock | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [form, setForm] = useState<NewBlockForm>({
@@ -40,6 +42,24 @@ export function usePlannerState() {
         setEditingBlock(null);
     }, []);
 
+
+    const saveBlock = useCallback(() => {
+
+        const newBlock: StudyBlock = {
+            id: generateId(),
+            subject: form.subject,
+            topic: form.topic,
+            startTime: form.startTime,
+            endTime: form.endTime,
+            color: "blue",
+            dayIndex: 0,
+        };
+        setBlocks((prev) => [...prev, newBlock]);
+        closeModal();
+
+
+    }, [form, closeModal]);
+
     return {
         form,
         setForm,
@@ -48,6 +68,7 @@ export function usePlannerState() {
         openAddModal,
         openEditBlock,
         closeModal,
+        saveBlock,
 
     }
 }
