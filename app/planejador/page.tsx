@@ -33,6 +33,8 @@ function ProgressBar({ progress }: { progress: number }) {
 export default function Page() {
 
     const {
+        form,
+        setForm,
         modalOpen,
         openAddModal,
         closeModal,
@@ -104,6 +106,9 @@ export default function Page() {
             </aside>
             <BlockFormModal
                 open={modalOpen}
+                form={form}
+                onFormChange={(patch) => setForm({ ...form, ...patch })}
+                onSave={() => { }} // Implement save logic
                 onCloseModal={closeModal}
             />
         </main>

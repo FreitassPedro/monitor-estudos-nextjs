@@ -10,22 +10,76 @@ import { useMemo } from "react";
 import { MOCK_BLOCKS, StudyBlock, SubjectColor } from "./mockData";
 import { formatDuration } from "../page";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader } from "@/components/ui/dialog";
 import { COLOR_MAP, getDayName } from "../utils";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 export function BlockFormModal({
     open,
+    form,
     onCloseModal,
+    onSave,
+    onFormChange
 }: {
     open: boolean;
+    form: Partial<StudyBlock>;
     onCloseModal: () => void;
+    onSave: () => void;
+    onFormChange: (patch: Partial<StudyBlock>) => void;
 }) {
 
     console.log("Modal open:", open);
-    return (            
+    return (
         <Dialog open={open} onOpenChange={(v) => !v && onCloseModal()}>
             <DialogContent>
-                <p>Modal content goes here</p>
+                <DialogHeader>
+                    <h2 className="text-lg font-semibold">Adicionar bloco de estudo</h2>
+                </DialogHeader>
+
+                <div className="flex flex-col gap-2">
+                    <Label>
+                        Matéria
+                    </Label>
+                    <Input
+                        id="subject"
+                        placeholder="Ex: Matemática"
+                        value={form.subject}
+                        onChange={(e) => onFormChange({ subject: e.target.value })}
+                    />
+
+                    <Label>
+                        Tópico
+                    </Label>
+                    <Input
+                        placeholder="Ex: Cálculo - Derivadas"
+                        value={form.topic}
+                        onChange={(e) => onFormChange({ topic: e.target.value })}
+                    />
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <Label>Inicio</Label>
+                            <Input
+                                type="time"
+                                value={form.startTime}
+                                onChange={(e) => onFormChange({ startTime: e.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <Label>Fim</Label>
+                            <Input
+                                type="time"
+                                value={form.endTime}
+                                onChange={(e) => onFormChange({ endTime: e.target.value })}
+                            />
+                        </div>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={onCloseModal}>Cancelar</Button>
+                    <Button onClick={onSave}>Salvar</Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     )
