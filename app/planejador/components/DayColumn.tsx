@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Clock, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMemo } from "react";
-import { MOCK_BLOCKS, StudyBlock } from "./mockData";
+import { StudyBlock } from "./mockData";
 import { formatDuration } from "../page";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader } from "@/components/ui/dialog";
@@ -29,7 +29,6 @@ export function BlockFormModal({
     onFormChange: (patch: Partial<StudyBlock>) => void;
 }) {
 
-    console.log("Modal open:", open);
     return (
         <Dialog open={open} onOpenChange={(v) => !v && onCloseModal()}>
             <DialogContent>
@@ -122,15 +121,19 @@ export function StudyBlockCard({
 };
 
 export function DayColumn({
+    blocks,
     date,
     dayIndex,
     onAddBlock,
     onEditBlock,
-}: { date: Date; dayIndex: number, onAddBlock: (dayIndex: number) => void, onEditBlock: (block: StudyBlock) => void }) {
+}: {
+    blocks: StudyBlock[];
+    date: Date;
+    dayIndex: number;
+    onAddBlock: (dayIndex: number) => void;
+    onEditBlock: (block: StudyBlock) => void;
+}) {
 
-    const blocks = useMemo(() => {
-        return MOCK_BLOCKS.filter((block) => block.dayIndex === dayIndex)
-    }, [dayIndex])
 
     const dayMinutes = useMemo(() => {
         return blocks.reduce((total, block) => {

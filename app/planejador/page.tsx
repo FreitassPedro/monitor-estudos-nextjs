@@ -33,6 +33,7 @@ function ProgressBar({ progress }: { progress: number }) {
 export default function Page() {
 
     const {
+        blocks,
         form,
         setForm,
         modalOpen,
@@ -74,6 +75,7 @@ export default function Page() {
                 {weekDates.map((date, dayIndex) => (
                     <DayColumn
                         key={dayIndex}
+                        blocks={blocks.filter(block => block.dayIndex === dayIndex)}
                         date={date}
                         dayIndex={dayIndex}
                         onAddBlock={openAddModal}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { StudyBlock } from "./components/mockData";
+import { MOCK_BLOCKS, StudyBlock } from "./components/mockData";
 import { generateId } from "../teste/4/components/planner-utils";
 
 export interface NewBlockForm {
@@ -9,10 +9,11 @@ export interface NewBlockForm {
     topic: string;
     startTime: string;
     endTime: string;
+    dayIndex: number;
 }
 
 export function usePlannerState() {
-    const [blocks, setBlocks] = useState<StudyBlock[]>([]);
+    const [blocks, setBlocks] = useState<StudyBlock[]>(MOCK_BLOCKS);
     const [editingBlock, setEditingBlock] = useState<StudyBlock | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [form, setForm] = useState<NewBlockForm>({
@@ -20,10 +21,12 @@ export function usePlannerState() {
         topic: "",
         startTime: "09:00",
         endTime: "10:00",
+        dayIndex: 0,
     });
 
     const openAddModal = useCallback((dayIndex: number) => {
         setModalOpen(true);
+        setForm((prev) => ({ ...prev, dayIndex }));
     }, []);
 
     const openEditBlock = useCallback((block: StudyBlock) => {
@@ -33,6 +36,7 @@ export function usePlannerState() {
             topic: block.topic ?? "",
             startTime: block.startTime,
             endTime: block.endTime,
+            dayIndex: block.dayIndex,
         });
         setModalOpen(true);
     }, []);
@@ -44,23 +48,35 @@ export function usePlannerState() {
 
 
     const saveBlock = useCallback(() => {
+        console.log("Saving block with form data:", form);
 
-        const newBlock: StudyBlock = {
-            id: generateId(),
-            subject: form.subject,
-            topic: form.topic,
-            startTime: form.startTime,
-            endTime: form.endTime,
-            color: "blue",
-            dayIndex: 0,
-        };
-        setBlocks((prev) => [...prev, newBlock]);
+        if (editingBlock) {
+            setBlocks((prev) =>
+                prev.map((blk) =>
+                    blk.id === editingBlock.id
+                        ? { ...blk, ...form, id: editingBlock.id } // Preserve ID on edit
+                        : blk
+                )
+            );
+        } else {
+            const newBlock: StudyBlock = {
+                id: generateId(),
+                subject: form.subject,
+                topic: form.topic,
+                startTime: form.startTime,
+                endTime: form.endTime,
+                color: "blue",
+                dayIndex: form.dayIndex,
+            };
+            setBlocks((prev) => [...prev, newBlock]);
+        }
+
         closeModal();
 
-
-    }, [form, closeModal]);
+    }, [form, closeModal, editingBlock]);
 
     return {
+        blocks,
         form,
         setForm,
         editingBlock,
