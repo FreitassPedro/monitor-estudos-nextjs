@@ -54,22 +54,23 @@ function CronometerTimeDisplay({ isRunning }: { isRunning: boolean }) {
                 className={`text-4xl font-mono font-semibold tracking-tight transition-colors ${isRunning ? "text-foreground" : "text-muted-foreground"
                     }`}
             >
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsTimeHidden(!isTimeHidden)}
+                    title={isTimeHidden ? "Mostrar tempo" : "Ocultar tempo"}
+                    className="h-8 w-8 text-muted-foreground/80 hover:text-foreground transition-colors"
+                >
+                    {isTimeHidden ? (
+                        <EyeOff className="h-4 w-4" />
+                    ) : (
+                        <Eye className="h-4 w-4" />
+                    )}
+                </Button>
                 {displayTime}
             </span>
-            <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsTimeHidden(!isTimeHidden)}
-                title={isTimeHidden ? "Mostrar tempo" : "Ocultar tempo"}
-                className="h-8 w-8 text-muted-foreground hover:text-foreground transition-colors"
-            >
-                {isTimeHidden ? (
-                    <EyeOff className="h-4 w-4" />
-                ) : (
-                    <Eye className="h-4 w-4" />
-                )}
-            </Button>
+
         </div>
     );
 };
@@ -372,23 +373,24 @@ export function Cronometer() {
                                 <div className="text-center select-none space-y-3">
                                     <p className="text-xs uppercase tracking-[0.25em] text-muted-foreground">Modo focado</p>
                                     <div className="flex flex-col items-center gap-2">
-                                        <span className={`font-mono font-semibold tabular-nums text-[min(18vw,11rem)] leading-none ${isCronometerRunning ? "text-foreground" : "text-muted-foreground"}`}>
-                                            {isTimeHiddenFocus ? "••:••:••" : formatCronometerTime(cronometerSeconds)}
-                                        </span>
                                         <Button
                                             type="button"
                                             variant="ghost"
-                                            size="icon"
+                                            size="default"
                                             onClick={() => setIsTimeHiddenFocus(!isTimeHiddenFocus)}
                                             title={isTimeHiddenFocus ? "Mostrar tempo" : "Ocultar tempo"}
-                                            className="h-8 w-8 text-muted-foreground hover:text-foreground transition-colors"
+                                            className="text-muted-foreground hover:text-foreground transition-colors"
                                         >
+                                            Alterar
                                             {isTimeHiddenFocus ? (
-                                                <EyeOff className="h-5 w-5" />
+                                                <EyeOff className="w-5 h-5" />
                                             ) : (
-                                                <Eye className="h-5 w-5" />
+                                                <Eye className="w-5 h-5" />
                                             )}
                                         </Button>
+                                        <span className={`font-mono font-semibold tabular-nums text-[min(18vw,11rem)] leading-none ${isCronometerRunning ? "text-foreground" : "text-muted-foreground"}`}>
+                                            {isTimeHiddenFocus ? "••:••:••" : formatCronometerTime(cronometerSeconds)}
+                                        </span>
                                     </div>
                                 </div>
                                 {/* Display Materia and Topico if available */}
