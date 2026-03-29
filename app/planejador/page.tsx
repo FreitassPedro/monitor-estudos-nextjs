@@ -58,7 +58,9 @@ export default function Page() {
     const goalsEntries = Object.entries(GOALS).sort((a, b) => b[1] - a[1]);
 
     return (
-        <main className="flex-1">
+        <div className="flex flex-col h-screen overflow-hidden ">
+
+            {/* ── Header ── */}
             <div className="border bg-secondary/60 flex items-center px-4 py-2">
                 <div>
                     <div className="flex items-center">
@@ -71,44 +73,53 @@ export default function Page() {
                     </p>
                 </div>
             </div>
-            <div className="grid grid-cols-7 gap-5 h-full px-6">
-                {weekDates.map((date, dayIndex) => (
-                    <DayColumn
-                        key={dayIndex}
-                        blocks={blocks.filter(block => block.dayIndex === dayIndex)}
-                        date={date}
-                        dayIndex={dayIndex}
-                        onAddBlock={openAddModal}
-                        onEditBlock={openEditBlock}
-                    />
-                ))}
-            </div>
 
-            <aside className="">
-                <h2 className="font-semibold mb-2">Matérias Dedicadas</h2>
-                {/* Progress by subject and templates would go here */}
-                <div className="space-y-2">
+            <div className="flex flex-1 overflow-hidden relative">
+                {/* ── Main planner ── */}
+                <div className="flex flex-1 min-w-0">
 
-
-                    {
-                        goalsEntries.map(([subject, goal]) => {
-
-                            const progress = 30; // Example progress, you would calculate this based on actual data
-
-                            return (
-                                <div key={subject}>
-                                    <div className="flex justify-between items-center font-semibold text-sm">
-                                        <p>{subject}</p>
-                                        <span className="text-xs">10h / {formatDuration(goal)}</span>
-                                    </div>
-                                    <ProgressBar progress={progress} />
-                                </div>
-                            )
-                        })
-                    }
-
+                    {/* ── Week grid ── */}
+                    <div className="flex-1 overflow-auto">
+                        <div className="grid grid-cols-7 gap-4 h-full px-6 min-w-250">
+                            {weekDates.map((date, dayIndex) => (
+                                <DayColumn
+                                    key={dayIndex}
+                                    blocks={blocks.filter(block => block.dayIndex === dayIndex)}
+                                    date={date}
+                                    dayIndex={dayIndex}
+                                    onAddBlock={openAddModal}
+                                    onEditBlock={openEditBlock}
+                                />
+                            ))}
+                        </div>
+                    </div>
                 </div>
-            </aside>
+                <aside className="w-64 flex flex-col h-full">
+                    <h2 className="font-semibold mb-2">Matérias Dedicadas</h2>
+                    {/* Progress by subject and templates would go here */}
+                    <div className="space-y-2">
+
+
+                        {
+                            goalsEntries.map(([subject, goal]) => {
+
+                                const progress = 30; // Example progress, you would calculate this based on actual data
+
+                                return (
+                                    <div key={subject}>
+                                        <div className="flex justify-between items-center font-semibold text-sm">
+                                            <p>{subject}</p>
+                                            <span className="text-xs">10h / {formatDuration(goal)}</span>
+                                        </div>
+                                        <ProgressBar progress={progress} />
+                                    </div>
+                                )
+                            })
+                        }
+
+                    </div>
+                </aside>
+            </div>
             <BlockFormModal
                 open={modalOpen}
                 form={form}
@@ -116,6 +127,6 @@ export default function Page() {
                 onSave={saveBlock}
                 onCloseModal={closeModal}
             />
-        </main>
+        </div>
     )
 }

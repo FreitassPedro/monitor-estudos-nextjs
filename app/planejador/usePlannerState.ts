@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { MOCK_BLOCKS, StudyBlock } from "./components/mockData";
+import { BlockType, MOCK_BLOCKS, StudyBlock } from "./components/mockData";
 import { generateId } from "../teste/4/components/planner-utils";
 
 export interface NewBlockForm {
@@ -9,6 +9,7 @@ export interface NewBlockForm {
     topic: string;
     startTime: string;
     endTime: string;
+    type?: BlockType;
     dayIndex: number;
 }
 
@@ -21,6 +22,7 @@ export function usePlannerState() {
         topic: "",
         startTime: "09:00",
         endTime: "10:00",
+        type: "exercise",
         dayIndex: 0,
     });
 
@@ -36,6 +38,7 @@ export function usePlannerState() {
             topic: block.topic ?? "",
             startTime: block.startTime,
             endTime: block.endTime,
+            type: block.type,
             dayIndex: block.dayIndex,
         });
         setModalOpen(true);
@@ -67,6 +70,7 @@ export function usePlannerState() {
                 endTime: form.endTime,
                 color: "blue",
                 dayIndex: form.dayIndex,
+                type: form.type,
             };
             setBlocks((prev) => [...prev, newBlock]);
         }

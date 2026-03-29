@@ -4,10 +4,10 @@ import { cn } from "@/lib/utils";
 
 import { Separator } from "@/components/ui/separator";
 
-import { Clock, Pencil } from "lucide-react";
+import { Clock, Pencil, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMemo } from "react";
-import { StudyBlock } from "./mockData";
+import { BlockType, StudyBlock } from "./mockData";
 import { formatDuration } from "../page";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader } from "@/components/ui/dialog";
@@ -54,6 +54,14 @@ export function BlockFormModal({
                         placeholder="Ex: Cálculo - Derivadas"
                         value={form.topic}
                         onChange={(e) => onFormChange({ topic: e.target.value })}
+                    />
+                    <Label>
+                        Tipo
+                    </Label>
+                    <Input
+                        placeholder="Ex: Estudo, Prática, Revisão..."
+                        value={form.type}
+                        onChange={(e) => onFormChange({ type: e.target.value as BlockType })}
                     />
 
                     <div className="grid grid-cols-2 gap-3">
@@ -105,6 +113,9 @@ export function StudyBlockCard({
         >
             <h3 className="text-sm font-semibold">{block.subject}</h3>
             <h3 className="text-xs text-muted-foreground">{block.topic}</h3>
+            <Badge variant="outline">
+                {block.type}
+            </Badge>
             <Button
                 variant="ghost" size="icon"
                 className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -144,7 +155,7 @@ export function DayColumn({
     }, [blocks])
 
     return (
-        <div className="flex flex-col h-full min-w-0">
+        <div className="flex flex-col min-w-0">
             <div className="px-2 py-2">
                 <p className="text-md font-semibold text-primary">{getDayName(date)}</p>
                 <p className="text-xs text-muted-foreground">{date.toLocaleDateString("pt-BR")}</p>
@@ -155,7 +166,7 @@ export function DayColumn({
             <Separator className="my-2" />
 
             {/* Drop zone */}
-            <div className="bg-muted/40 min-h-70 rounded-lg p-1.5 gap-2 flex flex-col h-full">
+            <div className="flex-1 flex flex-col bg-muted/20 min-h-70 rounded-lg p-1.5 gap-2 h-full">
                 {blocks ? blocks.map((block: StudyBlock) => (
                     <StudyBlockCard
                         key={block.id}
@@ -165,15 +176,19 @@ export function DayColumn({
                 )) : (
                     <p className="text-center text-sm text-muted-foreground mt-4">Nenhum bloco planejado</p>
                 )}
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="mt-auto w-full font-bol tracking-tight rounded-lg space-x-2
+                        text-muted-foreground/40 border border-dashed border-border/50 hover:text-primary hover:bg-primary/10 hover:border-primary/50
+                    "
+                    onClick={() => onAddBlock(dayIndex)}
+                >
+                    <Plus className="w-3.5 h-3.5 " />
+                    ADICIONAR
+                </Button>
             </div>
-            <Button
-                variant="outline"
-                size="sm"
-                className="mt-2 w-full"
-                onClick={() => onAddBlock(dayIndex)}
-            >
-                Adicionar bloco
-            </Button>
+
         </div>
 
     )

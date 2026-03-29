@@ -1,8 +1,10 @@
+export type BlockType = "leiture" | "revision" | "exercise" | "resume" | "exam";
 
 export interface StudyBlock {
     id: string;
     subject: string;
     topic?: string;
+    type?: BlockType;
     startTime: string; // "HH:MM"
     endTime: string;   // "HH:MM"
     color: SubjectColor;
@@ -30,6 +32,7 @@ export const MOCK_BLOCKS: StudyBlock[] = [
         endTime: "10:00",
         color: "blue",
         dayIndex: 0,
+        type: "leiture"
     },
     {
         id: "blk-2",
@@ -39,6 +42,7 @@ export const MOCK_BLOCKS: StudyBlock[] = [
         endTime: "15:30",
         color: "amber",
         dayIndex: 0,
+        type: "leiture"
     },
 
     // Tuesday
@@ -50,6 +54,7 @@ export const MOCK_BLOCKS: StudyBlock[] = [
         endTime: "11:00",
         color: "rose",
         dayIndex: 1,
+        type: "exam"
     },
     {
         id: "blk-4",
@@ -59,6 +64,7 @@ export const MOCK_BLOCKS: StudyBlock[] = [
         endTime: "16:00",
         color: "teal",
         dayIndex: 1,
+        type: "leiture"
     },
 
     // Wednesday
@@ -70,6 +76,7 @@ export const MOCK_BLOCKS: StudyBlock[] = [
         endTime: "09:30",
         color: "blue",
         dayIndex: 2,
+        type: "exercise"
     },
     {
         id: "blk-6",
@@ -79,6 +86,7 @@ export const MOCK_BLOCKS: StudyBlock[] = [
         endTime: "12:00",
         color: "emerald",
         dayIndex: 2,
+        type: "revision"
     },
     {
         id: "blk-7",
@@ -88,6 +96,8 @@ export const MOCK_BLOCKS: StudyBlock[] = [
         endTime: "15:00",
         color: "violet",
         dayIndex: 2,
+        type: "resume"
+
     },
 
     // Thursday
@@ -99,6 +109,7 @@ export const MOCK_BLOCKS: StudyBlock[] = [
         endTime: "11:30",
         color: "emerald",
         dayIndex: 3,
+        type: "leiture"
     },
     {
         id: "blk-9",
@@ -107,6 +118,7 @@ export const MOCK_BLOCKS: StudyBlock[] = [
         startTime: "14:00",
         endTime: "16:00",
         color: "amber",
+        type: "leiture",
         dayIndex: 3,
     },
 
@@ -119,6 +131,7 @@ export const MOCK_BLOCKS: StudyBlock[] = [
         endTime: "09:00",
         color: "orange",
         dayIndex: 4,
+        type: "leiture"
     },
     {
         id: "blk-11",
@@ -128,6 +141,7 @@ export const MOCK_BLOCKS: StudyBlock[] = [
         endTime: "11:00",
         color: "teal",
         dayIndex: 4,
+        type: "exercise"
     },
     {
         id: "blk-12",
@@ -137,6 +151,8 @@ export const MOCK_BLOCKS: StudyBlock[] = [
         endTime: "17:00",
         color: "violet",
         dayIndex: 4,
+
+        type: "exercise"
     },
 
     // Saturday
@@ -148,6 +164,7 @@ export const MOCK_BLOCKS: StudyBlock[] = [
         endTime: "12:00",
         color: "blue",
         dayIndex: 5,
+        type: "exercise"
     },
 
     // Sunday — rest (no blocks)
