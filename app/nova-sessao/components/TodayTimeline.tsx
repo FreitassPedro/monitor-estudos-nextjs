@@ -119,21 +119,24 @@ const formatTimeFromTimestamp = (time: Date | string | undefined | null, include
 };
 
 
-const RenderCurrentSessionCard = () => {
+const RenderCurrentSessionCard = ({
+    startTime,
+    endTime,
+    isRunning,
+    topicName,
+    subjectName,
+    subjectColor,
+}: {
+    startTime: Date | null;
+    endTime: Date | null;
+    isRunning: boolean;
+    topicName: string;
+    subjectName: string;
+    subjectColor?: string;
+}) => {
     const { currentTime } = useTimelineNow();
 
-    const startTime = useCronometerStore((state) => state.cronometer.startTime);
-    const endTime = useCronometerStore((state) => state.cronometer.endTime);
-
-    const isRunning = useCronometerStore((state) => state.cronometer.isRunning);
-    const formSubjectId = useSessionFormStore((state) => state.form.subjectId);
-    const formTopicId = useSessionFormStore((state) => state.form.topicId);
-
-    const topics = useTopicsMap();
-    const { data: subjectsMapData = {} } = useSubjectsMap();
-
-    const subject = subjectsMapData[formSubjectId];
-    const topic = topics[formTopicId];
+    const resolvedBorderColor = subjectColor ?? '#a1a1aa';
 
   
     const currentCard = useMemo(() => {
@@ -155,21 +158,21 @@ const RenderCurrentSessionCard = () => {
 
     return (
         <div
-            key={subject?.id ?? "pendingId" + '_current'}
-            className={`absolute z-10 left-2 right-2 rounded-lg p-2 border-l-4 overflow-hidden cursor-pointer hover:scale-[1.01] hover:z-20 transition-all
-            ${isRunning ? 'border-red-500 animate-pulse duration-3000 border-b border-dotted' : 'border-green-500'}
+            key={(subjectName || "pendingId") + '_current'}
+            className={`absolute z-10 left-2 right-2 rounded-lg p-2 border-l-4 overflow-hidden cursor-pointer hover:scale-[1.01] hover:z-20
+            ${isRunning ? 'border-red-500 border-b border-dotted' : 'border-green-500'}
     `}
             style={{
                 top: `${currentCard.top}%`,
                 height: `${currentCard.height}%`,
-                backgroundColor: '#a1a1aa33',
-                borderLeftColor: '#a1a1aa',
+                backgroundColor: `${resolvedBorderColor}33`,
+                borderLeftColor: `${resolvedBorderColor}`,
             }}
         >
             <div className="flex justify-between h-full">
                 <div className="flex flex-col items-center justify-between gap-1">
-                    <h4 className="font-semibold text-xs text-foreground truncate">{topic?.name ?? 'Topic not selected'}</h4>
-                    <span className="text-xs text-foreground truncate">{subject?.name ?? 'Subject not selected'}</span>
+                    <h4 className="font-semibold text-xs text-foreground truncate">{topicName}</h4>
+                    <span className="text-xs text-foreground truncate">{subjectName}</span>
                 </div>
                 <div className="text-xs text-foreground flex items-center gap-1 flex-row justify-between">
                     <div className='flex flex-row items-center gap-1'>
@@ -178,7 +181,7 @@ const RenderCurrentSessionCard = () => {
                     </div>
                     <div className='flex flex-row items-center gap-1'>
                         <Clock className="w-3 h-3" />
-                        {formatTimeFromTimestamp(currentCard?.endTime, isRunning)}
+                        {formatTimeFromTimestamp(currentCard?.endTime)}
                     </div>
                 </div>
             </div>
@@ -263,7 +266,7 @@ const NowLine = () => {
 
     return (
         <div
-            className="absolute left-0 right-0 h-0.5 bg-red-500 z-20 flex items-center transition-all animate-pulse duration-400 "
+            className="absolute left-0 right-0 h-0.5 bg-red-500 z-20 flex items-center"
             style={{
                 top: `${timeToPosition(currentTime)}%`
             }}
@@ -271,14 +274,27 @@ const NowLine = () => {
             <div className="absolute -left-1 w-2 h-2 bg-red-500 rounded-full"></div>
             <div className="absolute -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
             <span className="absolute -top-5 left-2 text-xs font-semibold text-red-500 bg-white px-1 rounded" suppressHydrationWarning>
-                {formatTimeFromTimestamp(currentTime, true)}
+                {formatTimeFromTimestamp(currentTime)}
             </span>
         </div>
     )
 }
 
-const RealtimeTimelineLayer = () => {
-    const isRunning = useCronometerStore((state) => state.cronometer.isRunning);
+const RealtimeTimelineLayer = ({
+    startTime,
+    endTime,
+    isRunning,
+    topicName,
+    subjectName,
+    subjectColor,
+}: {
+    startTime: Date | null;
+    endTime: Date | null;
+    isRunning: boolean;
+    topicName: string;
+    subjectName: string;
+    subjectColor?: string;
+}) => {
     // Deterministic first render to prevent SSR/client hydration mismatch.
     const [currentTime, setCurrentTime] = useState(() => new Date(2000, 0, 1, 12, 0, 0));
 
@@ -289,7 +305,7 @@ const RealtimeTimelineLayer = () => {
 
         updateCurrentTime();
 
-        const intervalMs = isRunning ? 1000 : 60_000;
+        const intervalMs = isRunning ? 10_000 : 60_000;
         const intervalId = setInterval(updateCurrentTime, intervalMs);
 
         return () => clearInterval(intervalId);
@@ -299,7 +315,14 @@ const RealtimeTimelineLayer = () => {
 
     return (
         <TimelineNowContext.Provider value={nowContextValue}>
-            <RenderCurrentSessionCard />
+            <RenderCurrentSessionCard
+                startTime={startTime}
+                endTime={endTime}
+                isRunning={isRunning}
+                topicName={topicName}
+                subjectName={subjectName}
+                subjectColor={subjectColor}
+            />
             <NowLine />
         </TimelineNowContext.Provider>
     );
@@ -310,6 +333,17 @@ export function TodayTimeline() {
     const today = getLocalDateForToday();
     const { data: logs, isLoading: isLogsLoading } = useTodayStudyLogs();
     const { data: subjectsMap, isLoading: isSubjectsLoading } = useSubjectsMap();
+    const topicsMap = useTopicsMap();
+
+    const currentStartTime = useCronometerStore((state) => state.cronometer.startTime);
+    const currentEndTime = useCronometerStore((state) => state.cronometer.endTime);
+    const isCurrentSessionRunning = useCronometerStore((state) => state.cronometer.isRunning);
+
+    const formSubjectId = useSessionFormStore((state) => state.form.subjectId);
+    const formTopicId = useSessionFormStore((state) => state.form.topicId);
+
+    const currentSubject = formSubjectId ? subjectsMap?.[formSubjectId] : undefined;
+    const currentTopic = formTopicId ? topicsMap[formTopicId] : undefined;
 
     return (
         <div className="h-auto md:h-full md:min-h-0 md:overflow-hidden">
@@ -355,7 +389,14 @@ export function TodayTimeline() {
                                     isLoading={isLogsLoading || isSubjectsLoading}
                                 />
 
-                                <RealtimeTimelineLayer />
+                                <RealtimeTimelineLayer
+                                    startTime={currentStartTime}
+                                    endTime={currentEndTime}
+                                    isRunning={isCurrentSessionRunning}
+                                    topicName={currentTopic?.name ?? 'Topic not selected'}
+                                    subjectName={currentSubject?.name ?? 'Subject not selected'}
+                                    subjectColor={currentSubject?.color}
+                                />
 
                             </div>
                         </div>

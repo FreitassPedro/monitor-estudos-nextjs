@@ -75,11 +75,26 @@ function CronometerTimeDisplay({ isRunning }: { isRunning: boolean }) {
     );
 };
 
+function FocusModeTimeDisplay({
+    isRunning,
+    isTimeHidden,
+}: {
+    isRunning: boolean;
+    isTimeHidden: boolean;
+}) {
+    const seconds = useCronometerStore((state) => state.cronometer.seconds);
+
+    return (
+        <span className={`font-mono font-semibold tabular-nums text-[min(18vw,11rem)] leading-none ${isRunning ? "text-foreground" : "text-muted-foreground"}`}>
+            {isTimeHidden ? "••:••:••" : formatCronometerTime(seconds)}
+        </span>
+    );
+}
+
 
 export function Cronometer() {
 
     const isCronometerRunning = useCronometerStore((state) => state.cronometer.isRunning);
-    const cronometerSeconds = useCronometerStore((state) => state.cronometer.seconds);
     const cronometerStartTime = useCronometerStore((state) => state.cronometer.startTime);
     const cronometerEndTime = useCronometerStore((state) => state.cronometer.endTime);
     const updateCronometer = useCronometerStore((state) => state.updateCronometer);
@@ -388,9 +403,10 @@ export function Cronometer() {
                                                 <Eye className="w-5 h-5" />
                                             )}
                                         </Button>
-                                        <span className={`font-mono font-semibold tabular-nums text-[min(18vw,11rem)] leading-none ${isCronometerRunning ? "text-foreground" : "text-muted-foreground"}`}>
-                                            {isTimeHiddenFocus ? "••:••:••" : formatCronometerTime(cronometerSeconds)}
-                                        </span>
+                                        <FocusModeTimeDisplay
+                                            isRunning={isCronometerRunning}
+                                            isTimeHidden={isTimeHiddenFocus}
+                                        />
                                     </div>
                                 </div>
                                 {/* Display Materia and Topico if available */}
