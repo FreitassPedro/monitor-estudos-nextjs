@@ -11,9 +11,11 @@ import { BlockType, StudyBlock } from "./mockData";
 import { formatDuration } from "../page";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader } from "@/components/ui/dialog";
-import { COLOR_MAP, getDayName } from "../utils";
+import { calculateheight, calculateTop, COLOR_MAP, getDayName } from "../utils";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+
+
 
 export function BlockFormModal({
     open,
@@ -100,16 +102,21 @@ export function StudyBlockCard({
 }: { block: StudyBlock; onEdit: (block: StudyBlock) => void }) {
 
     const colors = COLOR_MAP[block.color];
-    const size = 120; // Example size, you can calculate this based on duration
+
+    const top = useMemo(() => calculateTop(block.startTime), [block.startTime]);
+    const height = useMemo(() => calculateheight(block.startTime, block.endTime), [block.startTime, block.endTime]);
 
     return (
         <div
             className={cn(
-                "relative group rounded-lg border select-none",
+                "absolute z-0 group rounded-lg border select-none",
                 "p-3 cursor-pointer hover:bg-primary/70 transition-colors",
                 colors.bg,
             )}
-            style={{ height: size }}
+            style={{
+                height: `${height}%`,
+                top: `${top}%`
+            }}
         >
             <h3 className="text-sm font-semibold">{block.subject}</h3>
             <h3 className="text-xs text-muted-foreground">{block.topic}</h3>
@@ -145,6 +152,9 @@ export function DayColumn({
     onEditBlock: (block: StudyBlock) => void;
 }) {
 
+    const hourHeightPx = 64;
+    const timelineHeightPx = hourHeightPx * 24;
+
 
     const dayMinutes = useMemo(() => {
         return blocks.reduce((total, block) => {
@@ -166,7 +176,17 @@ export function DayColumn({
             <Separator className="my-2" />
 
             {/* Drop zone */}
-            <div className="flex-1 flex flex-col bg-muted/20 min-h-70 rounded-lg p-1.5 gap-2 h-full">
+            <div
+                className="relative flex flex-col rounded-lg bg-muted/20 p-1.5"
+                style={{ height: `${timelineHeightPx}px` }}
+            >
+                {Array.from({ length: 24 }, (_, i) => i + 1).map(hour => (
+                    <div key={hour}
+                        className="absolute left-0 right-0 border-t border-muted/50"
+                        style={{ top: `${(hour / 24) * 100}%` }}
+                    />
+                ))}
+
                 {blocks ? blocks.map((block: StudyBlock) => (
                     <StudyBlockCard
                         key={block.id}
@@ -176,6 +196,7 @@ export function DayColumn({
                 )) : (
                     <p className="text-center text-sm text-muted-foreground mt-4">Nenhum bloco planejado</p>
                 )}
+
                 <Button
                     variant="ghost"
                     size="sm"

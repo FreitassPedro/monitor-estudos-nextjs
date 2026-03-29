@@ -59,3 +59,67 @@ export const COLOR_MAP: Record<
     },
 };
 
+
+export const calculateTop = (startTime: string | Date) => {
+    if (!startTime) {
+        return 0;
+    }
+
+    if (typeof startTime === "string" && startTime.length === 5) {
+        startTime = new Date(`1970-01-01T${startTime}:00`);
+    }
+    const startTimeDate = new Date(startTime);
+    if (isNaN(startTimeDate.getTime())) {
+        return 0;
+    }
+    return timeToPosition(startTimeDate);
+};
+
+export const timeToPosition = (time: string | Date) => {
+    // Extrai hora/minuto/segundo de Date, timestamp ISO ou formato HH:MM
+    let hours: number, minutes: number, seconds = 0;
+
+    if (time instanceof Date) {
+        hours = time.getHours();
+        minutes = time.getMinutes();
+        seconds = time.getSeconds();
+    } else if (time.includes('T')) {
+        // Formato ISO: "2026-02-04T14:00:32.505Z"
+        const date = new Date(time);
+        hours = date.getHours();
+        minutes = date.getMinutes();
+        seconds = date.getSeconds();
+    } else {
+        // Formato HH:MM
+        [hours, minutes] = time.split(':').map(Number);
+    }
+
+    const totalMinutes = hours * 60 + minutes + (seconds / 60);
+    const dayStart = 0 * 60;
+    const dayEnd = 24 * 60;
+    return ((totalMinutes - dayStart) / (dayEnd - dayStart)) * 100;
+};
+
+export const calculateheight = (startTime: Date | string, endTime: Date | string) => {
+    if (!startTime) {
+        return 0;
+    }
+
+    if (!endTime) {
+        endTime = new Date();
+    }
+
+    const start = new Date(`1970-01-01T${startTime}:00`);
+    const end = new Date(`1970-01-01T${endTime}:00`);
+    const strtT = start.getTime();
+    const endT = end.getTime();
+    const durationMs = endT - strtT;
+    const durationMinutes = durationMs / (1000 * 60);
+    const height = (durationMinutes / (24 * 60)) * 100;
+    const minimumHeight = 0.5; // Altura mínima de 0.5% para sessões muito curtas
+    if (height < minimumHeight) {
+        return minimumHeight;
+    } else {
+        return Number(Math.min(height, 100 - calculateTop(start)).toFixed(2));
+    }
+}

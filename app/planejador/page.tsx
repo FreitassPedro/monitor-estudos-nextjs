@@ -54,7 +54,7 @@ export default function Page() {
 
             <div className="flex flex-1 overflow-hidden relative">
                 {/* ── Main planner ── */}
-                <div className="flex flex-1 min-w-0">
+                <div className="flex flex-1 min-w-0 rounded-4xl bg-background border border-muted m-4 p-4 flex-col">
 
                     {/* ── Week grid ── */}
                     <div className="flex-1 overflow-auto">

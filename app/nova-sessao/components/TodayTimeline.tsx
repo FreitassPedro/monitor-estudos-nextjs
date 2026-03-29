@@ -242,9 +242,7 @@ const RenderLogsCard = ({
         );
     }
 
-    return (
-        <>{renderedLogCards}</>
-    )
+    return renderedLogCards;
 };
 
 const NowLine = () => {

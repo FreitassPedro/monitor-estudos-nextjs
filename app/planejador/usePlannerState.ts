@@ -12,23 +12,25 @@ export interface NewBlockForm {
     type?: BlockType;
     dayIndex: number;
 }
+const DEFAULT_FORM: NewBlockForm = {
+    subject: "",
+    topic: "",
+    startTime: "09:00",
+    endTime: "10:00",
+    type: "exercise",
+    dayIndex: 0,
+};
 
 export function usePlannerState() {
     const [blocks, setBlocks] = useState<StudyBlock[]>(MOCK_BLOCKS);
     const [editingBlock, setEditingBlock] = useState<StudyBlock | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
-    const [form, setForm] = useState<NewBlockForm>({
-        subject: "",
-        topic: "",
-        startTime: "09:00",
-        endTime: "10:00",
-        type: "exercise",
-        dayIndex: 0,
-    });
+    const [form, setForm] = useState<NewBlockForm>(DEFAULT_FORM);
 
     const openAddModal = useCallback((dayIndex: number) => {
-        setModalOpen(true);
+        setEditingBlock(null);
         setForm((prev) => ({ ...prev, dayIndex }));
+        setModalOpen(true);
     }, []);
 
     const openEditBlock = useCallback((block: StudyBlock) => {
