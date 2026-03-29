@@ -75,11 +75,26 @@ function CronometerTimeDisplay({ isRunning }: { isRunning: boolean }) {
     );
 };
 
+function FocusModeTimeDisplay({
+    isRunning,
+    isTimeHidden,
+}: {
+    isRunning: boolean;
+    isTimeHidden: boolean;
+}) {
+    const seconds = useCronometerStore((state) => state.cronometer.seconds);
+
+    return (
+        <span className={`font-mono font-semibold tabular-nums text-[min(18vw,11rem)] leading-none ${isRunning ? "text-foreground" : "text-muted-foreground"}`}>
+            {isTimeHidden ? "••:••:••" : formatCronometerTime(seconds)}
+        </span>
+    );
+}
+
 
 export function Cronometer() {
 
     const isCronometerRunning = useCronometerStore((state) => state.cronometer.isRunning);
-    const cronometerSeconds = useCronometerStore((state) => state.cronometer.seconds);
     const cronometerStartTime = useCronometerStore((state) => state.cronometer.startTime);
     const cronometerEndTime = useCronometerStore((state) => state.cronometer.endTime);
     const updateCronometer = useCronometerStore((state) => state.updateCronometer);
@@ -168,7 +183,7 @@ export function Cronometer() {
         <>
             <CronometerTitleSync />
 
-            <Card className="shadow-lg border-border/60 bg-card/80 backdrop-blur-sm">
+            <Card className="shadow-lg border-border/60 bg-card/95">
                 <CardContent className="space-y-3">
 
                     <Button
@@ -209,7 +224,7 @@ export function Cronometer() {
 
                         {/* Cronometer Panel */}
                         <TabsContent value="cronometer" className="mt-4">
-                            <div className={`flex flex-col items-center gap-5 py-4 rounded-xl transition-all ${isCronometerRunning
+                            <div className={`flex flex-col items-center gap-5 py-4 rounded-xl transition-colors ${isCronometerRunning
                                 ? "ring-2 ring-primary/30 bg-primary/5"
                                 : "bg-muted/20"
                                 }`}>
@@ -355,7 +370,7 @@ export function Cronometer() {
             </Card>
 
             {isFocusModeOpen && (
-                <div className="fixed inset-0 z-50 bg-background/65 backdrop-blur-md">
+                <div className="fixed inset-0 z-50 bg-background/95">
                     <Card className="h-screen w-screen rounded-none border-none bg-background/70">
                         <CardContent className="h-full relative flex items-center justify-center p-6">
                             <Button
@@ -388,9 +403,10 @@ export function Cronometer() {
                                                 <Eye className="w-5 h-5" />
                                             )}
                                         </Button>
-                                        <span className={`font-mono font-semibold tabular-nums text-[min(18vw,11rem)] leading-none ${isCronometerRunning ? "text-foreground" : "text-muted-foreground"}`}>
-                                            {isTimeHiddenFocus ? "••:••:••" : formatCronometerTime(cronometerSeconds)}
-                                        </span>
+                                        <FocusModeTimeDisplay
+                                            isRunning={isCronometerRunning}
+                                            isTimeHidden={isTimeHiddenFocus}
+                                        />
                                     </div>
                                 </div>
                                 {/* Display Materia and Topico if available */}

@@ -276,7 +276,7 @@ export function StudySessionForm() {
 
                         {/* LEFT COLUMN — Subject, Topic, Material, Notes */}
                         <div className="space-y-5">
-                            <Card className="shadow-lg border-border/60 bg-card/80 backdrop-blur-sm">
+                            <Card className="shadow-lg border-border/60 bg-card/95">
                                 <CardHeader className="border-b border-border/40">
                                     <CardTitle className="text-base font-semibold flex  items-center gap-2 text-foreground">
                                         <BookOpen className="h-4 w-4 text-primary" />
@@ -497,7 +497,7 @@ export function StudySessionForm() {
             {/* Submitting Overlay */}
             {
                 isSubmitting && (
-                    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+                    <div className="fixed inset-0 bg-background/80 z-50 flex items-center justify-center">
                         <Card className="shadow-xl border-border/60">
                             <CardContent className="flex items-center gap-3 px-8 py-5">
                                 <Circle className="animate-spin h-5 w-5 text-primary" />
