@@ -6,6 +6,7 @@ import { getMondayOfCurrentWeek, getWeekDates } from "../teste/4/components/plan
 import { Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePlannerState } from "./usePlannerState";
+import { SidebarTools } from "./components/SidebarTools";
 
 export function formatDuration(minutes: number): string {
     const h = Math.floor(minutes / 60);
@@ -15,20 +16,6 @@ export function formatDuration(minutes: number): string {
     return `${h}h ${m}min`;
 }
 
-function ProgressBar({ progress }: { progress: number }) {
-    return (
-        <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden border border-border/5">
-            <div
-                className={cn(
-                    "h-full rounded-full transition-all duration-700 ease-out",
-                    progress >= 100 ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]" :
-                        progress > 50 ? "bg-primary" : "bg-amber-500"
-                )}
-                style={{ width: `${progress}%` }}
-            />
-        </div>
-    );
-}
 
 export default function Page() {
 
@@ -46,16 +33,7 @@ export default function Page() {
     const monday = useMemo(() => getMondayOfCurrentWeek(), []);
     const weekDates = useMemo(() => getWeekDates(monday), [monday]);
 
-    const GOALS: Record<string, number> = {
-        "Matemática": 600,
-        "Física": 300,
-        "História": 200,
-        "Inglês": 150,
-        "Química": 300,
-        "Geografia": 150,
-    };
 
-    const goalsEntries = Object.entries(GOALS).sort((a, b) => b[1] - a[1]);
 
     return (
         <div className="flex flex-col h-screen overflow-hidden ">
@@ -94,31 +72,8 @@ export default function Page() {
                         </div>
                     </div>
                 </div>
-                <aside className="w-64 flex flex-col h-full">
-                    <h2 className="font-semibold mb-2">Matérias Dedicadas</h2>
-                    {/* Progress by subject and templates would go here */}
-                    <div className="space-y-2">
+                <SidebarTools />
 
-
-                        {
-                            goalsEntries.map(([subject, goal]) => {
-
-                                const progress = 30; // Example progress, you would calculate this based on actual data
-
-                                return (
-                                    <div key={subject}>
-                                        <div className="flex justify-between items-center font-semibold text-sm">
-                                            <p>{subject}</p>
-                                            <span className="text-xs">10h / {formatDuration(goal)}</span>
-                                        </div>
-                                        <ProgressBar progress={progress} />
-                                    </div>
-                                )
-                            })
-                        }
-
-                    </div>
-                </aside>
             </div>
             <BlockFormModal
                 open={modalOpen}
