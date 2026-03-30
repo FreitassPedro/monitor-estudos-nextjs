@@ -123,8 +123,13 @@ export async function getAreaChartACtion(startDate: Date, endDate: Date, userId:
             });
         }
     });
+    // Order chart by date
+    const sortedChart: AreaChartData = {};
+    Object.keys(chart).sort().forEach(key => {
+        sortedChart[key] = chart[key];
+    });
 
-    return chart;
+    return sortedChart;
 }
 
 export async function getHeatmapMonthDataAction(monthDate: Date, userId: string): Promise<HeatmapMonthResponse> {
