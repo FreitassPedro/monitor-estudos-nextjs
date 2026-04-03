@@ -11,7 +11,7 @@ import { BlockType, StudyBlock } from "./mockData";
 import { formatDuration } from "../page";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader } from "@/components/ui/dialog";
-import { calculateheight, calculateTop, COLOR_MAP, getDayName } from "../utils";
+import { COLOR_MAP, getBlockTimelineMetrics, getDayName } from "../utils";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
@@ -98,41 +98,45 @@ export function BlockFormModal({
 
 export function StudyBlockCard({
     block,
+    hourHeights,
     onEdit
-}: { block: StudyBlock; onEdit: (block: StudyBlock) => void }) {
+}: { block: StudyBlock; hourHeights: number[]; onEdit: (block: StudyBlock) => void }) {
 
     const colors = COLOR_MAP[block.color];
-
-    const top = useMemo(() => calculateTop(block.startTime), [block.startTime]);
-    const height = useMemo(() => calculateheight(block.startTime, block.endTime), [block.startTime, block.endTime]);
+    const { topPx, heightPx } = useMemo(
+        () => getBlockTimelineMetrics(block, hourHeights),
+        [block, hourHeights]
+    );
 
     return (
         <div
             className={cn(
-                "absolute z-0 group rounded-lg border select-none",
-                "p-3 cursor-pointer hover:bg-primary/70 transition-colors",
+                "absolute z-0 group rounded-lg border select-none w-full",
+                "p-1.5 cursor-pointer hover:bg-primary/70 transition-colors overflow-hidden flex flex-col justify-start",
                 colors.bg,
             )}
             style={{
-                height: `${height}%`,
-                top: `${top}%`
+                height: `${heightPx}px`,
+                top: `${topPx}px`,
+                left: 0,
+                right: 0
             }}
         >
-            <h3 className="text-sm font-semibold">{block.subject}</h3>
-            <h3 className="text-xs text-muted-foreground">{block.topic}</h3>
-            <Badge variant="outline">
+            <h3 className="text-sm font-semibold truncate leading-tight">{block.subject}</h3>
+            {block.topic && <h3 className="text-xs text-muted-foreground truncate leading-tight">{block.topic}</h3>}
+            <Badge variant="outline" className="w-fit text-xs">
                 {block.type}
             </Badge>
             <Button
                 variant="ghost" size="icon"
-                className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center rounded-full p-0.5"
                 onClick={(e) => { e.stopPropagation(); onEdit(block); }}
             >
-                <Pencil className="absolute top-1 right-1 w-3 h-3 text-muted-foreground" />
+                <Pencil className="w-3 h-3 text-muted-foreground" />
             </Button>
-            <div className="flex items-center mt-1 text-muted-foreground">
-                <Clock className="w-3 h-3 " />
-                <p className="text-xs ">{block.startTime}-{block.endTime}</p>
+            <div className="flex items-center gap-0.5 mt-auto text-muted-foreground leading-tight">
+                <Clock className="w-2.5 h-2.5 shrink-0" />
+                <p className="text-xs truncate">{block.startTime}-{block.endTime}</p>
             </div>
         </div>
     );
@@ -142,18 +146,19 @@ export function DayColumn({
     blocks,
     date,
     dayIndex,
+    hourHeights,
+    timelineHeightPx,
     onAddBlock,
     onEditBlock,
 }: {
     blocks: StudyBlock[];
     date: Date;
     dayIndex: number;
+    hourHeights: number[];
+    timelineHeightPx: number;
     onAddBlock: (dayIndex: number) => void;
     onEditBlock: (block: StudyBlock) => void;
 }) {
-
-    const hourHeightPx = 64;
-    const timelineHeightPx = hourHeightPx * 24;
 
 
     const dayMinutes = useMemo(() => {
@@ -163,6 +168,12 @@ export function DayColumn({
             return total + (end - start);
         }, 0);
     }, [blocks])
+
+    const hourOffsets = useMemo(() => {
+        return hourHeights.map((_, index) => {
+            return hourHeights.slice(0, index).reduce((total, height) => total + height, 0);
+        });
+    }, [hourHeights]);
 
     return (
         <div className="flex flex-col min-w-0">
@@ -180,17 +191,18 @@ export function DayColumn({
                 className="relative flex flex-col rounded-lg bg-muted/20 p-1.5"
                 style={{ height: `${timelineHeightPx}px` }}
             >
-                {Array.from({ length: 24 }, (_, i) => i + 1).map(hour => (
+                {hourOffsets.map((top, hour) => (
                     <div key={hour}
                         className="absolute left-0 right-0 border-t border-muted/50"
-                        style={{ top: `${(hour / 24) * 100}%` }}
+                        style={{ top: `${top}px` }}
                     />
                 ))}
 
-                {blocks ? blocks.map((block: StudyBlock) => (
+                {blocks.length > 0 ? blocks.map((block: StudyBlock) => (
                     <StudyBlockCard
                         key={block.id}
                         block={block}
+                        hourHeights={hourHeights}
                         onEdit={onEditBlock}
                     />
                 )) : (

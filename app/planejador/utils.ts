@@ -1,5 +1,5 @@
 import { getDay } from "date-fns";
-import { SubjectColor } from "./components/mockData";
+import { StudyBlock, SubjectColor } from "./components/mockData";
 
 export function getDayName(date: Date): string {
     const days = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
@@ -123,3 +123,75 @@ export const calculateheight = (startTime: Date | string, endTime: Date | string
         return Number(Math.min(height, 100 - calculateTop(start)).toFixed(2));
     }
 }
+
+const MINUTES_PER_HOUR = 60;
+const HOURS_PER_DAY = 24;
+
+export const parseTimeToMinutes = (time: string | Date) => {
+    if (time instanceof Date) {
+        return time.getHours() * MINUTES_PER_HOUR + time.getMinutes() + time.getSeconds() / 60;
+    }
+
+    if (time.includes("T")) {
+        const date = new Date(time);
+        return date.getHours() * MINUTES_PER_HOUR + date.getMinutes() + date.getSeconds() / 60;
+    }
+
+    const [hours, minutes] = time.split(":").map(Number);
+    return hours * MINUTES_PER_HOUR + minutes;
+};
+
+export const buildHourHeights = (
+    blocks: StudyBlock[],
+    baseHeightPx = 44,
+    occupiedBonusPx = 28,
+) => {
+    return Array.from({ length: HOURS_PER_DAY }, (_, hour) => {
+        const slotStart = hour * MINUTES_PER_HOUR;
+        const slotEnd = slotStart + MINUTES_PER_HOUR;
+
+        const hasBlockInSlot = blocks.some((block) => {
+            const blockStart = parseTimeToMinutes(block.startTime);
+            const blockEnd = parseTimeToMinutes(block.endTime);
+            return blockStart < slotEnd && blockEnd > slotStart;
+        });
+
+        return baseHeightPx + (hasBlockInSlot ? occupiedBonusPx : 0);
+    });
+};
+
+export const getTimelinePositionPx = (minutes: number, hourHeights: number[]) => {
+    let position = 0;
+
+    for (let hour = 0; hour < HOURS_PER_DAY; hour += 1) {
+        const slotStart = hour * MINUTES_PER_HOUR;
+        const slotEnd = slotStart + MINUTES_PER_HOUR;
+        const slotHeight = hourHeights[hour] ?? hourHeights[hourHeights.length - 1] ?? 0;
+
+        if (minutes >= slotEnd) {
+            position += slotHeight;
+            continue;
+        }
+
+        const progressInSlot = Math.max(0, minutes - slotStart) / MINUTES_PER_HOUR;
+        position += slotHeight * progressInSlot;
+        return position;
+    }
+
+    return position;
+};
+
+export const getBlockTimelineMetrics = (
+    block: Pick<StudyBlock, "startTime" | "endTime">,
+    hourHeights: number[],
+) => {
+    const startMinutes = parseTimeToMinutes(block.startTime);
+    const endMinutes = parseTimeToMinutes(block.endTime);
+    const topPx = getTimelinePositionPx(startMinutes, hourHeights);
+    const bottomPx = getTimelinePositionPx(endMinutes, hourHeights);
+
+    return {
+        topPx,
+        heightPx: Math.max(bottomPx - topPx, 20),
+    };
+};
