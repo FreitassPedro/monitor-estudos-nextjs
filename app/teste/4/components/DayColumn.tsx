@@ -78,7 +78,7 @@ export function DayColumn({
             </p>
           </div>
           {isToday && (
-            <Badge className="bg-primary text-[9px] h-4 px-1 px-1.5 animate-pulse">HOJE</Badge>
+            <Badge className="bg-primary text-[9px] h-4 px-1 animate-pulse">HOJE</Badge>
           )}
         </div>
 

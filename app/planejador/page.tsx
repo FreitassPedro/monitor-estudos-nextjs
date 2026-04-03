@@ -32,6 +32,8 @@ export default function Page() {
         closeModal,
         openEditBlock,
         saveBlock,
+        draggedId, setDraggedId,
+        moveBlockToDay,
     } = usePlannerState();
 
     const monday = useMemo(() => getMondayOfCurrentWeek(), []);
@@ -101,6 +103,8 @@ export default function Page() {
                                     timelineHeightPx={timelineHeightPx}
                                     onAddBlock={openAddModal}
                                     onEditBlock={openEditBlock}
+                                    onDragStart={setDraggedId}
+                                    onDrop={moveBlockToDay}
                                 />
                             ))}
                         </div>

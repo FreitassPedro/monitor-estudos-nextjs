@@ -27,6 +27,8 @@ export function usePlannerState() {
     const [modalOpen, setModalOpen] = useState(false);
     const [form, setForm] = useState<NewBlockForm>(DEFAULT_FORM);
 
+    const [draggedId, setDraggedId] = useState<string | null>(null);
+
     const openAddModal = useCallback((dayIndex: number) => {
         setEditingBlock(null);
         setForm((prev) => ({ ...prev, dayIndex }));
@@ -81,10 +83,22 @@ export function usePlannerState() {
 
     }, [form, closeModal, editingBlock]);
 
+    const moveBlockToDay = useCallback((blockId: string, targetDay: number) => {
+        const block = blocks.find(b => b.id === blockId);
+        if (!block) return;
+
+        setBlocks((prev) =>
+            prev.map((b) => b.id === blockId ? { ...b, dayIndex: targetDay } : b)
+        );
+    }, [blocks]);
+
     return {
         blocks,
         form,
         setForm,
+        draggedId,
+        setDraggedId,
+        moveBlockToDay,
         editingBlock,
         modalOpen,
         openAddModal,

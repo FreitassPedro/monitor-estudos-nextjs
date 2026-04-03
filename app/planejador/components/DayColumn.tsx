@@ -4,9 +4,9 @@ import { cn } from "@/lib/utils";
 
 import { Separator } from "@/components/ui/separator";
 
-import { Clock, Pencil, Plus } from "lucide-react";
+import { Calendar, Clock, Pencil, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { BlockType, StudyBlock } from "./mockData";
 import { formatDuration } from "../page";
 import { Badge } from "@/components/ui/badge";
@@ -96,11 +96,18 @@ export function BlockFormModal({
 
 
 
+interface StudyBlockCardProps {
+    block: StudyBlock;
+    hourHeights: number[];
+    onEdit: (block: StudyBlock) => void;
+    onDragStart: (id: string) => void;
+}
 export function StudyBlockCard({
     block,
     hourHeights,
-    onEdit
-}: { block: StudyBlock; hourHeights: number[]; onEdit: (block: StudyBlock) => void }) {
+    onEdit,
+    onDragStart,
+}: StudyBlockCardProps) {
 
     const colors = COLOR_MAP[block.color];
     const { topPx, heightPx } = useMemo(
@@ -111,16 +118,20 @@ export function StudyBlockCard({
     return (
         <div
             className={cn(
-                "absolute z-0 group rounded-lg border select-none w-full",
-                "p-1.5 cursor-pointer hover:bg-primary/70 transition-colors overflow-hidden flex flex-col justify-start",
+                "absolute z-0 group rounded-lg border select-none left-2 right-2",
+                "px-2 py-1.5 cursor-pointer hover:bg-primary/70 transition-colors overflow-hidden flex flex-col justify-start",
                 colors.bg,
             )}
             style={{
                 height: `${heightPx}px`,
-                top: `${topPx}px`,
-                left: 0,
-                right: 0
+                top: `${topPx}px`
             }}
+            draggable
+            onDragStart={(e) => {
+                e.dataTransfer.setData("blockId", block.id);
+                onDragStart(block.id);
+            }}
+
         >
             <h3 className="text-sm font-semibold truncate leading-tight">{block.subject}</h3>
             {block.topic && <h3 className="text-xs text-muted-foreground truncate leading-tight">{block.topic}</h3>}
@@ -150,6 +161,8 @@ export function DayColumn({
     timelineHeightPx,
     onAddBlock,
     onEditBlock,
+    onDrop,
+    onDragStart,
 }: {
     blocks: StudyBlock[];
     date: Date;
@@ -158,7 +171,10 @@ export function DayColumn({
     timelineHeightPx: number;
     onAddBlock: (dayIndex: number) => void;
     onEditBlock: (block: StudyBlock) => void;
+    onDrop: (blockId: string, dayIndex: number) => void;
+    onDragStart: (blockId: string) => void;
 }) {
+    const [isDragOver, setIsDragOver] = useState(false);
 
 
     const dayMinutes = useMemo(() => {
@@ -188,8 +204,18 @@ export function DayColumn({
 
             {/* Drop zone */}
             <div
-                className="relative flex flex-col rounded-lg bg-muted/20 p-1.5"
+                className="relative flex-1 flex flex-col gap-3 rounded-xl p-2  transition-all duration-200 bg-muted/10 hover:bg-muted/20"
                 style={{ height: `${timelineHeightPx}px` }}
+                onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDragOver(true);
+                }}
+                onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDragOver(false);
+                    const blockId = e.dataTransfer.getData("blockId");
+                    if (blockId) onDrop(blockId, dayIndex);
+                }}
             >
                 {hourOffsets.map((top, hour) => (
                     <div key={hour}
@@ -204,10 +230,13 @@ export function DayColumn({
                         block={block}
                         hourHeights={hourHeights}
                         onEdit={onEditBlock}
+                        onDragStart={onDragStart}
                     />
                 )) : (
-                    <p className="text-center text-sm text-muted-foreground mt-4">Nenhum bloco planejado</p>
-                )}
+                    <div className="flex flex-col items-center justify-center py-12 opacity-20 pointer-events-none select-none">
+                        <Calendar className="w-8 h-8 mb-2" />
+                        <p className="text-[10px] font-medium">Vazio</p>
+                    </div>)}
 
                 <Button
                     variant="ghost"
