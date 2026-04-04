@@ -32,7 +32,7 @@ export default function Page() {
         closeModal,
         openEditBlock,
         saveBlock,
-        draggedId, setDraggedId,
+        setDraggedId,
         moveBlockToDay,
     } = usePlannerState();
 

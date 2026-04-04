@@ -204,7 +204,12 @@ export function DayColumn({
 
             {/* Drop zone */}
             <div
-                className="relative flex-1 flex flex-col gap-3 rounded-xl p-2  transition-all duration-200 bg-muted/10 hover:bg-muted/20"
+                className={cn(
+                    "relative flex-1 flex flex-col gap-3 rounded-xl p-2  transition-all duration-200 ",
+                    isDragOver 
+                    ? "bg-primary/10 border-primary/50"
+                    : "bg-muted/10 hover:bg-muted/20"
+                )}
                 style={{ height: `${timelineHeightPx}px` }}
                 onDragOver={(e) => {
                     e.preventDefault();
@@ -216,6 +221,7 @@ export function DayColumn({
                     const blockId = e.dataTransfer.getData("blockId");
                     if (blockId) onDrop(blockId, dayIndex);
                 }}
+                onDragLeave={() => setIsDragOver(false)}
             >
                 {hourOffsets.map((top, hour) => (
                     <div key={hour}
