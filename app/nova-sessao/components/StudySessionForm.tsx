@@ -207,11 +207,13 @@ export function StudySessionForm() {
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsSubmitting(true);
         console.log("Submitting form:", submitForm);
 
         const submitError = getFormSubmitError(submitForm);
         if (submitError) {
             toast.error(submitError);
+            setIsSubmitting(false);
             return;
         }
 
@@ -231,7 +233,6 @@ export function StudySessionForm() {
 
 
         try {
-            setIsSubmitting(true);
             await createStudyLog.mutateAsync(data);
             toast.success("Sessão de estudo registrada!");
             setSelectionForm(emptyForm);
