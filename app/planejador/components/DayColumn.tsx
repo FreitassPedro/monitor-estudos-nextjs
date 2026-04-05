@@ -1,157 +1,371 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-
 import { Separator } from "@/components/ui/separator";
-
-import { Calendar, Clock, Pencil, Plus } from "lucide-react";
+import { Calendar, Clock, GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useMemo, useState } from "react";
-import { BlockType, StudyBlock } from "./mockData";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { BlockType, StudyBlock, SubjectColor } from "./mockData";
 import { formatDuration } from "../page";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogFooter, DialogHeader } from "@/components/ui/dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+} from "@/components/ui/dialog";
 import { COLOR_MAP, getBlockTimelineMetrics, getDayName } from "../utils";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { pixelToMinutes, minutesToTimeStr } from "../usePlannerState";
+import { parseTimeToMinutes } from "../utils";
 
+// ── Color picker ────────────────────────────────────────────────────────────
 
+const COLOR_OPTIONS: SubjectColor[] = [
+    "blue", "emerald", "violet", "amber", "rose", "orange", "teal", "pink",
+];
+
+function ColorPicker({
+    value,
+    onChange,
+}: {
+    value?: string;
+    onChange: (c: SubjectColor) => void;
+}) {
+    const colorDots: Record<SubjectColor, string> = {
+        blue: "bg-blue-400",
+        emerald: "bg-emerald-400",
+        violet: "bg-violet-400",
+        amber: "bg-amber-400",
+        rose: "bg-rose-400",
+        orange: "bg-orange-400",
+        teal: "bg-teal-400",
+        pink: "bg-pink-400",
+    };
+    return (
+        <div className="flex gap-2 flex-wrap">
+            {COLOR_OPTIONS.map((c) => (
+                <button
+                    key={c}
+                    type="button"
+                    onClick={() => onChange(c)}
+                    className={cn(
+                        "w-6 h-6 rounded-full transition-all ring-offset-2",
+                        colorDots[c],
+                        value === c
+                            ? "ring-2 ring-primary scale-110"
+                            : "hover:scale-105 opacity-70 hover:opacity-100"
+                    )}
+                />
+            ))}
+        </div>
+    );
+}
+
+// ── Block Form Modal ─────────────────────────────────────────────────────────
 
 export function BlockFormModal({
     open,
     form,
     onCloseModal,
     onSave,
-    onFormChange
+    onDelete,
+    onFormChange,
+    isEditing,
 }: {
     open: boolean;
     form: Partial<StudyBlock>;
     onCloseModal: () => void;
     onSave: () => void;
+    onDelete?: () => void;
     onFormChange: (patch: Partial<StudyBlock>) => void;
+    isEditing?: boolean;
 }) {
-
     return (
         <Dialog open={open} onOpenChange={(v) => !v && onCloseModal()}>
-            <DialogContent>
+            <DialogContent className="max-w-sm">
                 <DialogHeader>
-                    <h2 className="text-lg font-semibold">Adicionar bloco de estudo</h2>
+                    <h2 className="text-base font-semibold">
+                        {isEditing ? "Editar bloco" : "Novo bloco de estudo"}
+                    </h2>
                 </DialogHeader>
 
-                <div className="flex flex-col gap-2">
-                    <Label>
-                        Matéria
-                    </Label>
-                    <Input
-                        id="subject"
-                        placeholder="Ex: Matemática"
-                        value={form.subject}
-                        onChange={(e) => onFormChange({ subject: e.target.value })}
-                    />
+                <div className="flex flex-col gap-3">
+                    <div>
+                        <Label className="text-xs text-muted-foreground mb-1 block">Matéria</Label>
+                        <Input
+                            placeholder="Ex: Matemática"
+                            value={form.subject ?? ""}
+                            onChange={(e) => onFormChange({ subject: e.target.value })}
+                            autoFocus
+                        />
+                    </div>
 
-                    <Label>
-                        Tópico
-                    </Label>
-                    <Input
-                        placeholder="Ex: Cálculo - Derivadas"
-                        value={form.topic}
-                        onChange={(e) => onFormChange({ topic: e.target.value })}
-                    />
-                    <Label>
-                        Tipo
-                    </Label>
-                    <Input
-                        placeholder="Ex: Estudo, Prática, Revisão..."
-                        value={form.type}
-                        onChange={(e) => onFormChange({ type: e.target.value as BlockType })}
-                    />
+                    <div>
+                        <Label className="text-xs text-muted-foreground mb-1 block">Tópico</Label>
+                        <Input
+                            placeholder="Ex: Cálculo — Derivadas"
+                            value={form.topic ?? ""}
+                            onChange={(e) => onFormChange({ topic: e.target.value })}
+                        />
+                    </div>
+
+                    <div>
+                        <Label className="text-xs text-muted-foreground mb-1 block">Tipo</Label>
+                        <div className="flex gap-2 flex-wrap">
+                            {["study", "exercise", "review", "practice"].map((t) => (
+                                <button
+                                    key={t}
+                                    type="button"
+                                    onClick={() => onFormChange({ type: t as BlockType })}
+                                    className={cn(
+                                        "px-3 py-1 rounded-full text-xs border transition-all",
+                                        form.type === t
+                                            ? "bg-primary text-primary-foreground border-primary"
+                                            : "border-border text-muted-foreground hover:border-primary/50"
+                                    )}
+                                >
+                                    {t}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <Label>Inicio</Label>
+                            <Label className="text-xs text-muted-foreground mb-1 block">Início</Label>
                             <Input
                                 type="time"
-                                value={form.startTime}
+                                value={form.startTime ?? "09:00"}
                                 onChange={(e) => onFormChange({ startTime: e.target.value })}
                             />
                         </div>
                         <div>
-                            <Label>Fim</Label>
+                            <Label className="text-xs text-muted-foreground mb-1 block">Fim</Label>
                             <Input
                                 type="time"
-                                value={form.endTime}
+                                value={form.endTime ?? "10:00"}
                                 onChange={(e) => onFormChange({ endTime: e.target.value })}
                             />
                         </div>
                     </div>
+
+                    <div>
+                        <Label className="text-xs text-muted-foreground mb-1 block">Cor</Label>
+                        <ColorPicker
+                            value={form.color as SubjectColor}
+                            onChange={(c) => onFormChange({ color: c })}
+                        />
+                    </div>
                 </div>
-                <DialogFooter>
-                    <Button variant="outline" onClick={onCloseModal}>Cancelar</Button>
-                    <Button onClick={onSave}>Salvar</Button>
+
+                <DialogFooter className="flex items-center justify-between mt-1">
+                    <div>
+                        {isEditing && onDelete && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                onClick={onDelete}
+                            >
+                                <Trash2 className="w-3.5 h-3.5 mr-1" />
+                                Excluir
+                            </Button>
+                        )}
+                    </div>
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={onCloseModal}>
+                            Cancelar
+                        </Button>
+                        <Button size="sm" onClick={onSave}>
+                            Salvar
+                        </Button>
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
-    )
+    );
 }
 
-
+// ── Study Block Card ─────────────────────────────────────────────────────────
 
 interface StudyBlockCardProps {
     block: StudyBlock;
     hourHeights: number[];
+    isDragging: boolean;
+    isResizing: boolean;
     onEdit: (block: StudyBlock) => void;
-    onDragStart: (id: string) => void;
+    onDragStart: (id: string, offsetY: number) => void;
+    onResizeStart: (id: string, e: React.MouseEvent) => void;
 }
+
 export function StudyBlockCard({
     block,
     hourHeights,
+    isDragging,
+    isResizing,
     onEdit,
     onDragStart,
+    onResizeStart,
 }: StudyBlockCardProps) {
-
     const colors = COLOR_MAP[block.color];
+
     const { topPx, heightPx } = useMemo(
         () => getBlockTimelineMetrics(block, hourHeights),
         [block, hourHeights]
     );
 
+    const handleMouseDown = useCallback(
+        (e: React.MouseEvent) => {
+            if ((e.target as HTMLElement).closest("[data-resize-handle]")) return;
+            e.preventDefault();
+
+            const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+            const offsetY = e.clientY - rect.top;
+            onDragStart(block.id, offsetY);
+        },
+        [block.id, onDragStart]
+    );
+
+    const durationMin = useMemo(() => {
+        const s = parseTimeToMinutes(block.startTime);
+        const e = parseTimeToMinutes(block.endTime);
+        return e - s;
+    }, [block.startTime, block.endTime]);
+
+    const compact = heightPx < 48;
+
     return (
         <div
             className={cn(
-                "absolute z-0 group rounded-lg border select-none left-2 right-2",
-                "px-2 py-1.5 cursor-pointer hover:bg-primary/70 transition-colors overflow-hidden flex flex-col justify-start",
+                "absolute z-10 group rounded-lg border select-none left-1 right-1",
+                "transition-shadow overflow-hidden flex flex-col",
                 colors.bg,
+                colors.border,
+                isDragging
+                    ? "opacity-40 shadow-lg ring-2 ring-primary/50 cursor-grabbing"
+                    : isResizing
+                        ? "shadow-md ring-2 ring-primary/30 cursor-ns-resize"
+                        : "cursor-grab hover:shadow-md hover:z-20"
             )}
             style={{
                 height: `${heightPx}px`,
-                top: `${topPx}px`
+                top: `${topPx}px`,
             }}
-            draggable
-            onDragStart={(e) => {
-                e.dataTransfer.setData("blockId", block.id);
-                onDragStart(block.id);
+            onMouseDown={handleMouseDown}
+            onDoubleClick={(e) => {
+                e.stopPropagation();
+                onEdit(block);
             }}
-
         >
-            <h3 className="text-sm font-semibold truncate leading-tight">{block.subject}</h3>
-            {block.topic && <h3 className="text-xs text-muted-foreground truncate leading-tight">{block.topic}</h3>}
-            <Badge variant="outline" className="w-fit text-xs">
-                {block.type}
-            </Badge>
+            {/* Drag grip */}
+            <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-40 transition-opacity pointer-events-none">
+                <GripVertical className="w-3 h-3" />
+            </div>
+
+            <div className={cn("flex flex-col flex-1 min-h-0", compact ? "px-2 py-0.5" : "px-2 py-1.5")}>
+                <h3 className={cn("font-semibold truncate leading-tight", colors.text, compact ? "text-xs" : "text-sm")}>
+                    {block.subject}
+                </h3>
+
+                {!compact && block.topic && (
+                    <p className="text-xs text-muted-foreground truncate leading-tight">{block.topic}</p>
+                )}
+
+                {!compact && (
+                    <Badge
+                        variant="outline"
+                        className={cn("w-fit text-xs mt-0.5 py-0 px-1.5 h-4", colors.border)}
+                    >
+                        {block.type}
+                    </Badge>
+                )}
+
+                <div className={cn("flex items-center gap-0.5 text-muted-foreground leading-tight", compact ? "mt-0" : "mt-auto")}>
+                    <Clock className="w-2.5 h-2.5 shrink-0" />
+                    <p className="text-xs truncate">
+                        {block.startTime}–{block.endTime}
+                        {!compact && ` · ${formatDuration(durationMin)}`}
+                    </p>
+                </div>
+            </div>
+
+            {/* Edit button */}
             <Button
-                variant="ghost" size="icon"
-                className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center rounded-full p-0.5"
-                onClick={(e) => { e.stopPropagation(); onEdit(block); }}
+                variant="ghost"
+                size="icon"
+                className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 rounded-full"
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(block);
+                }}
             >
-                <Pencil className="w-3 h-3 text-muted-foreground" />
+                <Pencil className="w-2.5 h-2.5 text-muted-foreground" />
             </Button>
-            <div className="flex items-center gap-0.5 mt-auto text-muted-foreground leading-tight">
-                <Clock className="w-2.5 h-2.5 shrink-0" />
-                <p className="text-xs truncate">{block.startTime}-{block.endTime}</p>
+
+            {/* Resize handle */}
+            <div
+                data-resize-handle
+                className={cn(
+                    "absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize",
+                    "flex items-center justify-center opacity-0 group-hover:opacity-60 transition-opacity"
+                )}
+                onMouseDown={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    console.log("resize start", block.id);
+                    onResizeStart(block.id, e);
+                }}
+            >
+                <div className="w-8 h-0.5 rounded-full bg-current opacity-50" />
             </div>
         </div>
     );
-};
+}
+
+// ── Ghost block shown while dragging ────────────────────────────────────────
+
+function GhostBlock({
+    topPx,
+    heightPx,
+    label,
+}: {
+    topPx: number;
+    heightPx: number;
+    label: string;
+}) {
+    return (
+        <div
+            className="absolute left-1 right-1 z-30 rounded-lg border-2 border-dashed border-primary/60 bg-primary/10 pointer-events-none flex items-center justify-center"
+            style={{ top: `${topPx}px`, height: `${heightPx}px` }}
+        >
+            <p className="text-xs font-medium text-primary/70">{label}</p>
+        </div>
+    );
+}
+
+// ── DayColumn ────────────────────────────────────────────────────────────────
+
+interface DayColumnProps {
+    blocks: StudyBlock[];
+    date: Date;
+    dayIndex: number;
+    hourHeights: number[];
+    timelineHeightPx: number;
+    timelineRef?: (el: HTMLDivElement | null) => void;
+    draggedId: string | null;
+    dragOffsetY: number;
+    resizingId: string | null;
+    allBlocks: StudyBlock[];
+    onAddBlock: (dayIndex: number, startTime?: string) => void;
+    onEditBlock: (block: StudyBlock) => void;
+    onDragStart: (id: string, offsetY: number) => void;
+    onDrop: (blockId: string, dayIndex: number, pixelTop: number) => void;
+    onDragEnd: () => void;
+    onResizeStart: (id: string, e: React.MouseEvent) => void;
+}
 
 export function DayColumn({
     blocks,
@@ -159,120 +373,272 @@ export function DayColumn({
     dayIndex,
     hourHeights,
     timelineHeightPx,
+    timelineRef,
+    draggedId,
+    dragOffsetY,
+    resizingId,
+    allBlocks,
     onAddBlock,
     onEditBlock,
-    onDrop,
     onDragStart,
-}: {
-    blocks: StudyBlock[];
-    date: Date;
-    dayIndex: number;
-    hourHeights: number[];
-    timelineHeightPx: number;
-    onAddBlock: (dayIndex: number) => void;
-    onEditBlock: (block: StudyBlock) => void;
-    onDrop: (blockId: string, dayIndex: number, targetHour: number) => void;
-    onDragStart: (blockId: string) => void;
-}) {
+    onDrop,
+    onDragEnd,
+    onResizeStart,
+}: DayColumnProps) {
+    const columnRef = useRef<HTMLDivElement>(null);
     const [isDragOver, setIsDragOver] = useState(false);
-    const [isDragOverHour, setIsDragOverHour] = useState(false);
-
-    const [dragOverHour, setDragOverHour] = useState<number | null>(null);
-
+    const [ghostTop, setGhostTop] = useState<number | null>(null);
 
     const dayMinutes = useMemo(() => {
         return blocks.reduce((total, block) => {
-            const start = parseInt(block.startTime.split(":")[0]) * 60 + parseInt(block.startTime.split(":")[1]);
-            const end = parseInt(block.endTime.split(":")[0]) * 60 + parseInt(block.endTime.split(":")[1]);
-            return total + (end - start);
+            const s = parseTimeToMinutes(block.startTime);
+            const e = parseTimeToMinutes(block.endTime);
+            return total + (e - s);
         }, 0);
-    }, [blocks])
+    }, [blocks]);
 
     const hourOffsets = useMemo(() => {
-        return hourHeights.map((_, index) => {
-            return hourHeights.slice(0, index).reduce((total, height) => total + height, 0);
-        });
+        return hourHeights.map((_, index) =>
+            hourHeights.slice(0, index).reduce((t, h) => t + h, 0)
+        );
     }, [hourHeights]);
+
+    const draggedBlock = draggedId ? allBlocks.find((b) => b.id === draggedId) : null;
+    const draggedDuration = draggedBlock
+        ? parseTimeToMinutes(draggedBlock.endTime) - parseTimeToMinutes(draggedBlock.startTime)
+        : 60;
+
+    const getRelativeY = useCallback(
+        (clientY: number) => {
+            if (!columnRef.current) return 0;
+            const rect = columnRef.current.getBoundingClientRect();
+            return clientY - rect.top;
+        },
+        []
+    );
+
+    const getGhostMetrics = useCallback(
+        (clientY: number) => {
+            const relY = getRelativeY(clientY);
+            const adjustedTop = relY - dragOffsetY;
+            const startMin = pixelToMinutes(Math.max(0, adjustedTop), hourHeights);
+            const snapped = Math.round(startMin / 15) * 15;
+            const endMin = snapped + draggedDuration;
+
+            const topPx = hourOffsetForMinutes(snapped, hourHeights, hourOffsets);
+            const bottomPx = hourOffsetForMinutes(endMin, hourHeights, hourOffsets);
+            const heightPx = Math.max(bottomPx - topPx, 20);
+
+            return { topPx, heightPx, snapped };
+        },
+        [getRelativeY, dragOffsetY, hourHeights, hourOffsets, draggedDuration]
+    );
+
+    const handleMouseMove = useCallback(
+        (e: React.MouseEvent) => {
+            if (!draggedId) return;
+            const { topPx } = getGhostMetrics(e.clientY);
+            setGhostTop(topPx);
+        },
+        [draggedId, getGhostMetrics]
+    );
+
+    const handleMouseUp = useCallback(
+        (e: React.MouseEvent) => {
+            if (!draggedId) return;
+            const relY = getRelativeY(e.clientY);
+            const adjustedTop = relY - dragOffsetY;
+            onDrop(draggedId, dayIndex, Math.max(0, adjustedTop));
+            setIsDragOver(false);
+            setGhostTop(null);
+            onDragEnd();
+        },
+        [draggedId, dayIndex, dragOffsetY, getRelativeY, onDrop, onDragEnd]
+    );
+
+    const handleMouseEnter = useCallback(
+        (e: React.MouseEvent) => {
+            if (!draggedId) return;
+            setIsDragOver(true);
+            const { topPx } = getGhostMetrics(e.clientY);
+            setGhostTop(topPx);
+        },
+        [draggedId, getGhostMetrics]
+    );
+
+    const handleMouseLeave = useCallback(() => {
+        setIsDragOver(false);
+        setGhostTop(null);
+    }, []);
+
+    const handleColumnDoubleClick = useCallback(
+        (e: React.MouseEvent) => {
+            if ((e.target as HTMLElement).closest("[data-block]")) return;
+            const relY = getRelativeY(e.clientY);
+            const minutes = pixelToMinutes(relY, hourHeights);
+            const snapped = Math.round(minutes / 15) * 15;
+            onAddBlock(dayIndex, minutesToTimeStr(snapped));
+        },
+        [getRelativeY, hourHeights, dayIndex, onAddBlock]
+    );
+
+    const ghostLabel = useMemo(() => {
+        if (ghostTop === null || !draggedBlock) return "";
+        const startMin = pixelToMinutes(ghostTop, hourHeights);
+        const snapped = Math.round(startMin / 15) * 15;
+        return `${minutesToTimeStr(snapped)} – ${minutesToTimeStr(snapped + draggedDuration)}`;
+    }, [ghostTop, draggedBlock, hourHeights, draggedDuration]);
+
+    const isToday = useMemo(() => {
+        const today = new Date();
+        return (
+            date.getDate() === today.getDate() &&
+            date.getMonth() === today.getMonth() &&
+            date.getFullYear() === today.getFullYear()
+        );
+    }, [date]);
 
     return (
         <div className="flex flex-col min-w-0">
-            <div className="px-2 py-2">
-                <p className="text-md font-semibold text-primary">{getDayName(date)}</p>
+            {/* Header */}
+            <div className={cn("px-2 py-2 rounded-t-lg", isToday && "bg-primary/5")}>
+                <p className={cn("text-sm font-semibold", isToday ? "text-primary" : "text-foreground")}>
+                    {getDayName(date)}
+                    {isToday && (
+                        <span className="ml-1.5 text-xs font-normal text-primary/70">Hoje</span>
+                    )}
+                </p>
                 <p className="text-xs text-muted-foreground">{date.toLocaleDateString("pt-BR")}</p>
-                <Badge variant={"secondary"}>
-                    {formatDuration(dayMinutes)}
+                <Badge variant={dayMinutes > 0 ? "secondary" : "outline"} className="mt-1">
+                    {dayMinutes > 0 ? formatDuration(dayMinutes) : "—"}
                 </Badge>
             </div>
-            <Separator className="my-2" />
 
-            {/* Drop zone */}
+            <Separator className="my-1" />
+
+            {/* Timeline */}
             <div
+                ref={(el) => {
+                    columnRef.current = el;
+                    timelineRef?.(el);
+                }}
                 className={cn(
-                    "relative flex-1 flex flex-col gap-3 rounded-xl p-2  transition-all duration-200 ",
-                    isDragOver
-                        ? "bg-primary/10 border-primary/50"
-                        : "bg-muted/10 hover:bg-muted/20"
+                    "relative rounded-xl transition-colors duration-150",
+                    isDragOver && draggedId
+                        ? "bg-primary/8 ring-1 ring-primary/30"
+                        : "bg-muted/5 hover:bg-muted/10"
                 )}
                 style={{ height: `${timelineHeightPx}px` }}
-                onDragOver={(e) => {
-                    e.preventDefault();
-                    setIsDragOver(true);
-                    setIsDragOverHour(false);
-                }}
-                onDrop={(e) => {
-                    e.preventDefault();
-                    setIsDragOver(false);
-                    const blockId = e.dataTransfer.getData("blockId");
-                    if (blockId && dragOverHour !== null) onDrop(blockId, dayIndex, dragOverHour);
-                }}
-                onDragLeave={() => {
-                    setIsDragOver(false);
-                    setIsDragOverHour(false);
-                }}
+                onMouseMove={handleMouseMove}
+                onMouseUp={handleMouseUp}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+                onDoubleClick={handleColumnDoubleClick}
             >
+                {/* Hour lines */}
                 {hourOffsets.map((top, hour) => (
-                    <div key={hour}
-                        className="absolute left-0 right-0 border-t border-muted/50"
+                    <div
+                        key={hour}
+                        className={cn(
+                            "absolute left-0 right-0 border-t pointer-events-none",
+                            hour % 6 === 0
+                                ? "border-border/40"
+                                : "border-muted/30"
+                        )}
                         style={{ top: `${top}px` }}
-                        onDragOver={(e) => {
-                            e.preventDefault();
-                            setIsDragOverHour(true);
-                            setDragOverHour(hour);
-                            console.log(`Dragging over hour ${hour} on day ${dayIndex}`);
-                        }}
-
                     />
                 ))}
 
-                {blocks.length > 0 ? blocks.map((block: StudyBlock) => (
-                    <StudyBlockCard
-                        key={block.id}
-                        block={block}
-                        hourHeights={hourHeights}
-                        onEdit={onEditBlock}
-                        onDragStart={onDragStart}
+                {/* Current time indicator */}
+                {isToday && <CurrentTimeIndicator hourHeights={hourHeights} />}
+
+                {/* Blocks */}
+                {blocks.map((block) => (
+                    <div key={block.id} data-block>
+                        <StudyBlockCard
+                            block={block}
+                            hourHeights={hourHeights}
+                            isDragging={draggedId === block.id}
+                            isResizing={resizingId === block.id}
+                            onEdit={onEditBlock}
+                            onDragStart={onDragStart}
+                            onResizeStart={onResizeStart}
+                        />
+                    </div>
+                ))}
+
+                {/* Ghost block */}
+                {isDragOver && ghostTop !== null && draggedBlock && (
+                    <GhostBlock
+                        topPx={ghostTop}
+                        heightPx={Math.max(
+                            hourOffsetForMinutes(
+                                pixelToMinutes(ghostTop, hourHeights) + draggedDuration,
+                                hourHeights,
+                                hourOffsets
+                            ) - ghostTop,
+                            20
+                        )}
+                        label={ghostLabel}
                     />
-                )) : (
-                    <div className="flex flex-col items-center justify-center py-12 opacity-20 pointer-events-none select-none">
-                        <Calendar className="w-8 h-8 mb-2" />
+                )}
+
+                {/* Empty state */}
+                {blocks.length === 0 && !isDragOver && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center opacity-15 pointer-events-none select-none">
+                        <Calendar className="w-6 h-6 mb-1" />
                         <p className="text-[10px] font-medium">Vazio</p>
                     </div>
                 )}
 
+                {/* Add button at bottom */}
                 <Button
                     variant="ghost"
                     size="sm"
-                    className="mt-auto w-full font-bol tracking-tight rounded-lg space-x-2
-                        text-muted-foreground/40 border border-dashed border-border/50 hover:text-primary hover:bg-primary/10 hover:border-primary/50
-                    "
+                    className="absolute bottom-2 left-1 right-1 h-7 font-medium tracking-tight rounded-md
+                        text-muted-foreground/40 border border-dashed border-border/40
+                        hover:text-primary hover:bg-primary/5 hover:border-primary/30 transition-all"
                     onClick={() => onAddBlock(dayIndex)}
                 >
-                    <Plus className="w-3.5 h-3.5 " />
-                    ADICIONAR
+                    <Plus className="w-3 h-3 mr-1" />
+                    <span className="text-xs">Adicionar</span>
                 </Button>
             </div>
-
         </div>
+    );
+}
 
-    )
-};
+// ── Current time indicator ────────────────────────────────────────────────────
+
+function CurrentTimeIndicator({ hourHeights }: { hourHeights: number[] }) {
+    const now = new Date();
+    const minutes = now.getHours() * 60 + now.getMinutes();
+    const hourOffsets = hourHeights.map((_, i) =>
+        hourHeights.slice(0, i).reduce((t, h) => t + h, 0)
+    );
+    const topPx = hourOffsetForMinutes(minutes, hourHeights, hourOffsets);
+
+    return (
+        <div
+            className="absolute left-0 right-0 z-20 pointer-events-none flex items-center"
+            style={{ top: `${topPx}px` }}
+        >
+            <div className="w-2 h-2 rounded-full bg-red-500 -ml-1 shrink-0" />
+            <div className="flex-1 h-px bg-red-400/80" />
+        </div>
+    );
+}
+
+// ── util ─────────────────────────────────────────────────────────────────────
+
+function hourOffsetForMinutes(
+    minutes: number,
+    hourHeights: number[],
+    hourOffsets: number[]
+): number {
+    const hour = Math.min(Math.floor(minutes / 60), 23);
+    const minuteInHour = minutes % 60;
+    const base = hourOffsets[hour] ?? 0;
+    const fraction = minuteInHour / 60;
+    return base + (hourHeights[hour] ?? 0) * fraction;
+}
