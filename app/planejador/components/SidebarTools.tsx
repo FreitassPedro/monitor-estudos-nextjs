@@ -29,7 +29,7 @@ export function SidebarTools() {
     const goalsEntries = Object.entries(GOALS).sort((a, b) => b[1] - a[1]);
 
     return (
-        <aside className="w-64 border-l flex flex-col h-full p-4">
+        <aside className="w-64 border-l bg-muted/10 flex flex-col h-full p-4">
             <h2 className="font-semibold mb-2">Matérias Dedicadas</h2>
             {/* Progress by subject and templates would go here */}
             <div className="space-y-2">

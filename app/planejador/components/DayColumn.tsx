@@ -171,10 +171,13 @@ export function DayColumn({
     timelineHeightPx: number;
     onAddBlock: (dayIndex: number) => void;
     onEditBlock: (block: StudyBlock) => void;
-    onDrop: (blockId: string, dayIndex: number) => void;
+    onDrop: (blockId: string, dayIndex: number, targetHour: number) => void;
     onDragStart: (blockId: string) => void;
 }) {
     const [isDragOver, setIsDragOver] = useState(false);
+    const [isDragOverHour, setIsDragOverHour] = useState(false);
+
+    const [dragOverHour, setDragOverHour] = useState<number | null>(null);
 
 
     const dayMinutes = useMemo(() => {
@@ -206,27 +209,38 @@ export function DayColumn({
             <div
                 className={cn(
                     "relative flex-1 flex flex-col gap-3 rounded-xl p-2  transition-all duration-200 ",
-                    isDragOver 
-                    ? "bg-primary/10 border-primary/50"
-                    : "bg-muted/10 hover:bg-muted/20"
+                    isDragOver
+                        ? "bg-primary/10 border-primary/50"
+                        : "bg-muted/10 hover:bg-muted/20"
                 )}
                 style={{ height: `${timelineHeightPx}px` }}
                 onDragOver={(e) => {
                     e.preventDefault();
                     setIsDragOver(true);
+                    setIsDragOverHour(false);
                 }}
                 onDrop={(e) => {
                     e.preventDefault();
                     setIsDragOver(false);
                     const blockId = e.dataTransfer.getData("blockId");
-                    if (blockId) onDrop(blockId, dayIndex);
+                    if (blockId && dragOverHour !== null) onDrop(blockId, dayIndex, dragOverHour);
                 }}
-                onDragLeave={() => setIsDragOver(false)}
+                onDragLeave={() => {
+                    setIsDragOver(false);
+                    setIsDragOverHour(false);
+                }}
             >
                 {hourOffsets.map((top, hour) => (
                     <div key={hour}
                         className="absolute left-0 right-0 border-t border-muted/50"
                         style={{ top: `${top}px` }}
+                        onDragOver={(e) => {
+                            e.preventDefault();
+                            setIsDragOverHour(true);
+                            setDragOverHour(hour);
+                            console.log(`Dragging over hour ${hour} on day ${dayIndex}`);
+                        }}
+
                     />
                 ))}
 
@@ -242,7 +256,8 @@ export function DayColumn({
                     <div className="flex flex-col items-center justify-center py-12 opacity-20 pointer-events-none select-none">
                         <Calendar className="w-8 h-8 mb-2" />
                         <p className="text-[10px] font-medium">Vazio</p>
-                    </div>)}
+                    </div>
+                )}
 
                 <Button
                     variant="ghost"

@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { BlockType, MOCK_BLOCKS, StudyBlock } from "./components/mockData";
 import { generateId } from "../teste/4/components/planner-utils";
+import { parseTimeToMinutes } from "./utils";
 
 export interface NewBlockForm {
     subject: string;
@@ -83,13 +84,38 @@ export function usePlannerState() {
 
     }, [form, closeModal, editingBlock]);
 
-    const moveBlockToDay = useCallback((blockId: string, targetDay: number) => {
-        const block = blocks.find(b => b.id === blockId);
-        if (!block) return;
+    const moveBlockToDay = useCallback((blockId: string, targetDay: number, targetHour: number) => {
+        console.log(`Moving block ${blockId} to day ${targetDay} at hour ${targetHour}`);
 
-        setBlocks((prev) =>
-            prev.map((b) => b.id === blockId ? { ...b, dayIndex: targetDay } : b)
-        );
+        const currentBlock = blocks.find(b => b.id === blockId);
+        if (!currentBlock) return;
+
+        // Calcular a duração do bloco em minutos
+        const startMinutes = parseTimeToMinutes(currentBlock.startTime);
+        const endMinutes = parseTimeToMinutes(currentBlock.endTime);
+        const durationMinutes = endMinutes - startMinutes;
+
+        // Novo horário de início com base no targetHour
+        const newStartMinutes = targetHour * 60; // targetHour é um número (ex: 9, 14, etc)
+        const newEndMinutes = newStartMinutes + durationMinutes;
+
+        // Converter minutos de volta para formato HH:MM
+        const hoursStart = Math.floor(newStartMinutes / 60);
+        const minutesStart = newStartMinutes % 60;
+        const newStartStr = `${String(hoursStart).padStart(2, '0')}:${String(minutesStart).padStart(2, '0')}`;
+
+        const hoursEnd = Math.floor(newEndMinutes / 60);
+        const minutesEnd = newEndMinutes % 60;
+        const newEndStr = `${String(hoursEnd).padStart(2, '0')}:${String(minutesEnd).padStart(2, '0')}`;
+
+        const movedBlock = {
+            ...currentBlock,
+            dayIndex: targetDay,
+            startTime: newStartStr,
+            endTime: newEndStr,
+        };
+
+        setBlocks((prev) => prev.map(b => b.id === blockId ? movedBlock : b));
     }, [blocks]);
 
     return {
