@@ -46,7 +46,7 @@ export default function RootLayout({
             <UserSelector />
             <MainNavbar />
             {children}
-            <Toaster position="top-right" />
+            <Toaster position="bottom-right" />
 
           </QueryProvider>
         </ThemeProvider>

@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, Plus, History, FolderOpen, CheckSquare, CalendarClock, User, LibraryBig, LogOut, TrendingUp, ChartSpline, PencilLine } from 'lucide-react';
+import { BookOpen, Plus, History, FolderOpen, CheckSquare, CalendarClock, User, LibraryBig, LogOut, TrendingUp, ChartSpline, PencilLine, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -15,6 +15,7 @@ const navItems = [
     { href: '/nova-sessao', label: 'Nova Sessão', icon: PencilLine, isEnabled: true },
     { href: '/historico', label: 'Estatísticas', icon: ChartSpline, isEnabled: true },
     { href: '/materias', label: 'Matérias', icon: FolderOpen, isEnabled: true },
+    { href: '/planejador', label: 'Agenda', icon: CalendarDays, isEnabled: true },
     { href: '/', label: 'Tarefas', icon: CheckSquare, isEnabled: false },
     { href: '/', label: 'Revisões', icon: CalendarClock, isEnabled: false },
     { href: '/', label: 'Ciclos', icon: CalendarClock, isEnabled: false },
