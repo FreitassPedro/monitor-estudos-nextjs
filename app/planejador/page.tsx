@@ -4,11 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BlockFormModal, DayColumn } from "./components/DayColumn";
 import { getMondayOfCurrentWeek, getWeekDates } from "../teste/4/components/planner-utils";
 import { Clock, ChevronLeft, ChevronRight } from "lucide-react";
-import { usePlannerState, pixelToMinutes, minutesToTimeStr } from "./usePlannerState";
+import { usePlannerState } from "./usePlannerState";
 import { SidebarTools } from "./components/SidebarTools";
 import { buildHourHeights, parseTimeToMinutes } from "./utils";
 import { Button } from "@/components/ui/button";
-import { addWeeks, subWeeks } from "date-fns";
+import { addWeeks } from "date-fns";
 
 export function formatDuration(minutes: number): string {
     const h = Math.floor(minutes / 60);

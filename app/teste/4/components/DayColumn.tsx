@@ -37,7 +37,7 @@ export function DayColumn({
   onToggleStatus,
 }: DayColumnProps) {
   const [isDragOver, setIsDragOver] = useState(false);
-  
+
   const dayMinutes = blocks.reduce((a, b) => a + blockDurationMinutes(b), 0);
   const doneBlocks = blocks.filter(b => b.status === 'done');
   const totalBlocks = blocks.length;
@@ -45,9 +45,9 @@ export function DayColumn({
 
   return (
     <div className={cn(
-        "flex flex-col min-w-0 transition-opacity",
-        !isToday && !isWeekend && "opacity-95 hover:opacity-100"
-      )}>
+      "flex flex-col min-w-0 transition-opacity",
+      !isToday && !isWeekend && "opacity-95 hover:opacity-100"
+    )}>
       {/* Day header */}
       <div
         className={cn(
@@ -92,7 +92,7 @@ export function DayColumn({
             </Badge>
             <div className="flex items-center gap-1 min-w-0">
               <div className="flex-1 h-1 bg-muted rounded-full min-w-[30px]">
-                <div 
+                <div
                   className="h-full bg-emerald-500 rounded-full transition-all duration-500"
                   style={{ width: `${(doneBlocks.length / totalBlocks) * 100}%` }}
                 />
@@ -128,8 +128,8 @@ export function DayColumn({
       >
         {blocks.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 opacity-20 pointer-events-none select-none">
-             <Calendar className="w-8 h-8 mb-2" />
-             <p className="text-[10px] font-medium">Vazio</p>
+            <Calendar className="w-8 h-8 mb-2" />
+            <p className="text-[10px] font-medium">Vazio</p>
           </div>
         ) : (
           blocks.map((block) => (
