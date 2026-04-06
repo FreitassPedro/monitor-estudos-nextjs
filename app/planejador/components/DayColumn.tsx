@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { Calendar, Clock, GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
+import { Calendar, Clock, GripVertical, MoreHorizontal, Pencil, Plus, Trash2, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { BlockType, StudyBlock, SubjectColor } from "./mockData";
@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { pixelToMinutes, minutesToTimeStr } from "../usePlannerState";
 import { parseTimeToMinutes } from "../utils";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 // ── Color picker ────────────────────────────────────────────────────────────
 
@@ -196,6 +197,7 @@ interface StudyBlockCardProps {
     isDragging: boolean;
     isResizing: boolean;
     onEdit: (block: StudyBlock) => void;
+    onRemove: (blockId: string) => void;
     onDragStart: (id: string, offsetY: number) => void;
     onResizeStart: (id: string, e: React.MouseEvent) => void;
 }
@@ -205,6 +207,7 @@ export function StudyBlockCard({
     hourHeights,
     isDragging,
     isResizing,
+    onRemove,
     onEdit,
     onDragStart,
     onResizeStart,
@@ -291,6 +294,36 @@ export function StudyBlockCard({
                 </div>
             </div>
 
+            {/* Options Button */}
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute top-1 right-6 opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 rounded-full"
+                    >
+                        <MoreHorizontal className="w-2.5 h-2.5" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    <DropdownMenuGroup>
+                        <DropdownMenuItem>
+                            Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem variant="destructive"
+                            onClick={() => onRemove(block.id)}
+                        >
+                            <Trash2Icon />
+                            Trash
+                        </DropdownMenuItem>
+
+                    </DropdownMenuGroup>
+
+                </DropdownMenuContent>
+
+            </DropdownMenu>
+
+
             {/* Edit button */}
             <Button
                 variant="ghost"
@@ -359,6 +392,7 @@ interface DayColumnProps {
     dragOffsetY: number;
     resizingId: string | null;
     allBlocks: StudyBlock[];
+    onRemoveBlock: (blockId: string) => void;
     onAddBlock: (dayIndex: number, startTime?: string) => void;
     onEditBlock: (block: StudyBlock) => void;
     onDragStart: (id: string, offsetY: number) => void;
@@ -378,6 +412,7 @@ export function DayColumn({
     dragOffsetY,
     resizingId,
     allBlocks,
+    onRemoveBlock,
     onAddBlock,
     onEditBlock,
     onDragStart,
@@ -561,6 +596,7 @@ export function DayColumn({
                             isDragging={draggedId === block.id}
                             isResizing={resizingId === block.id}
                             onEdit={onEditBlock}
+                            onRemove={onRemoveBlock}
                             onDragStart={onDragStart}
                             onResizeStart={onResizeStart}
                         />

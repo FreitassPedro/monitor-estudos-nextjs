@@ -75,6 +75,10 @@ export function usePlannerState() {
         setEditingBlock(null);
     }, []);
 
+    const removeBlock = useCallback((blockId: string) => {
+        setBlocks((prev) => prev.filter((b) => b.id !== blockId));
+    }, []);
+
     const saveBlock = useCallback(() => {
         if (editingBlock) {
             setBlocks((prev) => prev.map((b) => b.id === editingBlock.id ? { ...b, ...form } : b));
@@ -172,6 +176,7 @@ export function usePlannerState() {
         resizeBlockByPixel,
         editingBlock,
         modalOpen,
+        removeBlock,
         openAddModal,
         openEditBlock,
         closeModal,

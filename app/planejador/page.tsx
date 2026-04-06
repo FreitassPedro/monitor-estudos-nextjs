@@ -36,6 +36,7 @@ export default function Page() {
         resizeBlockByPixel,
         editingBlock,
         modalOpen,
+        removeBlock,
         openAddModal,
         openEditBlock,
         closeModal,
@@ -249,6 +250,7 @@ export default function Page() {
                                         dragOffsetY={dragOffsetY}
                                         resizingId={resizingId}
                                         onAddBlock={openAddModal}
+                                        onRemoveBlock={removeBlock}
                                         onEditBlock={openEditBlock}
                                         onDragStart={handleDragStart}
                                         onDrop={() => { }} // handled globally
