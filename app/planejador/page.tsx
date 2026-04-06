@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BlockFormModal, DayColumn } from "./components/DayColumn";
 import { getMondayOfCurrentWeek, getWeekDates } from "../teste/4/components/planner-utils";
 import { Clock, ChevronLeft, ChevronRight } from "lucide-react";
@@ -233,32 +233,33 @@ export default function Page() {
                                     ))}
                                 </div>
                             </div>
-
-                            {weekDates.map((date, dayIndex) => (
-                                <div
-                                    key={dayIndex}
-                                >
-                                    <DayColumn
-                                        blocks={blocks.filter((b) => b.dayIndex === dayIndex)}
-                                        allBlocks={blocks}
-                                        date={date}
-                                        dayIndex={dayIndex}
-                                        hourHeights={hourHeights}
-                                        timelineHeightPx={timelineHeightPx}
-                                        timelineRef={(el) => { timelineRefs.current[dayIndex] = el; }}
-                                        draggedId={draggedId}
-                                        dragOffsetY={dragOffsetY}
-                                        resizingId={resizingId}
-                                        onAddBlock={openAddModal}
-                                        onRemoveBlock={removeBlock}
-                                        onEditBlock={openEditBlock}
-                                        onDragStart={handleDragStart}
-                                        onDrop={() => { }} // handled globally
-                                        onDragEnd={() => { }}
-                                        onResizeStart={handleResizeStart}
-                                    />
-                                </div>
-                            ))}
+                            <Suspense fallback={<div>Loading...</div>}>
+                                {weekDates.map((date, dayIndex) => (
+                                    <div
+                                        key={dayIndex}
+                                    >
+                                        <DayColumn
+                                            blocks={blocks.filter((b) => b.dayIndex === dayIndex)}
+                                            allBlocks={blocks}
+                                            date={date}
+                                            dayIndex={dayIndex}
+                                            hourHeights={hourHeights}
+                                            timelineHeightPx={timelineHeightPx}
+                                            timelineRef={(el) => { timelineRefs.current[dayIndex] = el; }}
+                                            draggedId={draggedId}
+                                            dragOffsetY={dragOffsetY}
+                                            resizingId={resizingId}
+                                            onAddBlock={openAddModal}
+                                            onRemoveBlock={removeBlock}
+                                            onEditBlock={openEditBlock}
+                                            onDragStart={handleDragStart}
+                                            onDrop={() => { }} // handled globally
+                                            onDragEnd={() => { }}
+                                            onResizeStart={handleResizeStart}
+                                        />
+                                    </div>
+                                ))}
+                            </Suspense>
                         </div>
                     </div>
                 </div>
