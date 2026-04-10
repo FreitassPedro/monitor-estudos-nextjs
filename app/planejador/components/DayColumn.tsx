@@ -6,7 +6,7 @@ import { Calendar, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { BlockType, StudyBlock, SubjectColor } from "./mockData";
-import { formatDuration } from "../page";
+import { formatDuration } from "../utils";
 import { Badge } from "@/components/ui/badge";
 import {
     Dialog,

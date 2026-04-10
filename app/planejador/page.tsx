@@ -6,17 +6,9 @@ import { getMondayOfCurrentWeek, getWeekDates } from "../teste/4/components/plan
 import { Clock, ChevronLeft, ChevronRight } from "lucide-react";
 import { usePlannerState } from "./usePlannerState";
 import { SidebarTools } from "./components/SidebarTools";
-import { buildHourHeights, parseTimeToMinutes } from "./utils";
+import { buildHourHeights, formatDuration, parseTimeToMinutes } from "./utils";
 import { Button } from "@/components/ui/button";
 import { addWeeks } from "date-fns";
-
-export function formatDuration(minutes: number): string {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    if (h === 0) return `${m}min`;
-    if (m === 0) return `${h}h`;
-    return `${h}h ${m}min`;
-}
 
 function formatHourLabel(hour: number) {
     return `${String(hour).padStart(2, "0")}:00`;
@@ -65,7 +57,6 @@ export default function Page() {
 
     // ── Drag state ───────────────────────────────────────────────────────────
     const [dragOffsetY, setDragOffsetY] = useState(0);
-    const [activeDayIndex, setActiveDayIndex] = useState<number | null>(null);
     const gridRef = useRef<HTMLDivElement>(null);
     const timelineRefs = useRef<(HTMLDivElement | null)[]>([]);
 
@@ -119,7 +110,6 @@ export default function Page() {
 
             setDraggedId(null);
             setResizingId(null);
-            setActiveDayIndex(null);
         };
 
         window.addEventListener("mousemove", handleMouseMove);
@@ -211,11 +201,11 @@ export default function Page() {
                     <div className="flex-1 overflow-auto">
                         <div
                             ref={gridRef}
-                            className="grid gap-2 h-full px-2 min-w-[800px]"
+                            className="grid gap-2 h-full px-2 min-w-200"
                             style={{ gridTemplateColumns: "56px repeat(7, minmax(0, 1fr))" }}
                         >
                             {/* Hour labels */}
-                            <div className="flex flex-col min-w-0 pt-[72px]">
+                            <div className="flex flex-col min-w-0 pt-18">
                                 <div
                                     className="relative text-xs text-muted-foreground"
                                     style={{ height: `${timelineHeightPx}px` }}

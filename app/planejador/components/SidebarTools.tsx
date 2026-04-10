@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { formatDuration } from "../page";
+import { formatDuration } from "../utils";
 
 function ProgressBar({ progress }: { progress: number }) {
     return (

@@ -5,7 +5,7 @@ import { COLOR_MAP, getBlockTimelineMetrics, parseTimeToMinutes } from "../utils
 import { cn } from "@/lib/utils";
 import { Clock, GripVertical, MoreHorizontal, Pencil, Trash2Icon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { formatDuration } from "../page";
+import { formatDuration } from "../utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { StudyBlock } from "./mockData";
