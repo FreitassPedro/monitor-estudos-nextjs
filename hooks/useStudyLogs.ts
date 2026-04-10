@@ -68,7 +68,7 @@ export function useStudyLogsHistory(startDate: Date, endDate: Date) {
 
 export function useTodayStudyLogs() {
     const userId = useAuthStore((state) => state.user?.id);
-    
+
     // Obter a data local do cliente para passar ao servidor
     // Isso garante que usuários em diferentes timezones recebam os dados corretos
     const todayDate = getLocalDateForToday();

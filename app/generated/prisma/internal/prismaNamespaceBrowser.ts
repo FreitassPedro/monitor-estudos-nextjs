@@ -109,6 +109,7 @@ export const StudyLogsScalarFieldEnum = {
   topicId: 'topicId',
   start_time: 'start_time',
   end_time: 'end_time',
+  material_type: 'material_type',
   duration_minutes: 'duration_minutes',
   notes: 'notes',
   created_at: 'created_at',

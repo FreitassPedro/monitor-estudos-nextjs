@@ -99,10 +99,10 @@ const emptyForm: FormData = {
     notes: "",
 };
 
-type StudyMode = "leitura" | "revisao" | "exercicios" | "resumo";
+export type StudyMode = "teoria" | "revisao" | "exercicios" | "resumo";
 
 const STUDY_MODES: { value: StudyMode; label: string; icon: React.ReactNode }[] = [
-    { value: "leitura", label: "Leitura", icon: <BookOpen className="h-3.5 w-3.5" /> },
+    { value: "teoria", label: "Teoria", icon: <BookOpen className="h-3.5 w-3.5" /> },
     { value: "revisao", label: "Revisão", icon: <RotateCcw className="h-3.5 w-3.5" /> },
     { value: "exercicios", label: "Exercícios", icon: <Pencil className="h-3.5 w-3.5" /> },
     { value: "resumo", label: "Resumo", icon: <FileText className="h-3.5 w-3.5" /> },
@@ -135,7 +135,7 @@ export function StudySessionForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // New UI-only state
-    const [studyMode, setStudyMode] = useState<StudyMode>("leitura");
+    const [studyMode, setStudyMode] = useState<StudyMode>("teoria");
 
 
     const currentSubjectTopics = useMemo(
@@ -225,6 +225,7 @@ export function StudySessionForm() {
         const data: StudyLogInput = {
             topic_id: submitForm.topicId,
             study_date: studyDate,
+            material_type: studyMode,
             start_time: startTime,
             end_time: endTime,
             duration_minutes: durationMinutes,

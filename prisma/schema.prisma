@@ -55,6 +55,7 @@ model StudyLogs {
     topic            Topic    @relation(fields: [topicId], references: [id])
     start_time       DateTime @db.Timestamptz(3)
     end_time         DateTime @db.Timestamptz(3)
+    material_type String?
     duration_minutes Int
     notes            String?
     created_at       DateTime @default(now()) @db.Timestamptz(3)

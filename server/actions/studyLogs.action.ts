@@ -156,6 +156,7 @@ export interface StudyLogInput {
     study_date: Date;
     start_time: Date;
     end_time: Date;
+    material_type?: string;
     duration_minutes: number;
     notes?: string;
 }
@@ -169,6 +170,7 @@ export async function createStudyLogAction(data: StudyLogInput) {
             end_time: data.end_time,
             duration_minutes: data.duration_minutes,
             notes: data.notes,
+            material_type: data.material_type,
         },
         include,
     });
