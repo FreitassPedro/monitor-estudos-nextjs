@@ -1,9 +1,11 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BlockType, MOCK_BLOCKS, StudyBlock, SubjectColor } from "./components/mockData";
 import { generateId } from "../teste/4/components/planner-utils";
 import { parseTimeToMinutes } from "./utils";
+
+const PLANNER_BLOCKS_STORAGE_KEY = "planner.blocks.v1";
 
 export interface NewBlockForm {
     subject: string;
@@ -32,8 +34,24 @@ export function minutesToTimeStr(minutes: number): string {
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
+
+
 export function usePlannerState() {
-    const [blocks, setBlocks] = useState<StudyBlock[]>(MOCK_BLOCKS);
+    const [blocks, setBlocks] = useState<StudyBlock[]>(() => {
+        if (typeof window === "undefined") return MOCK_BLOCKS;
+
+        try {
+            const raw = window.localStorage.getItem(PLANNER_BLOCKS_STORAGE_KEY);
+            if (!raw) return MOCK_BLOCKS;
+
+            const parsed = JSON.parse(raw);
+            if (!Array.isArray(parsed)) return MOCK_BLOCKS;
+
+            return parsed as StudyBlock[];
+        } catch {
+            return MOCK_BLOCKS;
+        }
+    });
     const [editingBlock, setEditingBlock] = useState<StudyBlock | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [form, setForm] = useState<NewBlockForm>(DEFAULT_FORM);
@@ -162,6 +180,11 @@ export function usePlannerState() {
         },
         []
     );
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        window.localStorage.setItem(PLANNER_BLOCKS_STORAGE_KEY, JSON.stringify(blocks));
+    }, [blocks]);
 
     return {
         blocks,
