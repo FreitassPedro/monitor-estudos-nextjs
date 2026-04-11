@@ -1,37 +1,36 @@
-// ── Study Block Card ─────────────────────────────────────────────────────────
-
 import { useCallback, useMemo } from "react";
-import { COLOR_MAP, getBlockTimelineMetrics, parseTimeToMinutes } from "../utils";
-import { cn } from "@/lib/utils";
-import { Clock, GripVertical, MoreHorizontal, Pencil, Trash2Icon } from "lucide-react";
+import { StudyBlock } from "./mockData";
+import { COLOR_MAP, formatDuration, getBlockTimelineMetrics, parseTimeToMinutes } from "../utils";
+import { CheckCircle2, Circle, Clock, GripVertical, MoreHorizontal, Pencil, Trash2Icon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { formatDuration } from "../utils";
+import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { StudyBlock } from "./mockData";
+import { usePlannerActions } from "./PlannerActionsContext";
 
-interface StudyBlockCardProps {
+interface BlockCardProps {
     block: StudyBlock;
     hourHeights: number[];
-    isDragging: boolean;
-    isResizing: boolean;
-    onEdit: (block: StudyBlock) => void;
-    onRemove: (blockId: string) => void;
-    onDragStart: (id: string, offsetY: number) => void;
-    onResizeStart: (id: string, e: React.MouseEvent) => void;
 }
 
-export function StudyBlockCard({
+export function BlockCard({
     block,
     hourHeights,
-    isDragging,
-    isResizing,
-    onRemove,
-    onEdit,
-    onDragStart,
-    onResizeStart,
-}: StudyBlockCardProps) {
+}: BlockCardProps) {
+
+    const {
+        draggedId,
+        resizingId,
+        openEditBlock,
+        removeBlock,
+        handleDragStart,
+        handleResizeStart,
+        toggleBlockStatus,
+    } = usePlannerActions();
+
     const colors = COLOR_MAP[block.color];
+    const isDragging = draggedId === block.id;
+    const isResizing = resizingId === block.id;
 
     const { topPx, heightPx } = useMemo(
         () => getBlockTimelineMetrics(block, hourHeights),
@@ -45,9 +44,9 @@ export function StudyBlockCard({
 
             const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
             const offsetY = e.clientY - rect.top;
-            onDragStart(block.id, offsetY);
+            handleDragStart(block.id, offsetY);
         },
-        [block.id, onDragStart]
+        [block.id, handleDragStart]
     );
 
     const durationMin = useMemo(() => {
@@ -69,7 +68,8 @@ export function StudyBlockCard({
                     ? "opacity-40 shadow-lg ring-2 ring-primary/50 cursor-grabbing"
                     : isResizing
                         ? "shadow-md ring-2 ring-primary/30 cursor-ns-resize"
-                        : "cursor-grab hover:shadow-md hover:z-20"
+                        : "cursor-grab hover:shadow-md hover:z-20",
+                block.status === "done" && "opacity-60 grayscale-[0.3]"
             )}
             style={{
                 height: `${heightPx}px`,
@@ -78,7 +78,7 @@ export function StudyBlockCard({
             onMouseDown={handleMouseDown}
             onDoubleClick={(e) => {
                 e.stopPropagation();
-                onEdit(block);
+                openEditBlock(block);
             }}
         >
             {/* Drag grip */}
@@ -87,7 +87,20 @@ export function StudyBlockCard({
             </div>
 
             <div className={cn("flex flex-col flex-1 min-h-0", compact ? "px-2 py-0.5" : "px-2 py-1.5")}>
-                <h3 className={cn("font-semibold truncate leading-tight", colors.text, compact ? "text-xs" : "text-sm")}>
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        toggleBlockStatus(block.id);
+                    }}
+                >
+                    {block.status === "done" ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-current opacity-80" />
+                    ) : (
+                        <Circle className="w-3.5 h-3.5 text-current opacity-40 hover:opacity-80 transition-opacity" />
+                    )}
+                </button>
+
+                <h3 className={cn("font-semibold truncate leading-tight text-xs", colors.text )}>
                     {block.subject}
                 </h3>
 
@@ -106,7 +119,7 @@ export function StudyBlockCard({
 
                 <div className={cn("flex items-center gap-0.5 text-muted-foreground leading-tight", compact ? "mt-0" : "mt-auto")}>
                     <Clock className="w-2.5 h-2.5 shrink-0" />
-                    <p className="text-xs truncate">
+                    <p className="text-[10px] font-medium truncate">
                         {block.startTime}–{block.endTime}
                         {!compact && ` · ${formatDuration(durationMin)}`}
                     </p>
@@ -130,7 +143,7 @@ export function StudyBlockCard({
                             Editar
                         </DropdownMenuItem>
                         <DropdownMenuItem variant="destructive"
-                            onClick={() => onRemove(block.id)}
+                            onClick={() => removeBlock(block.id)}
                         >
                             <Trash2Icon />
                             Trash
@@ -148,7 +161,7 @@ export function StudyBlockCard({
                 onMouseDown={(e) => e.stopPropagation()}
                 onClick={(e) => {
                     e.stopPropagation();
-                    onEdit(block);
+                    openEditBlock(block);
                 }}
             >
                 <Pencil className="w-2.5 h-2.5 text-muted-foreground" />
@@ -165,11 +178,31 @@ export function StudyBlockCard({
                     e.stopPropagation();
                     e.preventDefault();
                     console.log("resize start", block.id);
-                    onResizeStart(block.id, e);
+                    handleResizeStart(block.id, e);
                 }}
             >
                 <div className="w-8 h-0.5 rounded-full bg-current opacity-50" />
             </div>
+        </div>
+    );
+}
+// ── Ghost block shown while dragging ────────────────────────────────────────
+
+export function GhostBlock({
+    topPx,
+    heightPx,
+    label,
+}: {
+    topPx: number;
+    heightPx: number;
+    label: string;
+}) {
+    return (
+        <div
+            className="absolute left-1 right-1 z-30 rounded-lg border-2 border-dashed border-primary/60 bg-primary/10 pointer-events-none flex items-center justify-center"
+            style={{ top: `${topPx}px`, height: `${heightPx}px` }}
+        >
+            <p className="text-xs font-medium text-primary/70">{label}</p>
         </div>
     );
 }

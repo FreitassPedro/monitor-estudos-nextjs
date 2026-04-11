@@ -34,8 +34,6 @@ export function minutesToTimeStr(minutes: number): string {
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-
-
 export function usePlannerState() {
     const [blocks, setBlocks] = useState<StudyBlock[]>(() => {
         if (typeof window === "undefined") return MOCK_BLOCKS;
@@ -47,11 +45,15 @@ export function usePlannerState() {
             const parsed = JSON.parse(raw);
             if (!Array.isArray(parsed)) return MOCK_BLOCKS;
 
-            return parsed as StudyBlock[];
+            return parsed.map((block) => ({
+                ...block,
+                status: block?.status === "done" ? "done" : "todo",
+            })) as StudyBlock[];
         } catch {
             return MOCK_BLOCKS;
         }
     });
+
     const [editingBlock, setEditingBlock] = useState<StudyBlock | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [form, setForm] = useState<NewBlockForm>(DEFAULT_FORM);
@@ -110,6 +112,7 @@ export function usePlannerState() {
                 color: form.color,
                 dayIndex: form.dayIndex,
                 type: form.type,
+                status: "todo",
             };
             setBlocks((prev) => [...prev, newBlock]);
         }
@@ -120,6 +123,16 @@ export function usePlannerState() {
         setBlocks((prev) => prev.filter((b) => b.id !== blockId));
         closeModal();
     }, [closeModal]);
+
+    const toggleBlockStatus = useCallback((blockId: string) => {
+        setBlocks((prev) =>
+            prev.map((block) =>
+                block.id === blockId
+                    ? { ...block, status: block.status === "done" ? "todo" : "done" }
+                    : block
+            )
+        );
+    }, []);
 
     /**
      * Move a block to a new day + pixel offset within the timeline.
@@ -205,10 +218,11 @@ export function usePlannerState() {
         closeModal,
         saveBlock,
         deleteBlock,
+        toggleBlockStatus,
     };
 }
 
-// ── helpers ──────────────────────────────────────────────────────────────────
+// Helpers
 
 function snapToGrid(minutes: number, gridMinutes: number): number {
     return Math.round(minutes / gridMinutes) * gridMinutes;

@@ -9,6 +9,7 @@ import { SidebarTools } from "./components/SidebarTools";
 import { buildHourHeights, formatDuration, parseTimeToMinutes } from "./utils";
 import { Button } from "@/components/ui/button";
 import { addWeeks } from "date-fns";
+import { PlannerActionsProvider } from "./components/PlannerActionsContext";
 
 function formatHourLabel(hour: number) {
     return `${String(hour).padStart(2, "0")}:00`;
@@ -34,6 +35,7 @@ export default function Page() {
         closeModal,
         saveBlock,
         deleteBlock,
+        toggleBlockStatus,
     } = usePlannerState();
 
     // ── Week navigation ──────────────────────────────────────────────────────
@@ -147,10 +149,24 @@ export default function Page() {
     }, [weekDates]);
 
     return (
-        <div
-            className="flex flex-col h-screen"
-            style={{ cursor: draggedId ? "grabbing" : resizingId ? "ns-resize" : undefined }}
+        <PlannerActionsProvider
+            value={{
+                allBlocks: blocks,
+                draggedId,
+                resizingId,
+                dragOffsetY,
+                openAddModal,
+                openEditBlock,
+                removeBlock,
+                handleDragStart,
+                handleResizeStart,
+                toggleBlockStatus,
+            }}
         >
+            <div
+                className="flex flex-col h-screen"
+                style={{ cursor: draggedId ? "grabbing" : resizingId ? "ns-resize" : undefined }}
+            >
             {/* ── Header ── */}
             <div className="border-b bg-background/95 backdrop-blur-sm flex items-center justify-between px-6 py-3 shrink-0">
                 <div className="flex items-center gap-6">
@@ -230,22 +246,11 @@ export default function Page() {
                                     >
                                         <DayColumn
                                             blocks={blocks.filter((b) => b.dayIndex === dayIndex)}
-                                            allBlocks={blocks}
                                             date={date}
                                             dayIndex={dayIndex}
                                             hourHeights={hourHeights}
                                             timelineHeightPx={timelineHeightPx}
                                             timelineRef={(el) => { timelineRefs.current[dayIndex] = el; }}
-                                            draggedId={draggedId}
-                                            dragOffsetY={dragOffsetY}
-                                            resizingId={resizingId}
-                                            onAddBlock={openAddModal}
-                                            onRemoveBlock={removeBlock}
-                                            onEditBlock={openEditBlock}
-                                            onDragStart={handleDragStart}
-                                            onDrop={() => { }} // handled globally
-                                            onDragEnd={() => { }}
-                                            onResizeStart={handleResizeStart}
                                         />
                                     </div>
                                 ))}
@@ -257,15 +262,16 @@ export default function Page() {
                 <SidebarTools />
             </div>
 
-            <BlockFormModal
-                open={modalOpen}
-                form={form}
-                isEditing={!!editingBlock}
-                onFormChange={(patch) => setForm({ ...form, ...patch })}
-                onSave={saveBlock}
-                onDelete={editingBlock ? () => deleteBlock(editingBlock.id) : undefined}
-                onCloseModal={closeModal}
-            />
-        </div>
+                <BlockFormModal
+                    open={modalOpen}
+                    form={form}
+                    isEditing={!!editingBlock}
+                    onFormChange={(patch) => setForm({ ...form, ...patch })}
+                    onSave={saveBlock}
+                    onDelete={editingBlock ? () => deleteBlock(editingBlock.id) : undefined}
+                    onCloseModal={closeModal}
+                />
+            </div>
+        </PlannerActionsProvider>
     );
 }

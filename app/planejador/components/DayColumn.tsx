@@ -19,7 +19,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { pixelToMinutes, minutesToTimeStr } from "../usePlannerState";
 import { parseTimeToMinutes } from "../utils";
-import { StudyBlockCard } from "./StudyBlock";
+import { BlockCard, GhostBlock } from "./Blocks";
+import { usePlannerActions } from "./PlannerActionsContext";
 
 // ── Color picker ────────────────────────────────────────────────────────────
 
@@ -191,26 +192,7 @@ export function BlockFormModal({
 
 
 
-// ── Ghost block shown while dragging ────────────────────────────────────────
 
-function GhostBlock({
-    topPx,
-    heightPx,
-    label,
-}: {
-    topPx: number;
-    heightPx: number;
-    label: string;
-}) {
-    return (
-        <div
-            className="absolute left-1 right-1 z-30 rounded-lg border-2 border-dashed border-primary/60 bg-primary/10 pointer-events-none flex items-center justify-center"
-            style={{ top: `${topPx}px`, height: `${heightPx}px` }}
-        >
-            <p className="text-xs font-medium text-primary/70">{label}</p>
-        </div>
-    );
-}
 
 // ── DayColumn ────────────────────────────────────────────────────────────────
 
@@ -221,17 +203,6 @@ interface DayColumnProps {
     hourHeights: number[];
     timelineHeightPx: number;
     timelineRef?: (el: HTMLDivElement | null) => void;
-    draggedId: string | null;
-    dragOffsetY: number;
-    resizingId: string | null;
-    allBlocks: StudyBlock[];
-    onRemoveBlock: (blockId: string) => void;
-    onAddBlock: (dayIndex: number, startTime?: string) => void;
-    onEditBlock: (block: StudyBlock) => void;
-    onDragStart: (id: string, offsetY: number) => void;
-    onDrop: (blockId: string, dayIndex: number, pixelTop: number) => void;
-    onDragEnd: () => void;
-    onResizeStart: (id: string, e: React.MouseEvent) => void;
 }
 
 export function DayColumn({
@@ -241,18 +212,8 @@ export function DayColumn({
     hourHeights,
     timelineHeightPx,
     timelineRef,
-    draggedId,
-    dragOffsetY,
-    resizingId,
-    allBlocks,
-    onRemoveBlock,
-    onAddBlock,
-    onEditBlock,
-    onDragStart,
-    onDrop,
-    onDragEnd,
-    onResizeStart,
 }: DayColumnProps) {
+    const { draggedId, dragOffsetY, allBlocks, openAddModal } = usePlannerActions();
     const columnRef = useRef<HTMLDivElement>(null);
     const [isDragOver, setIsDragOver] = useState(false);
     const [ghostTop, setGhostTop] = useState<number | null>(null);
@@ -311,19 +272,6 @@ export function DayColumn({
         [draggedId, getGhostMetrics]
     );
 
-    const handleMouseUp = useCallback(
-        (e: React.MouseEvent) => {
-            if (!draggedId) return;
-            const relY = getRelativeY(e.clientY);
-            const adjustedTop = relY - dragOffsetY;
-            onDrop(draggedId, dayIndex, Math.max(0, adjustedTop));
-            setIsDragOver(false);
-            setGhostTop(null);
-            onDragEnd();
-        },
-        [draggedId, dayIndex, dragOffsetY, getRelativeY, onDrop, onDragEnd]
-    );
-
     const handleMouseEnter = useCallback(
         (e: React.MouseEvent) => {
             if (!draggedId) return;
@@ -345,9 +293,9 @@ export function DayColumn({
             const relY = getRelativeY(e.clientY);
             const minutes = pixelToMinutes(relY, hourHeights);
             const snapped = Math.round(minutes / 15) * 15;
-            onAddBlock(dayIndex, minutesToTimeStr(snapped));
+            openAddModal(dayIndex, minutesToTimeStr(snapped));
         },
-        [getRelativeY, hourHeights, dayIndex, onAddBlock]
+        [getRelativeY, hourHeights, dayIndex, openAddModal]
     );
 
     const ghostLabel = useMemo(() => {
@@ -398,7 +346,6 @@ export function DayColumn({
                 )}
                 style={{ height: `${timelineHeightPx}px` }}
                 onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
                 onDoubleClick={handleColumnDoubleClick}
@@ -423,15 +370,9 @@ export function DayColumn({
                 {/* Blocks */}
                 {blocks.map((block) => (
                     <div key={block.id} data-block>
-                        <StudyBlockCard
+                        <BlockCard
                             block={block}
                             hourHeights={hourHeights}
-                            isDragging={draggedId === block.id}
-                            isResizing={resizingId === block.id}
-                            onEdit={onEditBlock}
-                            onRemove={onRemoveBlock}
-                            onDragStart={onDragStart}
-                            onResizeStart={onResizeStart}
                         />
                     </div>
                 ))}
@@ -467,7 +408,7 @@ export function DayColumn({
                     className="absolute bottom-2 left-1 right-1 h-7 font-medium tracking-tight rounded-md
                         text-muted-foreground/40 border border-dashed border-border/40
                         hover:text-primary hover:bg-primary/5 hover:border-primary/30 transition-all"
-                    onClick={() => onAddBlock(dayIndex)}
+                    onClick={() => openAddModal(dayIndex)}
                 >
                     <Plus className="w-3 h-3 mr-1" />
                     <span className="text-xs">Adicionar</span>
