@@ -167,100 +167,100 @@ export default function Page() {
                 className="flex flex-col h-screen"
                 style={{ cursor: draggedId ? "grabbing" : resizingId ? "ns-resize" : undefined }}
             >
-            {/* ── Header ── */}
-            <div className="border-b bg-background/95 backdrop-blur-sm flex items-center justify-between px-6 py-3 shrink-0">
-                <div className="flex items-center gap-6">
-                    <div>
-                        <h1 className="text-sm font-semibold tracking-tight">Planejador Semanal</h1>
-                        <p className="text-xs text-muted-foreground">{weekLabel}</p>
-                    </div>
+                {/* ── Header ── */}
+                <div className="border-b bg-background/95 backdrop-blur-sm flex items-center justify-between px-6 py-3 shrink-0">
+                    <div className="flex items-center gap-6">
+                        <div>
+                            <h1 className="text-sm font-semibold tracking-tight">Planejador Semanal</h1>
+                            <p className="text-xs text-muted-foreground">{weekLabel}</p>
+                        </div>
 
-                    <div className="flex items-center gap-1">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            onClick={() => setWeekOffset((w) => w - 1)}
-                        >
-                            <ChevronLeft className="w-4 h-4" />
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 text-xs"
-                            onClick={() => setWeekOffset(0)}
-                        >
-                            Hoje
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            onClick={() => setWeekOffset((w) => w + 1)}
-                        >
-                            <ChevronRight className="w-4 h-4" />
-                        </Button>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-2 text-muted-foreground">
-                    <Clock size={14} />
-                    <span className="text-xs">
-                        Total: <strong className="text-foreground">{formatDuration(totalMinutes)}</strong>
-                    </span>
-                </div>
-            </div>
-
-            <div className="flex flex-1 overflow-hidden relative">
-                {/* ── Main planner ── */}
-                <div className="flex flex-1 min-w-0 bg-background border border-muted m-4 mr-0 rounded-2xl p-4 flex-col">
-                    <div className="flex-1 overflow-auto">
-                        <div
-                            ref={gridRef}
-                            className="grid gap-2 h-full px-2 min-w-200"
-                            style={{ gridTemplateColumns: "56px repeat(7, minmax(0, 1fr))" }}
-                        >
-                            {/* Hour labels */}
-                            <div className="flex flex-col min-w-0 pt-18">
-                                <div
-                                    className="relative text-xs text-muted-foreground"
-                                    style={{ height: `${timelineHeightPx}px` }}
-                                >
-                                    {hourOffsets.map((top, hour) => (
-                                        <div
-                                            key={hour}
-                                            className="absolute right-2 flex items-center"
-                                            style={{ top: `${top}px` }}
-                                        >
-                                            <span className={hour % 6 === 0 ? "text-foreground/60" : "text-muted-foreground/40"}>
-                                                {formatHourLabel(hour)}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <Suspense fallback={<div>Loading...</div>}>
-                                {weekDates.map((date, dayIndex) => (
-                                    <div
-                                        key={dayIndex}
-                                    >
-                                        <DayColumn
-                                            blocks={blocks.filter((b) => b.dayIndex === dayIndex)}
-                                            date={date}
-                                            dayIndex={dayIndex}
-                                            hourHeights={hourHeights}
-                                            timelineHeightPx={timelineHeightPx}
-                                            timelineRef={(el) => { timelineRefs.current[dayIndex] = el; }}
-                                        />
-                                    </div>
-                                ))}
-                            </Suspense>
+                        <div className="flex items-center gap-1">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
+                                onClick={() => setWeekOffset((w) => w - 1)}
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 text-xs"
+                                onClick={() => setWeekOffset(0)}
+                            >
+                                Hoje
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
+                                onClick={() => setWeekOffset((w) => w + 1)}
+                            >
+                                <ChevronRight className="w-4 h-4" />
+                            </Button>
                         </div>
                     </div>
+
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                        <Clock size={14} />
+                        <span className="text-xs">
+                            Total: <strong className="text-foreground">{formatDuration(totalMinutes)}</strong>
+                        </span>
+                    </div>
                 </div>
 
-                <SidebarTools />
-            </div>
+                <div className="flex flex-1 overflow-hidden relative">
+                    {/* ── Main planner ── */}
+                    <div className="flex flex-1 min-w-0 bg-background border border-muted m-4 mr-0 rounded-2xl p-4 flex-col">
+                        <div className="flex-1 overflow-auto">
+                            <div
+                                ref={gridRef}
+                                className="grid gap-2 h-full px-2 min-w-200"
+                                style={{ gridTemplateColumns: "56px repeat(7, minmax(0, 1fr))" }}
+                            >
+                                {/* Hour labels */}
+                                <div className="flex flex-col min-w-0 pt-18">
+                                    <div
+                                        className="relative text-xs text-muted-foreground"
+                                        style={{ height: `${timelineHeightPx}px` }}
+                                    >
+                                        {hourOffsets.map((top, hour) => (
+                                            <div
+                                                key={hour}
+                                                className="absolute right-2 flex items-center"
+                                                style={{ top: `${top}px` }}
+                                            >
+                                                <span className={hour % 6 === 0 ? "text-foreground/60" : "text-muted-foreground/40"}>
+                                                    {formatHourLabel(hour)}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <Suspense fallback={<div>Loading...</div>}>
+                                    {weekDates.map((date, dayIndex) => (
+                                        <div
+                                            key={dayIndex}
+                                        >
+                                            <DayColumn
+                                                blocks={blocks.filter((b) => b.dayIndex === dayIndex)}
+                                                date={date}
+                                                dayIndex={dayIndex}
+                                                hourHeights={hourHeights}
+                                                timelineHeightPx={timelineHeightPx}
+                                                timelineRef={(el) => { timelineRefs.current[dayIndex] = el; }}
+                                            />
+                                        </div>
+                                    ))}
+                                </Suspense>
+                            </div>
+                        </div>
+                    </div>
+
+                    <SidebarTools />
+                </div>
 
                 <BlockFormModal
                     open={modalOpen}
