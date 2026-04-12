@@ -151,6 +151,7 @@ function DetailPanel({ node, logs, onClose, onUpdateNode, onAddLog }: DetailPane
                   <select value={logType} onChange={(e) => setLogType(e.target.value as LogType)}
                     className={`text-xs px-2 py-1 rounded border outline-none focus:ring-1 focus:ring-indigo-400 ${logTypeColor(logType)}`}>
                     {LOG_TYPE_OPTIONS.map((o) => <option key={o} value={o}>{logTypeIcon(o)} {o}</option>)}
+                  
                   </select>
                   <input type="number" min={0} max={100} placeholder="% acerto" value={logPerf} onChange={(e) => setLogPerf(e.target.value)}
                     className="w-24 text-xs px-2 py-1 border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-indigo-400 bg-white" />

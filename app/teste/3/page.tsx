@@ -1,6 +1,6 @@
 "use client";
-import React, { useEffect, useState } from 'react';
-import { mockJsonDashboardStats, mockJsonTopicTree, mockStudyLogs, TopicNode } from './mock';
+import React, { useEffect, useMemo, useState } from 'react';
+import { mockJsonDashboardStats, mockJsonTopicTree, mockStudyLogs, PENDENCIES_MOCK, TopicNode } from './mock';
 import {
     ChevronRight,
     ChevronDown,
@@ -16,6 +16,8 @@ import {
     Trash2,
     Settings,
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // ─── shadcn/ui-style primitives (inline, no external dep) ───────────────────
 
@@ -60,9 +62,16 @@ const Button = ({
 };
 
 // ─── Detail Sheet ────────────────────────────────────────────────────────────
-
-const DetailSheet = ({ topicId, topicName, onClose }: { topicId: string; topicName: string; onClose: () => void }) => {
+interface DetailsSheetProps {
+    topicId: string;
+    topicName: string;
+    subjectName: string;
+    onClose: () => void;
+}
+const DetailSheet = ({ topicId, topicName, subjectName, onClose }: DetailsSheetProps) => {
     const logs = mockStudyLogs.filter(log => log.topicId === topicId);
+
+    const pendencies = PENDENCIES_MOCK.filter(p => p.topicId === topicId);
 
     useEffect(() => {
         const handleKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -107,15 +116,59 @@ const DetailSheet = ({ topicId, topicName, onClose }: { topicId: string; topicNa
                     ) : (
                         <ul className="space-y-2">
                             {logs.map(log => (
-                                <li key={log.id} className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3 hover:bg-muted/50 transition-colors">
-                                    <div className="flex items-center gap-3">
+                                <li key={log.id} className="flex flex-col rounded-lg border border-border bg-muted/30 px-4 py-2 hover:bg-muted/50 transition-colors">
+                                    <div className="flex items-center justify-between gap-3">
                                         <div className="h-1.5 w-1.5 rounded-full bg-primary/60" />
-                                        <span className="text-sm text-foreground">{log.date}</span>
+                                        <h2 className='text-sm text-foreground'>{topicName}</h2>
+                                        <span className="text-sm text-foreground">{new Date(log.date).toLocaleDateString()}</span>
+                                        <Badge variant="outline">
+                                            <Clock size={10} />
+                                            {log.durationMinutes} min
+                                        </Badge>
                                     </div>
-                                    <Badge variant="outline">
-                                        <Clock size={10} />
-                                        {log.durationMinutes} min
-                                    </Badge>
+
+                                    {log.notes && <p className="text-sm text-muted-foreground">{log.notes}</p>}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+
+                {/* Pendencies section (optional) */}
+                <div className="flex-1 overflow-y-auto p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                        <Clock size={14} className="text-muted-foreground" />
+                        <span className="text-sm font-medium text-foreground">Pendencies</span>
+                        <Badge variant="secondary">{pendencies.length}</Badge>
+                    </div>
+
+                    {pendencies.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                            <BookOpen size={32} className="text-muted-foreground/40 mb-3" />
+                            <p className="text-sm text-muted-foreground">Nenhuma pendência registrada para este tópico.</p>
+                        </div>
+                    ) : (
+                        <ul className="space-y-2">
+                            {pendencies.map(pendency => (
+                                <li key={pendency.id} className="flex flex-col rounded-lg border border-border bg-muted/30 px-4 py-2 hover:bg-muted/50 transition-colors">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <Input type="checkbox" checked={pendency.resolved}
+                                            onClick={() => {
+                                                // Handle checkbox click
+                                            }}
+                                            className="h-4 w-4 text-primary" />
+
+
+                                        <div className="h-1.5 w-1.5 rounded-full bg-primary/60" />
+                                        <h2 className='text-sm text-foreground'>{topicName}</h2>
+                                        <span className="text-sm text-foreground">{new Date(pendency.createdAt).toLocaleDateString()}</span>
+                                        <Badge variant="outline">
+                                            <Clock size={10} />
+                                            {pendency.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </Badge>
+                                    </div>
+
+                                    {pendency.text && <p className="text-sm text-muted-foreground">{pendency.text}</p>}
                                 </li>
                             ))}
                         </ul>
@@ -245,6 +298,22 @@ function NodeRow({
                     </div>
                 </td>
 
+                {/* Status */}
+                <td>
+                    <Select defaultValue={"Medio"} onValueChange={(value) => {
+                        // Handle status change
+                    }}>
+                        <SelectTrigger size={"sm"} >
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Baixo">Baixo</SelectItem>
+                            <SelectItem value="Medio">Médio</SelectItem>
+                            <SelectItem value="Alto">Alto</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </td>
+
                 {/* Pendências */}
                 <td className="py-2.5 text-center w-24">
                     {pendingCount > 0 ? (
@@ -253,7 +322,7 @@ function NodeRow({
                             {pendingCount}
                         </Badge>
                     ) : (
-                        <span className="text-muted-foreground/30 text-xs">—</span>
+                        <span className="text-muted-foreground/30 text-xs">--—</span>
                     )}
                 </td>
 
@@ -287,6 +356,7 @@ export default function StudyMonitorPage() {
     const [detailNode, setDetailNode] = useState<TopicNode | null>(null);
     const [dashboardStats] = useState<typeof mockJsonDashboardStats>(mockJsonDashboardStats);
     const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
+
 
     return (
         <>
@@ -438,6 +508,7 @@ export default function StudyMonitorPage() {
                 detailNode && (
                     <DetailSheet
                         topicId={detailNode.id}
+                        subjectName={""}
                         topicName={detailNode.name}
                         onClose={() => setDetailNode(null)}
                     />
