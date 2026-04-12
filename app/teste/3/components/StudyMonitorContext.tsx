@@ -1,30 +1,38 @@
 "use client";
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { TopicNode, Pendency, NOTES_MOCK, PENDENCIES_MOCK } from '../mock';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import { TopicNode, Pendency, NOTES_MOCK, PENDENCIES_MOCK, mockStudyLogs } from '../mock';
 import { mockJsonDashboardStats, mockJsonTopicTree } from '../mock';
 
-// ─── Context Value Type ───────────────────────────────────────────────────────
-interface StudyMonitorContextValue {
-  // State
-  folderTree: { id: string; name: string; color: string; topics: TopicNode[] }[];
+interface StudyMonitorNote {
+  id: string;
+  topicId: string;
+  content: string;
+  createdAt: Date;
+}
+
+// ─── UI Context ───────────────────────────────────────────────────────────────
+interface StudyMonitorUIContextValue {
   detailNode: TopicNode | null;
-  dashboardStats: typeof mockJsonDashboardStats;
   selectedTopicId: string | null;
-
-  // Pendencies & Notes
-  allPendencies: Pendency[];
-  allNotes: Array<{
-    id: string;
-    topicId: string;
-    content: string;
-    createdAt: Date;
-  }>;
-
-  // Actions
   openDetailSheet: (node: TopicNode) => void;
   closeDetailSheet: () => void;
   selectTopic: (topicId: string) => void;
   clearFilter: () => void;
+}
+
+// ─── Data Context ─────────────────────────────────────────────────────────────
+interface StudyMonitorDataContextValue {
+  folderTree: { id: string; name: string; color: string; topics: TopicNode[] }[];
+  dashboardStats: typeof mockJsonDashboardStats;
+
+  allPendencies: Pendency[];
+  allNotes: StudyMonitorNote[];
+  pendenciesByTopic: Record<string, Pendency[]>;
+  notesByTopic: Record<string, StudyMonitorNote[]>;
+  logsByTopic: Record<string, typeof mockStudyLogs>;
+  pendingCountByTopic: Record<string, number>;
+  logsCountByTopic: Record<string, number>;
+
   addPendency: (topicId: string, pendency: Pendency) => void;
   removePendency: (pendencyId: string) => void;
   togglePendencyStatus: (pendencyId: string) => void;
@@ -32,32 +40,17 @@ interface StudyMonitorContextValue {
   removeNote: (noteId: string) => void;
 }
 
-// ─── Create Context ───────────────────────────────────────────────────────────
-const StudyMonitorContext = createContext<StudyMonitorContextValue | undefined>(
-  undefined
-);
+const StudyMonitorUIContext = createContext<StudyMonitorUIContextValue | undefined>(undefined);
+const StudyMonitorDataContext = createContext<StudyMonitorDataContextValue | undefined>(undefined);
 
-// ─── Provider Component ───────────────────────────────────────────────────────
-export const StudyMonitorProvider = ({
+export const StudyMonitorUIProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
-  const [folderTree] = useState(mockJsonTopicTree);
   const [detailNode, setDetailNode] = useState<TopicNode | null>(null);
-  const [dashboardStats] = useState(mockJsonDashboardStats);
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
-  const [allPendencies, setAllPendencies] = useState<Pendency[]>(PENDENCIES_MOCK);
-  const [allNotes, setAllNotes] = useState<
-    Array<{
-      id: string;
-      topicId: string;
-      content: string;
-      createdAt: Date;
-    }>
-  >(NOTES_MOCK);
 
-  // Actions
   const openDetailSheet = useCallback((node: TopicNode) => {
     setDetailNode(node);
   }, []);
@@ -73,6 +66,39 @@ export const StudyMonitorProvider = ({
   const clearFilter = useCallback(() => {
     setSelectedTopicId(null);
   }, []);
+
+  const value = useMemo<StudyMonitorUIContextValue>(() => ({
+    detailNode,
+    selectedTopicId,
+    openDetailSheet,
+    closeDetailSheet,
+    selectTopic,
+    clearFilter,
+  }), [
+    detailNode,
+    selectedTopicId,
+    openDetailSheet,
+    closeDetailSheet,
+    selectTopic,
+    clearFilter,
+  ]);
+
+  return (
+    <StudyMonitorUIContext.Provider value={value}>
+      {children}
+    </StudyMonitorUIContext.Provider>
+  );
+};
+
+export const StudyMonitorDataProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const [folderTree] = useState(mockJsonTopicTree);
+  const [dashboardStats] = useState(mockJsonDashboardStats);
+  const [allPendencies, setAllPendencies] = useState<Pendency[]>(PENDENCIES_MOCK);
+  const [allNotes, setAllNotes] = useState<StudyMonitorNote[]>(NOTES_MOCK);
 
   const addPendency = useCallback((topicId: string, pendency: Pendency) => {
     setAllPendencies((prev) => [...prev, pendency]);
@@ -104,38 +130,132 @@ export const StudyMonitorProvider = ({
     setAllNotes((prev) => prev.filter((n) => n.id !== noteId));
   }, []);
 
-  const value: StudyMonitorContextValue = {
+  const pendenciesByTopic = useMemo(() => {
+    return allPendencies.reduce<Record<string, Pendency[]>>((acc, pendency) => {
+      if (!acc[pendency.topicId]) {
+        acc[pendency.topicId] = [];
+      }
+      acc[pendency.topicId].push(pendency);
+      return acc;
+    }, {});
+  }, [allPendencies]);
+
+  const notesByTopic = useMemo(() => {
+    return allNotes.reduce<Record<string, StudyMonitorNote[]>>((acc, note) => {
+      if (!acc[note.topicId]) {
+        acc[note.topicId] = [];
+      }
+      acc[note.topicId].push(note);
+      return acc;
+    }, {});
+  }, [allNotes]);
+
+  const logsByTopic = useMemo(() => {
+    return mockStudyLogs.reduce<Record<string, typeof mockStudyLogs>>((acc, log) => {
+      if (!acc[log.topicId]) {
+        acc[log.topicId] = [];
+      }
+      acc[log.topicId].push(log);
+      return acc;
+    }, {});
+  }, []);
+
+  const pendingCountByTopic = useMemo(() => {
+    return allPendencies.reduce<Record<string, number>>((acc, pendency) => {
+      if (!pendency.resolved) {
+        acc[pendency.topicId] = (acc[pendency.topicId] ?? 0) + 1;
+      }
+      return acc;
+    }, {});
+  }, [allPendencies]);
+
+  const logsCountByTopic = useMemo(() => {
+    return mockStudyLogs.reduce<Record<string, number>>((acc, log) => {
+      acc[log.topicId] = (acc[log.topicId] ?? 0) + 1;
+      return acc;
+    }, {});
+  }, []);
+
+  const value: StudyMonitorDataContextValue = useMemo(() => ({
     folderTree,
-    detailNode,
     dashboardStats,
-    selectedTopicId,
     allPendencies,
     allNotes,
-    openDetailSheet,
-    closeDetailSheet,
-    selectTopic,
-    clearFilter,
+    pendenciesByTopic,
+    notesByTopic,
+    logsByTopic,
+    pendingCountByTopic,
+    logsCountByTopic,
     addPendency,
     removePendency,
     togglePendencyStatus,
     addNote,
     removeNote,
-  };
+  }), [
+    folderTree,
+    dashboardStats,
+    allPendencies,
+    allNotes,
+    pendenciesByTopic,
+    notesByTopic,
+    logsByTopic,
+    pendingCountByTopic,
+    logsCountByTopic,
+    addPendency,
+    removePendency,
+    togglePendencyStatus,
+    addNote,
+    removeNote,
+  ]);
 
   return (
-    <StudyMonitorContext.Provider value={value}>
+    <StudyMonitorDataContext.Provider value={value}>
       {children}
-    </StudyMonitorContext.Provider>
+    </StudyMonitorDataContext.Provider>
   );
 };
 
-// ─── Hook to use context ───────────────────────────────────────────────────────
-export const useStudyMonitor = () => {
-  const context = useContext(StudyMonitorContext);
+export const StudyMonitorProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  return (
+    <StudyMonitorDataProvider>
+      <StudyMonitorUIProvider>
+        {children}
+      </StudyMonitorUIProvider>
+    </StudyMonitorDataProvider>
+  );
+};
+
+export const useStudyMonitorUI = () => {
+  const context = useContext(StudyMonitorUIContext);
   if (!context) {
+    throw new Error(
+      'useStudyMonitorUI deve ser usado dentro de StudyMonitorUIProvider'
+    );
+  }
+  return context;
+};
+
+export const useStudyMonitorData = () => {
+  const context = useContext(StudyMonitorDataContext);
+  if (!context) {
+    throw new Error(
+      'useStudyMonitorData deve ser usado dentro de StudyMonitorDataProvider'
+    );
+  }
+  return context;
+};
+
+export const useStudyMonitor = () => {
+  const ui = useStudyMonitorUI();
+  const data = useStudyMonitorData();
+  if (!ui || !data) {
     throw new Error(
       'useStudyMonitor deve ser usado dentro de StudyMonitorProvider'
     );
   }
-  return context;
+  return { ...data, ...ui };
 };

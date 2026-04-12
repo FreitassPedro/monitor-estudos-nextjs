@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { mockStudyLogs, Pendency, TopicNode } from './mock';
-import { StudyMonitorProvider, useStudyMonitor } from './components/StudyMonitorContext';
+import { Pendency, TopicNode } from './mock';
+import { StudyMonitorDataProvider, StudyMonitorUIProvider, useStudyMonitorData, useStudyMonitorUI } from './components/StudyMonitorContext';
 import {
     ChevronRight,
     ChevronDown,
@@ -26,17 +26,15 @@ import { Separator } from '@/components/ui/separator';
 
 // ─── Detail Sheet ────────────────────────────────────────────────────────────
 const DetailSheet = ({ topicId, topicName }: { topicId: string; topicName: string }) => {
-    const { closeDetailSheet, allPendencies, allNotes, addPendency, togglePendencyStatus, addNote } = useStudyMonitor();
+    const { closeDetailSheet } = useStudyMonitorUI();
+    const { pendenciesByTopic, notesByTopic, logsByTopic, addPendency, togglePendencyStatus, addNote } = useStudyMonitorData();
 
     const [pendencyMessage, setPendencyMessage] = useState("");
     const [noteContent, setNoteContent] = useState("");
 
-
-    const logs = mockStudyLogs.filter(log => log.topicId === topicId);
-
-    const pendencies = allPendencies.filter(p => p.topicId === topicId);
-
-    const notes = allNotes.filter(n => n.topicId === topicId);
+    const logs = logsByTopic[topicId] ?? [];
+    const pendencies = pendenciesByTopic[topicId] ?? [];
+    const notes = notesByTopic[topicId] ?? [];
 
     useEffect(() => {
         const handleKey = (e: KeyboardEvent) => e.key === 'Escape' && closeDetailSheet();
@@ -223,7 +221,7 @@ const SidebarTopicNode = ({
     topic: TopicNode;
     depth?: number;
 }) => {
-    const { selectTopic, selectedTopicId } = useStudyMonitor();
+    const { selectTopic, selectedTopicId } = useStudyMonitorUI();
     const [open, setOpen] = useState(depth < 1);
     const hasChildren = topic.children && topic.children.length > 0;
     const isSelected = selectedTopicId === topic.id;
@@ -280,11 +278,12 @@ function NodeRow({
     node: TopicNode;
     level?: number;
 }) {
-    const { openDetailSheet, allPendencies } = useStudyMonitor();
+    const { openDetailSheet } = useStudyMonitorUI();
+    const { pendingCountByTopic, logsCountByTopic } = useStudyMonitorData();
     const hasChildren = node.children && node.children.length > 0;
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const pendingCount = allPendencies.filter(p => p.topicId === node.id && !p.resolved).length;
-    const logsCount = mockStudyLogs.filter(l => l.topicId === node.id).length;
+    const pendingCount = pendingCountByTopic[node.id] ?? 0;
+    const logsCount = logsCountByTopic[node.id] ?? 0;
 
     return (
         <>
@@ -381,7 +380,8 @@ function NodeRow({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 function StudyMonitorContent() {
-    const { folderTree, detailNode, dashboardStats, selectedTopicId, clearFilter } = useStudyMonitor();
+    const { detailNode, selectedTopicId, clearFilter } = useStudyMonitorUI();
+    const { folderTree, dashboardStats } = useStudyMonitorData();
 
     return (
         <>
@@ -543,8 +543,10 @@ function StudyMonitorContent() {
 
 export default function StudyMonitorPage() {
     return (
-        <StudyMonitorProvider>
-            <StudyMonitorContent />
-        </StudyMonitorProvider>
+        <StudyMonitorDataProvider>
+            <StudyMonitorUIProvider>
+                <StudyMonitorContent />
+            </StudyMonitorUIProvider>
+        </StudyMonitorDataProvider>
     );
 }
