@@ -141,6 +141,13 @@ const DetailSheet = ({ topicId, topicName, subjectName, onClose }: DetailsSheetP
                         <span className="text-sm font-medium text-foreground">Pendencies</span>
                         <Badge variant="secondary">{pendencies.length}</Badge>
                     </div>
+                    {/* New pendency (optional) */}
+                    <div className="flex gap-2 mb-4">
+                        <Input placeholder="Nova pendência..." className="flex-1" />
+                        <Button>
+                            Adicionar
+                        </Button>
+                    </div>
 
                     {pendencies.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -303,7 +310,7 @@ function NodeRow({
                     <Select defaultValue={"Medio"} onValueChange={(value) => {
                         // Handle status change
                     }}>
-                        <SelectTrigger size={"sm"} >
+                        <SelectTrigger  size={"sm"} >
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -329,7 +336,7 @@ function NodeRow({
                 {/* Logs button */}
                 <td className="py-2.5 w-24 text-center">
                     <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
                         onClick={() => onOpenDetail?.(node)}
                         className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
@@ -435,6 +442,9 @@ export default function StudyMonitorPage() {
                                             Tópico
                                         </th>
                                         <th className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-24">
+                                            Status
+                                        </th>
+                                        <th className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-24">
                                             Pendências
                                         </th>
                                         <th className="text-center py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider w-24">
@@ -449,7 +459,7 @@ export default function StudyMonitorPage() {
                                             <tr className="group border-b border-border bg-muted/30 border-l-4 transition-colors group-hover:border-l-primary"
                                                 style={{ borderColor: subject.color }}
                                             >
-                                                <td colSpan={4} className="py-2.5 px-4">
+                                                <td colSpan={5} className="py-2.5 px-4">
                                                     <div className="flex w-full items-center justify-between gap-6 "                                                    >
                                                         <div className="flex items-center gap-3">
                                                             <div
@@ -458,7 +468,7 @@ export default function StudyMonitorPage() {
                                                             />
                                                             <span className="font-medium text-foreground">{subject.name}</span>
                                                         </div>
-                                                        <div className="ml-6 flex items-center gap-2">
+                                                        <div className="ml-6 flex items-center gap-2 col-span-full ">
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
@@ -476,7 +486,7 @@ export default function StudyMonitorPage() {
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
-                                                                className="h-9 w-9 opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-hover:pointer-events-auto"
+                                                                className="h-9 w-9 pointer-events-none  "
                                                             >
                                                                 <Settings className="h-4 w-4 " />
                                                             </Button>
