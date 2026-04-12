@@ -1,6 +1,7 @@
 "use client";
-import React, { useEffect, useMemo, useState } from 'react';
-import { mockJsonDashboardStats, mockJsonTopicTree, mockStudyLogs, NOTES_MOCK, PENDENCIES_MOCK, TopicNode } from './mock';
+import React, { useEffect, useState } from 'react';
+import { mockStudyLogs, Pendency, TopicNode } from './mock';
+import { StudyMonitorProvider, useStudyMonitor } from './components/StudyMonitorContext';
 import {
     ChevronRight,
     ChevronDown,
@@ -18,75 +19,59 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
-// ─── shadcn/ui-style primitives (inline, no external dep) ───────────────────
-
-const Badge = ({ children, variant = 'default' }: { children: React.ReactNode; variant?: 'default' | 'secondary' | 'outline' }) => {
-    const styles = {
-        default: 'bg-primary/10 text-primary border border-primary/20',
-        secondary: 'bg-muted text-muted-foreground border border-border',
-        outline: 'bg-transparent text-muted-foreground border border-border',
-    };
-    return (
-        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${styles[variant]}`}>
-            {children}
-        </span>
-    );
-};
-
-const Button = ({
-    children,
-    onClick,
-    variant = 'default',
-    size = 'md',
-    className = '',
-}: {
-    children: React.ReactNode;
-    onClick?: () => void;
-    variant?: 'default' | 'ghost' | 'outline';
-    size?: 'sm' | 'md' | 'icon';
-    className?: string;
-}) => {
-    const base = 'inline-flex items-center justify-center gap-1.5 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 disabled:opacity-50';
-    const variants = {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/90',
-        ghost: 'hover:bg-accent hover:text-accent-foreground text-muted-foreground',
-        outline: 'border border-border bg-background hover:bg-accent hover:text-accent-foreground text-foreground',
-    };
-    const sizes = { sm: 'h-7 px-2.5 text-xs', md: 'h-9 px-4 text-sm', icon: 'h-7 w-7 text-xs' };
-    return (
-        <button onClick={onClick} className={`${base} ${variants[variant]} ${sizes[size]} ${className}`}>
-            {children}
-        </button>
-    );
-};
 
 // ─── Detail Sheet ────────────────────────────────────────────────────────────
-interface DetailsSheetProps {
-    topicId: string;
-    topicName: string;
-    subjectName: string;
-    onClose: () => void;
-}
-const DetailSheet = ({ topicId, topicName, subjectName, onClose }: DetailsSheetProps) => {
+const DetailSheet = ({ topicId, topicName }: { topicId: string; topicName: string }) => {
+    const { closeDetailSheet, allPendencies, allNotes, addPendency, togglePendencyStatus, addNote } = useStudyMonitor();
+
+    const [pendencyMessage, setPendencyMessage] = useState("");
+    const [noteContent, setNoteContent] = useState("");
+
+
     const logs = mockStudyLogs.filter(log => log.topicId === topicId);
 
-    const pendencies = PENDENCIES_MOCK.filter(p => p.topicId === topicId);
+    const pendencies = allPendencies.filter(p => p.topicId === topicId);
 
-    const notes = NOTES_MOCK.filter(n => n.topicId === topicId);
+    const notes = allNotes.filter(n => n.topicId === topicId);
 
     useEffect(() => {
-        const handleKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+        const handleKey = (e: KeyboardEvent) => e.key === 'Escape' && closeDetailSheet();
         document.addEventListener('keydown', handleKey);
         return () => document.removeEventListener('keydown', handleKey);
-    }, [onClose]);
+    }, [closeDetailSheet]);
+
+    const handleAddPendency = () => {
+        if (!pendencyMessage.trim()) return;
+
+        const newPendency: Pendency = {
+            id: `p${Date.now()}`,
+            topicId,
+            text: pendencyMessage.trim(),
+            resolved: false,
+            createdAt: new Date(),
+        };
+
+        addPendency(topicId, newPendency);
+        setPendencyMessage("");
+    };
+
+    const handleAddNote = () => {
+        if (!noteContent.trim()) return;
+
+        addNote(topicId, noteContent);
+        setNoteContent("");
+    };
 
     return (
         <>
             {/* Backdrop */}
             <div
                 className="fixed inset-0 z-40 bg-background/60 backdrop-blur-sm"
-                onClick={onClose}
+                onClick={closeDetailSheet}
             />
             {/* Sheet panel */}
             <div className="fixed right-0 top-0 z-50 h-full w-full max-w-md bg-background border-l border-border shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
@@ -97,7 +82,7 @@ const DetailSheet = ({ topicId, topicName, subjectName, onClose }: DetailsSheetP
                         <h2 className="text-lg font-semibold text-foreground">{topicName}</h2>
                         <p className="text-xs text-muted-foreground mt-0.5">ID: {topicId}</p>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={onClose} className="mt-0.5">
+                    <Button variant="ghost" size="icon" onClick={closeDetailSheet} className="mt-0.5">
                         <X size={15} />
                     </Button>
                 </div>
@@ -135,6 +120,9 @@ const DetailSheet = ({ topicId, topicName, subjectName, onClose }: DetailsSheetP
                         </ul>
                     )}
                 </div>
+
+                <Separator />
+
                 {/* Notes section (optional) */}
                 <div className="flex-1 overflow-y-auto p-6">
                     <div className="flex items-center gap-2 mb-4">
@@ -143,8 +131,8 @@ const DetailSheet = ({ topicId, topicName, subjectName, onClose }: DetailsSheetP
                     </div>
                     {/* New note (optional) */}
                     <div className="flex gap-2 mb-4">
-                        <Input placeholder="Nova nota..." className="flex-1" />
-                        <Button>
+                        <Input placeholder="Nova nota..." className="flex-1" value={noteContent} onChange={(e) => setNoteContent(e.target.value)} />
+                        <Button onClick={handleAddNote}>
                             Adicionar
                         </Button>
                     </div>
@@ -170,6 +158,9 @@ const DetailSheet = ({ topicId, topicName, subjectName, onClose }: DetailsSheetP
                     )}
                 </div>
 
+                <Separator />
+
+
                 {/* Pendencies section (optional) */}
                 <div className="flex-1 overflow-y-auto p-6">
                     <div className="flex items-center gap-2 mb-4">
@@ -179,8 +170,8 @@ const DetailSheet = ({ topicId, topicName, subjectName, onClose }: DetailsSheetP
                     </div>
                     {/* New pendency (optional) */}
                     <div className="flex gap-2 mb-4">
-                        <Input placeholder="Nova pendência..." className="flex-1" />
-                        <Button>
+                        <Input placeholder="Nova pendência..." className="flex-1" value={pendencyMessage} onChange={(e) => setPendencyMessage(e.target.value)} />
+                        <Button onClick={handleAddPendency}>
                             Adicionar
                         </Button>
                     </div>
@@ -197,7 +188,8 @@ const DetailSheet = ({ topicId, topicName, subjectName, onClose }: DetailsSheetP
                                     <div className="flex items-center justify-between gap-3">
                                         <Input type="checkbox" checked={pendency.resolved}
                                             onClick={() => {
-                                                // Handle checkbox click
+                                                
+                                                togglePendencyStatus(pendency.id);
                                             }}
                                             className="h-4 w-4 text-primary" />
 
@@ -227,14 +219,11 @@ const DetailSheet = ({ topicId, topicName, subjectName, onClose }: DetailsSheetP
 const SidebarTopicNode = ({
     topic,
     depth = 0,
-    onSelectTopic,
-    selectedTopicId,
 }: {
     topic: TopicNode;
     depth?: number;
-    onSelectTopic: (id: string) => void;
-    selectedTopicId: string | null;
 }) => {
+    const { selectTopic, selectedTopicId } = useStudyMonitor();
     const [open, setOpen] = useState(depth < 1);
     const hasChildren = topic.children && topic.children.length > 0;
     const isSelected = selectedTopicId === topic.id;
@@ -243,7 +232,7 @@ const SidebarTopicNode = ({
         <div>
             <button
                 onClick={() => {
-                    onSelectTopic(topic.id);
+                    selectTopic(topic.id);
                     if (hasChildren) setOpen(o => !o);
                 }}
                 className={`group w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors
@@ -274,8 +263,6 @@ const SidebarTopicNode = ({
                             key={child.id}
                             topic={child}
                             depth={depth + 1}
-                            onSelectTopic={onSelectTopic}
-                            selectedTopicId={selectedTopicId}
                         />
                     ))}
                 </div>
@@ -289,15 +276,14 @@ const SidebarTopicNode = ({
 function NodeRow({
     node,
     level = 0,
-    onOpenDetail,
 }: {
     node: TopicNode;
     level?: number;
-    onOpenDetail?: (node: TopicNode) => void;
 }) {
+    const { openDetailSheet, allPendencies } = useStudyMonitor();
     const hasChildren = node.children && node.children.length > 0;
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const pendingCount = 2;
+    const pendingCount = allPendencies.filter(p => p.topicId === node.id && !p.resolved).length;
     const logsCount = mockStudyLogs.filter(l => l.topicId === node.id).length;
 
     return (
@@ -343,7 +329,7 @@ function NodeRow({
 
                 {/* Status */}
                 <td>
-                    <Select defaultValue={"Medio"} onValueChange={(value) => {
+                    <Select defaultValue={"Medio"} onValueChange={() => {
                         // Handle status change
                     }}>
                         <SelectTrigger size={"sm"} >
@@ -365,7 +351,7 @@ function NodeRow({
                             {pendingCount}
                         </Badge>
                     ) : (
-                        <span className="text-muted-foreground/30 text-xs">--—</span>
+                        <span className="text-muted-foreground/30 text-xs">-</span>
                     )}
                 </td>
 
@@ -374,7 +360,7 @@ function NodeRow({
                     <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => onOpenDetail?.(node)}
+                        onClick={() => openDetailSheet(node)}
                         className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
                     >
                         <Clock size={12} />
@@ -386,7 +372,7 @@ function NodeRow({
             {/* Children rows with smooth reveal */}
             {!isCollapsed &&
                 node.children.map(child => (
-                    <NodeRow key={child.id} node={child} level={level + 1} onOpenDetail={onOpenDetail} />
+                    <NodeRow key={child.id} node={child} level={level + 1} />
                 ))}
         </>
     );
@@ -394,12 +380,8 @@ function NodeRow({
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-export default function StudyMonitorPage() {
-    const [folderTree] = useState<{ id: string; name: string; color: string, topics: TopicNode[] }[]>(mockJsonTopicTree);
-    const [detailNode, setDetailNode] = useState<TopicNode | null>(null);
-    const [dashboardStats] = useState<typeof mockJsonDashboardStats>(mockJsonDashboardStats);
-    const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
-
+function StudyMonitorContent() {
+    const { folderTree, detailNode, dashboardStats, selectedTopicId, clearFilter } = useStudyMonitor();
 
     return (
         <>
@@ -419,7 +401,7 @@ export default function StudyMonitorPage() {
                             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Meus Tópicos</span>
                             {selectedTopicId && (
                                 <button
-                                    onClick={() => setSelectedTopicId(null)}
+                                    onClick={clearFilter}
                                     className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
                                 >
                                     <Filter size={10} />
@@ -439,8 +421,6 @@ export default function StudyMonitorPage() {
                                             key={rootTopic.id}
                                             topic={rootTopic}
                                             depth={0}
-                                            onSelectTopic={setSelectedTopicId}
-                                            selectedTopicId={selectedTopicId}
                                         />
                                     ))}
                                 </div>
@@ -536,7 +516,6 @@ export default function StudyMonitorPage() {
                                                         key={topic.id}
                                                         node={topic}
                                                         level={1}
-                                                        onOpenDetail={setDetailNode}
                                                     />
                                                 ))
                                             }
@@ -554,12 +533,18 @@ export default function StudyMonitorPage() {
                 detailNode && (
                     <DetailSheet
                         topicId={detailNode.id}
-                        subjectName={""}
                         topicName={detailNode.name}
-                        onClose={() => setDetailNode(null)}
                     />
                 )
             }
         </>
+    );
+}
+
+export default function StudyMonitorPage() {
+    return (
+        <StudyMonitorProvider>
+            <StudyMonitorContent />
+        </StudyMonitorProvider>
     );
 }

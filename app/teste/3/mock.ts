@@ -13,8 +13,9 @@ export interface Pendency {
   text: string;
   resolved: boolean;
   createdAt: Date;
+  
   topicId: string;
-  studyLogId: string;
+  studyLogId?: string;
 }
 
 export const subjectMock: { id: string; name: string }[] = [
