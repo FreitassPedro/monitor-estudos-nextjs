@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useMemo, useState } from 'react';
-import { mockJsonDashboardStats, mockJsonTopicTree, mockStudyLogs, PENDENCIES_MOCK, TopicNode } from './mock';
+import { mockJsonDashboardStats, mockJsonTopicTree, mockStudyLogs, NOTES_MOCK, PENDENCIES_MOCK, TopicNode } from './mock';
 import {
     ChevronRight,
     ChevronDown,
@@ -73,6 +73,8 @@ const DetailSheet = ({ topicId, topicName, subjectName, onClose }: DetailsSheetP
 
     const pendencies = PENDENCIES_MOCK.filter(p => p.topicId === topicId);
 
+    const notes = NOTES_MOCK.filter(n => n.topicId === topicId);
+
     useEffect(() => {
         const handleKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
         document.addEventListener('keydown', handleKey);
@@ -128,6 +130,40 @@ const DetailSheet = ({ topicId, topicName, subjectName, onClose }: DetailsSheetP
                                     </div>
 
                                     {log.notes && <p className="text-sm text-muted-foreground">{log.notes}</p>}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+                {/* Notes section (optional) */}
+                <div className="flex-1 overflow-y-auto p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                        <BookOpen size={14} className="text-muted-foreground" />
+                        <span className="text-sm font-medium text-foreground">Notas</span>
+                    </div>
+                    {/* New note (optional) */}
+                    <div className="flex gap-2 mb-4">
+                        <Input placeholder="Nova nota..." className="flex-1" />
+                        <Button>
+                            Adicionar
+                        </Button>
+                    </div>
+                    {notes.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                            <BookOpen size={32} className="text-muted-foreground/40 mb-3" />
+                            <p className="text-sm text-muted-foreground">Nenhuma nota registrada para este tópico.</p>
+                        </div>
+                    ) : (
+                        <ul className="space-y-2">
+                            {notes.map(note => (
+                                <li key={note.id} className="flex flex-col rounded-lg border border-border bg-muted/30 px-4 py-2 hover:bg-muted/50 transition-colors">
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-primary/60" />
+                                        <h2 className='text-sm text-foreground'>{topicName}</h2>
+                                        <span className="text-sm text-foreground">{new Date(note.createdAt).toLocaleDateString()}</span>
+                                    </div>
+
+                                    {note.content && <p className="text-sm text-muted-foreground">{note.content}</p>}
                                 </li>
                             ))}
                         </ul>
@@ -310,7 +346,7 @@ function NodeRow({
                     <Select defaultValue={"Medio"} onValueChange={(value) => {
                         // Handle status change
                     }}>
-                        <SelectTrigger  size={"sm"} >
+                        <SelectTrigger size={"sm"} >
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>

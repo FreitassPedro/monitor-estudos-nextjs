@@ -54,6 +54,14 @@ export interface StudyLog {
   date: string; // ISO format
 }
 
+export interface SimpleNote {
+  id: string;
+  topicId: string;
+  content: string;
+  resolved: boolean;
+  createdAt: Date;
+}
+
 
 
 // ────────────────────────────────────────────────────────────
@@ -63,6 +71,12 @@ export const SUBJECTS_MOCK: { id: string; name: string }[] = [
   { id: "1", name: "Computação" },
   { id: "2", name: "Biologia" },
   { id: "3", name: "Física" }
+];
+
+export const NOTES_MOCK: SimpleNote[] = [
+  { id: "1", topicId: "3", content: "Rever conceitos de REST", createdAt: new Date("2026-03-10"), resolved: false },
+  { id: "2", topicId: "4", content: "Praticar mais exercícios de API", createdAt: new Date("2026-03-09"), resolved: true },
+  { id: "3", topicId: "5", content: "Rever sintaxe de Java", createdAt: new Date("2026-03-08"), resolved: false }
 ];
 
 export const TOPICS_MOCK: TopicNode[] = [
