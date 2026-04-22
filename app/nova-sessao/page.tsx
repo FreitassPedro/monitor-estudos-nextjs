@@ -14,7 +14,7 @@ export default function NovaSessaoPage() {
         <div className="flex flex-col h-screen">
             <div className="flex flex-1 relative">
                 <div className="flex-1 scroll-smooth overflow-auto">
-                    <main className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 px-4">
+                    <main className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 px-4 py-2">
                         <StudySessionForm />
                         <Suspense fallback={<div className="p-4">Carregando timeline...</div>}>
                             <TodayTimeline />
