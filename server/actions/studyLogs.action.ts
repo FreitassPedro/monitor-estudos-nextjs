@@ -214,6 +214,22 @@ export async function deleteStudyLogAction(id: string) {
     });
 }
 
+export async function getLastStudyLogAction(userId: string) {
+    return prisma.studyLogs.findFirst({
+        where: {
+            topic: {
+                subject: {
+                    userId: userId,
+                },
+            },
+        },
+        orderBy: {
+            created_at: "desc",
+        },
+        include,
+    });
+}
+
 export async function getTodayStudyLogsAction(userId: string, todayDate?: Date) {
     "use server";
     // 1. Dizemos ao Next.js: "Aguarde a requisição chegar. Isso não é estático."

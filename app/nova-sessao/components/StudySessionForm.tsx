@@ -11,6 +11,8 @@ import {
     RotateCcw,
     Pencil,
     FileText,
+    History,
+    X,
 
 } from "lucide-react";
 
@@ -38,7 +40,7 @@ import {
 
 import { useSubjects } from "@/hooks/useSubjects";
 import { useTopicsMap, useTopicsTree } from "@/hooks/useTopics";
-import { useCreateStudyLog } from "@/hooks/useStudyLogs";
+import { useCreateStudyLog, useLastStudyLog } from "@/hooks/useStudyLogs";
 import { StudyLogInput } from "@/server/actions/studyLogs.action";
 import { NewTopicDialog } from "../../materias/components/NewTopicDialog";
 import { TopicTreeSelector } from "./TopicTreeSelector";
@@ -128,10 +130,12 @@ export function StudySessionForm() {
 
     const { data: topicsTree = [], isLoading: loadingTopicsTree } = useTopicsTree();
     const { data: subjects = [], isLoading: loadingSubjects } = useSubjects();
+    const { data: lastLog } = useLastStudyLog();
 
     const [newTopicDialogOpen, setNewTopicDialogOpen] = useState(false);
     const [topicTreePopoverOpen, setTopicTreePopoverOpen] = useState(false);
 
+    const [hiddenLastLogId, setHiddenLastLogId] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // New UI-only state
@@ -142,6 +146,21 @@ export function StudySessionForm() {
         () => getTopicTreeForSubject(topicsTree, selectionForm.subjectId),
         [topicsTree, selectionForm.subjectId]
     );
+
+    const showResume = !!lastLog && hiddenLastLogId !== lastLog.id;
+
+    const handleResumeLastSession = () => {
+        if (!lastLog) return;
+        setSelectionForm((prev) => ({
+            ...prev,
+            subjectId: lastLog.topic.subjectId,
+            topicId: lastLog.topicId,
+            notes: lastLog.notes || "",
+        }));
+        setStudyMode(lastLog.material_type as StudyMode || "teoria");
+        toast.info("Dados da última sessão carregados!");
+        setHiddenLastLogId(lastLog.id);
+    };
 
     // Time/date fields are controlled by Cronometer via Zustand store.
     const submitForm = useMemo<FormData>(
@@ -278,6 +297,45 @@ export function StudySessionForm() {
 
                         {/* LEFT COLUMN — Subject, Topic, Material, Notes */}
                         <div className="space-y-5">
+                            {lastLog && showResume && (
+                                <Card className="border-primary/20 bg-primary/5 shadow-sm overflow-hidden transition-all hover:border-primary/30">
+                                    <CardContent className="p-2 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-primary/10 rounded-full shrink-0">
+                                                <History className="h-4 w-4 text-primary" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-semibold text-foreground">Retomar última sessão?</p>
+                                                <p className="text-xs text-muted-foreground truncate flex-col flex">
+                                                    <span className="text-sm">{lastLog.topic.subject.name}</span>
+                                                    <span>{lastLog.topic.name}</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={handleResumeLastSession}
+                                            className="bg-background hover:bg-primary hover:text-primary-foreground border-primary/20 text-xs h-8 px-3 transition-colors shrink-0 self-end sm:self-auto"
+                                        >
+                                            <RotateCcw className="h-3 w-3 mr-1.5" />
+                                            Retomar dados
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={() => setHiddenLastLogId(lastLog.id)}
+                                            className="text-muted-foreground"
+                                            title="Fechar notificação"
+                                        >
+                                            <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                            )}
+
                             <Card className="shadow-lg border-border/60 bg-card/95">
                                 <CardHeader className="border-b border-border/40">
                                     <CardTitle className="text-base font-semibold flex  items-center gap-2 text-foreground">

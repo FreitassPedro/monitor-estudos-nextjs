@@ -1,4 +1,4 @@
-import { createStudyLogAction, deleteStudyLogAction, getStudyLogsByDateAction, getSummaryStatsAction, getTodayStudyLogsAction, StudyLogInput, updateStudyLogAction, UpdateStudyLogInput } from "@/server/actions/studyLogs.action";
+import { createStudyLogAction, deleteStudyLogAction, getLastStudyLogAction, getStudyLogsByDateAction, getSummaryStatsAction, getTodayStudyLogsAction, StudyLogInput, updateStudyLogAction, UpdateStudyLogInput } from "@/server/actions/studyLogs.action";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getDay } from "date-fns";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -17,6 +17,16 @@ export const summaryStatsQueryOptions = (startDate: Date, endDate: Date, userId?
     enabled: !!startDate && !!endDate && !!userId,
     staleTime: 1000 * 60 * 5, // 5 minutos
 });
+
+export function useLastStudyLog() {
+    const userId = useAuthStore((state) => state.user?.id);
+    return useQuery({
+        queryKey: ["studyLogs", "last", userId],
+        queryFn: () => getLastStudyLogAction(userId!),
+        enabled: !!userId,
+        staleTime: 1000 * 60 * 5, // 5 minutos
+    });
+}
 
 export function useCreateStudyLog() {
     const queryClient = useQueryClient();
