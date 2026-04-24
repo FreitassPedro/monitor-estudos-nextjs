@@ -1,5 +1,6 @@
 
 import { LogSection } from "./SidebarLogs";
+import { TodaySummaryMini } from "./TodaySummaryMini";
 
 export function SessionSidebar() {
 
@@ -7,11 +8,14 @@ export function SessionSidebar() {
         <div className="flex-1 flex flex-col overflow-hidden h-full border-l border-border">
             {/* Header - Hidden on mobile (shown in toggle) */}
             <div className="hidden lg:block p-6 border-b border-border">
-                <h2 className="text-lg font-semibold text-foreground">Histórico da Matéria</h2>
+                <h2 className="text-lg font-semibold text-foreground">Informações</h2>
             </div>
 
             {/* Conteúdo do Sidebar */}
             <div className="flex-1 overflow-y-auto p-4 space-y-10">
+                {/* Resumo de Hoje */}
+                <TodaySummaryMini />
+
                 {/* Últimos Logs */}
                 <LogSection type="subject" />
 

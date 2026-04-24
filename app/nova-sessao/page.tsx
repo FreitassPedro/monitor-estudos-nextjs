@@ -32,7 +32,7 @@ export default function NovaSessaoPage() {
                     ${isSidebarOpen ? 'translate-y-0' : 'translate-y-full lg:translate-y-0'}
                 `}>
                     <div className='lg:hidden flex items-center justify-between p-4 border-b border-border'>
-                        <h3 className="text-sm font-semibold">Histórico da Matéria</h3>
+                        <h3 className="text-sm font-semibold">Informações</h3>
                         <Button
                             variant="ghost"
                             size="icon"
