@@ -29,6 +29,20 @@ const formatCronometerTime = (seconds: number) => {
     return `${padTwo(hrs)}:${padTwo(mins)}:${padTwo(secs)}`;
 };
 
+const formatDateForInputLocal = (date?: Date) => {
+    if (!date || isNaN(date.getTime())) return "";
+    const year = date.getFullYear();
+    const month = padTwo(date.getMonth() + 1);
+    const day = padTwo(date.getDate());
+    return `${year}-${month}-${day}`;
+};
+
+const parseInputDateLocal = (value: string) => {
+    const [year, month, day] = value.split("-").map(Number);
+    if (!year || !month || !day) return undefined;
+    return new Date(year, month - 1, day);
+};
+
 function CronometerTitleSync() {
     const isRunning = useCronometerStore((state) => state.cronometer.isRunning);
     const seconds = useCronometerStore((state) => state.cronometer.seconds);
@@ -157,10 +171,11 @@ export function Cronometer() {
         });
     };
 
-    const handleStudyDateChange = (date: Date) => {
-        const [year, month, day] = date.toISOString().split("T")[0].split("-").map(Number);
-        updateForm({ study_date: new Date(year, month - 1, day) });
+    const handleStudyDateChange = (value: string) => {
+        const localDate = parseInputDateLocal(value);
+        updateForm({ study_date: localDate });
     };
+
     const toggleCronometer = () => {
         const now = new Date();
         if (!isCronometerRunning) {
@@ -224,10 +239,11 @@ export function Cronometer() {
 
                         {/* Cronometer Panel */}
                         <TabsContent value="cronometer" className="mt-4">
-                            <div className={`flex flex-col items-center gap-5 py-4 rounded-xl transition-colors ${isCronometerRunning
-                                ? "ring-2 ring-primary/30 bg-primary/5"
-                                : "bg-muted/20"
+                            <div className={`flex flex-col items-center gap-5 py-4 rounded-xl transition-colors
+                                 ${isCronometerRunning
+                                    ? "ring-2 ring-primary/30 bg-primary/5" : "bg-muted/20"
                                 }`}>
+
                                 {/* Time Display */}
                                 <CronometerTimeDisplay isRunning={isCronometerRunning} />
 
@@ -259,7 +275,6 @@ export function Cronometer() {
                                     <Button
                                         type="button"
                                         variant="outline"
-
                                         onClick={handleResetCronometer}
                                         disabled={isCronometerRunning}
                                         title="Resetar"
@@ -361,9 +376,9 @@ export function Cronometer() {
                         <Input
                             id="study_date"
                             type="date"
-                            value={form.study_date ? form.study_date.toISOString().split("T")[0] : ""}
+                            value={formatDateForInputLocal(form.study_date)}
                             className="bg-background/60 focus-visible:ring-primary/40"
-                            onChange={(e) => handleStudyDateChange(new Date(e.target.value))}
+                            onChange={(e) => handleStudyDateChange(e.target.value)}
                         />
                     </div>
                 </CardContent>

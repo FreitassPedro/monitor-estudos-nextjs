@@ -335,6 +335,7 @@ const RealtimeTimelineLayer = ({
 export function TodayTimeline() {
 
     const today = getLocalDateForToday();
+
     const { data: logs, isLoading: isLogsLoading } = useTodayStudyLogs();
     const { data: subjectsMap, isLoading: isSubjectsLoading } = useSubjectsMap();
     const topicsMap = useTopicsMap();
