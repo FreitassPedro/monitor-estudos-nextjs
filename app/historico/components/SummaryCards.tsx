@@ -123,7 +123,7 @@ export function SummaryCards() {
             bg: 'bg-emerald-500/10',
         },
         {
-            
+
             label: 'Média de horas / dia',
             value: formatDuration(stats.avgMinutesPerDay),
             icon: Timer,

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTodayStudyLogs } from '@/hooks/useStudyLogs';
 import { BookOpen, Clock, FileText, Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export const StudyLogItemResume = ({
     log,
@@ -101,6 +102,7 @@ function RecentSessionsSkeleton() {
 
 export function RecentSessions() {
     const { data: todayLogs, isLoading } = useTodayStudyLogs();
+    const route = useRouter();
 
     return (
         <Card className="h-auto md:flex md:h-full md:min-h-0 md:flex-col md:overflow-hidden">
@@ -120,6 +122,7 @@ export function RecentSessions() {
                             variant="default"
                             size="lg"
                             className=""
+                            onClick={() => route.push('/nova-sessao')}
                         >
                             Começar a estudar
                         </Button>

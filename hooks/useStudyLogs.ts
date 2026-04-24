@@ -4,15 +4,17 @@ import { getDay } from "date-fns";
 import { useAuthStore } from "@/store/useAuthStore";
 import { getLocalDateForToday } from "@/lib/utils";
 
+const getDateKey = (date: Date) => date.toDateString();
+
 export const studyLogsByDateQUeryOptions = (startDate: Date, endDate: Date, userId?: string) => ({
-    queryKey: ["studyLogs", "range", getDay(startDate), getDay(endDate), userId],
+    queryKey: ["studyLogs", "range", getDateKey(startDate), getDateKey(endDate), userId],
     queryFn: () => getStudyLogsByDateAction({ startDate, endDate, userId: userId! }),
     enabled: !!startDate && !!endDate,
     staleTime: 1000 * 60 * 5, // 5 minutos
 });
 
 export const summaryStatsQueryOptions = (startDate: Date, endDate: Date, userId?: string) => ({
-    queryKey: ["summaryStats", "range", getDay(startDate), getDay(endDate), userId],
+    queryKey: ["summaryStats", "range", getDateKey(startDate), getDateKey(endDate), userId],
     queryFn: () => getSummaryStatsAction(startDate, endDate, userId!),
     enabled: !!startDate && !!endDate && !!userId,
     staleTime: 1000 * 60 * 5, // 5 minutos
