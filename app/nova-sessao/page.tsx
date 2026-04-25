@@ -43,7 +43,9 @@ export default function NovaSessaoPage() {
                             <X className="w-4 h-4" />
                         </Button>
                     </div>
-                    <SessionSidebar />
+                    <Suspense fallback={<div className="p-4">Carregando informações...</div>}>
+                        <SessionSidebar />
+                    </Suspense>
                 </aside>
                 <Button
                     variant="outline"
