@@ -199,17 +199,17 @@ export function Cronometer() {
             <CronometerTitleSync />
 
             <Card className="shadow-lg border-border/60 bg-card/95">
-                <CardContent className="space-y-3">
+                <CardContent className="p-4 space-y-2">
 
                     <Button
                         type={"button"}
                         variant="outline"
-
-                        className={cn("rounded-full w-full text-muted-foreground hover:text-foreground focus-visible:ring-primary/40")}
+                        size="sm"
+                        className={cn("rounded-full w-full h-8 text-xs text-muted-foreground hover:text-foreground focus-visible:ring-primary/40")}
                         onClick={() => setIsFocusModeOpen(true)}
                         title="Entrar no modo focado"
                     >
-                        Modo foco <Maximize2 className="h-4 w-4 text-primary" />
+                        Modo foco <Maximize2 className="h-3.5 w-3.5 ml-1.5 text-primary" />
                     </Button>
 
                     {/* Time Mode Tabs */}
@@ -218,28 +218,28 @@ export function Cronometer() {
                         onValueChange={(v) => setTimeRegisterType(v as "manual" | "cronometer")}
                     >
 
-                        <TabsList className="w-full grid grid-cols-2 bg-muted/50">
+                        <TabsList className="h-8 w-full grid grid-cols-2 bg-muted/50">
                             <TabsTrigger
                                 value="manual"
                                 disabled={isCronometerRunning}
                                 title={isCronometerRunning ? "Pare o cronômetro para registrar manualmente" : undefined}
-                                className="gap-1.5 text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                                className="h-7 gap-1.5 text-[10px] data-[state=active]:bg-background data-[state=active]:shadow-sm"
                             >
-                                <ClockArrowUp className="h-3.5 w-3.5" />
+                                <ClockArrowUp className="h-3 w-3" />
                                 Manual
                             </TabsTrigger>
                             <TabsTrigger
                                 value="cronometer"
-                                className="gap-1.5 text-xs data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                                className="h-7 gap-1.5 text-[10px] data-[state=active]:bg-background data-[state=active]:shadow-sm"
                             >
-                                <Timer className="h-3.5 w-3.5" />
+                                <Timer className="h-3 w-3" />
                                 Cronômetro
                             </TabsTrigger>
                         </TabsList>
 
                         {/* Cronometer Panel */}
-                        <TabsContent value="cronometer" className="mt-4">
-                            <div className={`flex flex-col items-center gap-5 py-4 rounded-xl transition-colors
+                        <TabsContent value="cronometer" className="mt-2">
+                            <div className={`flex flex-col items-center gap-3 py-3 rounded-xl transition-colors
                                  ${isCronometerRunning
                                     ? "ring-2 ring-primary/30 bg-primary/5" : "bg-muted/20"
                                 }`}>
@@ -251,9 +251,9 @@ export function Cronometer() {
                                 <div className="flex gap-2 w-full px-4">
                                     <Button
                                         type="button"
-
+                                        size="sm"
                                         onClick={toggleCronometer}
-                                        className={`flex-1 gap-2 transition-all 
+                                        className={`flex-1 h-9 gap-2 transition-all 
                                                             ${isCronometerRunning ?
                                                 "bg-destructive hover:bg-destructive/90 text-destructive-foreground"
                                                 : "bg-emerald-600 hover:bg-emerald-700 text-white"
@@ -261,13 +261,13 @@ export function Cronometer() {
                                     >
                                         {isCronometerRunning ? (
                                             <>
-                                                <Square className="fill-current" />
+                                                <Square className="h-3.5 w-3.5 fill-current" />
                                                 Parar
                                             </>
 
                                         ) : (
                                             <>
-                                                <Play className="fill-current" />
+                                                <Play className="h-3.5 w-3.5 fill-current" />
                                                 Iniciar
                                             </>
                                         )}
@@ -275,10 +275,11 @@ export function Cronometer() {
                                     <Button
                                         type="button"
                                         variant="outline"
+                                        size="sm"
                                         onClick={handleResetCronometer}
                                         disabled={isCronometerRunning}
                                         title="Resetar"
-                                        className="shrink-0 text-muted-foreground hover:text-foreground"
+                                        className="h-9 shrink-0 text-muted-foreground hover:text-foreground"
                                     >
                                         Resetar
                                     </Button>
@@ -293,10 +294,10 @@ export function Cronometer() {
 
 
                     {/* Start / End Time */}
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-2 gap-2">
                         {/* Hora Início */}
-                        <div className="space-y-1.5">
-                            <Label htmlFor="start_time" className="text-sm font-medium text-foreground/80">
+                        <div className="space-y-1">
+                            <Label htmlFor="start_time" className="text-[10px] font-medium text-foreground/80">
                                 Início
                             </Label>
                             <div className="flex gap-1">
@@ -305,7 +306,7 @@ export function Cronometer() {
                                     type="time"
                                     disabled={timeRegisterType === "cronometer"}
                                     value={formatTime(form.start_time)}
-                                    className="bg-background/60 focus-visible:ring-primary/40 min-w-0"
+                                    className="h-8 text-xs bg-background/60 focus-visible:ring-primary/40 min-w-0"
                                     onChange={(e) => handleTimeInput("start_time", e.target.value)}
                                 />
                                 <Button
@@ -315,7 +316,7 @@ export function Cronometer() {
                                     onClick={() => setCurrentTime("start_time")}
                                     disabled={timeRegisterType === "cronometer"}
                                     title="Hora atual"
-                                    className="shrink-0 h-9 w-9 text-muted-foreground hover:text-foreground"
+                                    className="shrink-0 h-8 w-8 text-muted-foreground hover:text-foreground"
                                 >
                                     <ClockArrowUp className="h-3.5 w-3.5" />
                                 </Button>
@@ -323,8 +324,8 @@ export function Cronometer() {
                         </div>
 
                         {/* Hora Fim */}
-                        <div className="space-y-1.5">
-                            <Label htmlFor="end_time" className="text-sm font-medium text-foreground/80">
+                        <div className="space-y-1">
+                            <Label htmlFor="end_time" className="text-[10px] font-medium text-foreground/80">
                                 Fim
                             </Label>
                             <div className="flex gap-1">
@@ -333,7 +334,7 @@ export function Cronometer() {
                                     type="time"
                                     disabled={timeRegisterType === "cronometer"}
                                     value={formatTime(form.end_time)}
-                                    className={`bg-background/60 focus-visible:ring-primary/40 min-w-0 ${endTimeError ? "border-destructive ring-destructive/30" : ""
+                                    className={`h-8 text-xs bg-background/60 focus-visible:ring-primary/40 min-w-0 ${endTimeError ? "border-destructive ring-destructive/30" : ""
                                         }`}
                                     onChange={(e) => handleTimeInput("end_time", e.target.value)}
                                 />
@@ -344,13 +345,13 @@ export function Cronometer() {
                                     onClick={() => setCurrentTime("end_time")}
                                     disabled={timeRegisterType === "cronometer"}
                                     title="Hora atual"
-                                    className="shrink-0 h-9 w-9 text-muted-foreground hover:text-foreground"
+                                    className="shrink-0 h-8 w-8 text-muted-foreground hover:text-foreground"
                                 >
                                     <ClockArrowUp className="h-3.5 w-3.5" />
                                 </Button>
                             </div>
                             {endTimeError && (
-                                <p className="text-xs text-destructive leading-tight">{endTimeError}</p>
+                                <p className="text-[10px] text-destructive leading-tight">{endTimeError}</p>
                             )}
                         </div>
                     </div>
@@ -359,9 +360,9 @@ export function Cronometer() {
 
                     {/* Duration Badge */}
                     {duration > 0 && (
-                        <div className="flex items-center justify-between rounded-lg bg-primary/8 border border-primary/20 px-4 py-2.5">
-                            <span className="text-xs text-muted-foreground font-medium">Duração calculada</span>
-                            <span className="text-sm font-semibold text-primary tabular-nums">
+                        <div className="flex items-center justify-between rounded-lg bg-primary/8 border border-primary/20 px-3 py-1.5">
+                            <span className="text-[10px] text-muted-foreground font-medium">Duração calculada</span>
+                            <span className="text-xs font-semibold text-primary tabular-nums">
                                 {Math.floor(duration / 60) > 0 && `${Math.floor(duration / 60)}h `}
                                 {duration % 60}min
                             </span>
@@ -369,15 +370,15 @@ export function Cronometer() {
                     )}
 
                     {/* Date */}
-                    <div className="space-y-1.5">
-                        <Label htmlFor="study_date" className="text-sm font-medium text-foreground/80">
+                    <div className="space-y-1">
+                        <Label htmlFor="study_date" className="text-[10px] font-medium text-foreground/80">
                             Data
                         </Label>
                         <Input
                             id="study_date"
                             type="date"
                             value={formatDateForInputLocal(form.study_date)}
-                            className="bg-background/60 focus-visible:ring-primary/40"
+                            className="h-8 text-xs bg-background/60 focus-visible:ring-primary/40"
                             onChange={(e) => handleStudyDateChange(e.target.value)}
                         />
                     </div>

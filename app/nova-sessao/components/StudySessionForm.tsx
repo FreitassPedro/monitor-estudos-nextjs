@@ -271,16 +271,16 @@ export function StudySessionForm() {
 
     return (
         <>
-            <div className="min-h-screen bg-linear-to-br from-background via-muted/20 to-background py-8 px-4">
-                <form onSubmit={onSubmit} className="max-w-5xl mx-auto space-y-6">
+            <div className="min-h-screen bg-linear-to-br from-background via-muted/20 to-background py-4 px-4">
+                <form onSubmit={onSubmit} className="max-w-5xl mx-auto space-y-4">
 
                     {/* Header */}
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+                            <h1 className="text-xl font-semibold tracking-tight text-foreground">
                                 Nova Sessão de Estudo
                             </h1>
-                            <p className="text-sm text-muted-foreground mt-0.5">
+                            <p className="text-xs text-muted-foreground mt-0.5">
                                 Registre e acompanhe seu progresso de aprendizado
                             </p>
                         </div>
@@ -293,21 +293,21 @@ export function StudySessionForm() {
                     </div>
 
                     {/* Main Grid */}
-                    <div className="grid grid-cols-1  gap-6">
+                    <div className="grid grid-cols-1  gap-4">
 
                         {/* LEFT COLUMN — Subject, Topic, Material, Notes */}
-                        <div className="space-y-5">
+                        <div className="space-y-4">
                             {lastLog && showResume && (
                                 <Card className="border-primary/20 bg-primary/5 shadow-sm overflow-hidden transition-all hover:border-primary/30">
-                                    <CardContent className="p-2 py-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                    <CardContent className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2 bg-primary/10 rounded-full shrink-0">
                                                 <History className="h-4 w-4 text-primary" />
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="text-sm font-semibold text-foreground">Retomar última sessão?</p>
-                                                <p className="text-xs text-muted-foreground truncate flex-col flex">
-                                                    <span className="text-sm">{lastLog.topic.subject.name}</span>
+                                                <p className="text-xs font-semibold text-foreground">Retomar última sessão?</p>
+                                                <p className="text-[10px] text-muted-foreground truncate flex-col flex">
+                                                    <span className="text-xs">{lastLog.topic.subject.name}</span>
                                                     <span>{lastLog.topic.name}</span>
                                                 </p>
                                             </div>
@@ -317,9 +317,9 @@ export function StudySessionForm() {
                                             variant="outline"
                                             size="sm"
                                             onClick={handleResumeLastSession}
-                                            className="bg-background hover:bg-primary hover:text-primary-foreground border-primary/20 text-xs h-8 px-3 transition-colors shrink-0 self-end sm:self-auto"
+                                            className="bg-background hover:bg-primary hover:text-primary-foreground border-primary/20 text-[10px] h-7 px-2 transition-colors shrink-0 self-end sm:self-auto"
                                         >
-                                            <RotateCcw className="h-3 w-3 mr-1.5" />
+                                            <RotateCcw className="h-3 w-3 mr-1" />
                                             Retomar dados
                                         </Button>
                                         <Button
@@ -327,7 +327,7 @@ export function StudySessionForm() {
                                             variant="outline"
                                             size="icon"
                                             onClick={() => setHiddenLastLogId(lastLog.id)}
-                                            className="text-muted-foreground"
+                                            className="text-muted-foreground h-6 w-6"
                                             title="Fechar notificação"
                                         >
                                             <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
@@ -338,20 +338,18 @@ export function StudySessionForm() {
 
                             <Card className="shadow-lg border-border/60 bg-card/95">
                                 <CardHeader className="border-b border-border/40">
-                                    <CardTitle className="text-base font-semibold flex  items-center gap-2 text-foreground">
+                                    <CardTitle className="text-sm font-semibold flex  items-center gap-2 text-foreground">
                                         <BookOpen className="h-4 w-4 text-primary" />
                                         Conteúdo Estudado
                                     </CardTitle>
-                                    <CardDescription></CardDescription>
                                 </CardHeader>
-                                <CardContent className="space-y-5">
-
+                                <CardContent className="px-4 space-y-3">
                                     {/* Matéria */}
-                                    <div className="space-y-1.5">
-                                        <Label className="text-sm font-medium text-foreground/80">Matéria</Label>
+                                    <div className="space-y-1">
+                                        <Label className="text-xs font-medium text-foreground/80">Matéria</Label>
                                         <div className="flex items-center gap-2 min-w-0">
                                             <Select value={selectionForm.subjectId} onValueChange={handleSubjectChange}>
-                                                <SelectTrigger className="min-w-0 flex-1 focus-visible:ring-primary/40 bg-background/60">
+                                                <SelectTrigger className="h-9 min-w-0 flex-1 focus-visible:ring-primary/40 bg-background/60">
                                                     <SelectValue placeholder="Selecione uma matéria" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -366,7 +364,7 @@ export function StudySessionForm() {
                                                     ) : (
                                                         subjects.map((subject) => (
                                                             <SelectItem key={subject.id} value={subject.id}>
-                                                                <span className="flex items-center gap-2">
+                                                                <span className="flex items-center gap-2 text-sm">
                                                                     <span
                                                                         className="w-2.5 h-2.5 rounded-full inline-block shrink-0"
                                                                         style={{ backgroundColor: subject.color }}
@@ -384,7 +382,7 @@ export function StudySessionForm() {
                                                 size="icon"
                                                 onClick={() => router.push("/materias")}
                                                 title="Cadastrar matéria"
-                                                className="shrink-0 text-muted-foreground hover:text-foreground"
+                                                className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground"
                                             >
                                                 <Plus className="h-4 w-4" />
                                             </Button>
@@ -392,8 +390,8 @@ export function StudySessionForm() {
                                     </div>
 
                                     {/* Tópico */}
-                                    <div className="space-y-1.5">
-                                        <Label className="text-sm font-medium text-foreground/80">Tópico Estudado</Label>
+                                    <div className="space-y-1">
+                                        <Label className="text-xs font-medium text-foreground/80">Tópico Estudado</Label>
                                         <div className="flex items-center gap-2 min-w-0">
                                             <div className="flex-1 min-w-0">
                                                 <Dialog
@@ -404,11 +402,11 @@ export function StudySessionForm() {
                                                         <Button
                                                             variant="outline"
                                                             type="button"
-                                                            className={`w-full  justify-between font-normal bg-background/60 hover:bg-background/80 focus-visible:ring-primary/40 ${!selectionForm.topicId ? "text-muted-foreground" : "text-foreground"
+                                                            className={`h-9 w-full justify-between font-normal bg-background/60 hover:bg-background/80 focus-visible:ring-primary/40 ${!selectionForm.topicId ? "text-muted-foreground" : "text-foreground"
                                                                 }`}
                                                             disabled={!selectionForm.subjectId || loadingTopicsTree}
                                                         >
-                                                            <span className="truncate">{getSelectedTopicName()}</span>
+                                                            <span className="truncate text-sm">{getSelectedTopicName()}</span>
                                                             <Network className="h-3.5 w-3.5 ml-2 shrink-0 text-muted-foreground" />
                                                         </Button>
                                                     </DialogTrigger>
@@ -441,7 +439,7 @@ export function StudySessionForm() {
                                                 variant="outline"
                                                 size="icon"
                                                 onClick={() => setNewTopicDialogOpen(true)}
-                                                className="shrink-0 text-muted-foreground hover:text-foreground"
+                                                className="h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground"
                                                 disabled={!selectionForm.subjectId}
                                                 title="Novo tópico"
                                             >
@@ -451,8 +449,8 @@ export function StudySessionForm() {
                                     </div>
 
                                     {/* Tipo de material */}
-                                    <div className="space-y-3">
-                                        <Label className="text-sm font-medium text-foreground/80">
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-medium text-foreground/80">
                                             Modo de Estudo
                                         </Label>
                                         <RadioGroup
@@ -469,7 +467,7 @@ export function StudySessionForm() {
                                                     />
                                                     <Label
                                                         htmlFor={`mode-${mode.value}`}
-                                                        className={`flex flex-col items-center justify-center gap-1.5 rounded-lg border-2 px-3 py-3 cursor-pointer text-xs font-medium transition-all select-none
+                                                        className={`flex flex-col items-center justify-center gap-1 rounded-lg border-2 px-2 py-2 cursor-pointer text-[10px] font-medium transition-all select-none
                                                             ${studyMode === mode.value
                                                                 ? "border-primary bg-primary/10 text-primary"
                                                                 : "border-border/60 bg-background/40 text-muted-foreground hover:border-border hover:text-foreground"
@@ -484,17 +482,17 @@ export function StudySessionForm() {
                                     </div>
 
                                     {/* Anotações */}
-                                    <div className="space-y-1.5">
-                                        <Label htmlFor="notes" className="text-sm font-medium text-foreground/80">
+                                    <div className="space-y-1">
+                                        <Label htmlFor="notes" className="text-xs font-medium text-foreground/80">
                                             Anotações{" "}
                                             <span className="text-muted-foreground font-normal">(opcional)</span>
                                         </Label>
                                         <Textarea
                                             id="notes"
                                             placeholder="Resumo, pontos-chave, dúvidas..."
-                                            rows={4}
+                                            rows={3}
                                             value={selectionForm.notes}
-                                            className="bg-background/60 focus-visible:ring-primary/40 resize-none"
+                                            className="text-sm bg-background/60 focus-visible:ring-primary/40 resize-none"
                                             onChange={(e) =>
                                                 setSelectionForm((prev) => ({ ...prev, notes: e.target.value }))
                                             }
@@ -506,7 +504,7 @@ export function StudySessionForm() {
                         </div>
 
                         {/* Time tracking */}
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             <Cronometer />
 
                             {/* Action Buttons */}
@@ -514,8 +512,8 @@ export function StudySessionForm() {
                                 <Button
                                     type="submit"
                                     disabled={createStudyLog.isPending || !isFormReadyToSubmit}
-                                    className="w-full font-semibold h-11 shadow-md"
-                                    size="lg"
+                                    className="w-full font-semibold h-10 shadow-md"
+                                    size="default"
                                 >
                                     {createStudyLog.isPending ? (
                                         <span className="flex items-center gap-2">
@@ -530,7 +528,7 @@ export function StudySessionForm() {
                                     type="button"
                                     variant="outline"
                                     onClick={() => router.back()}
-                                    className="w-full text-muted-foreground hover:text-foreground"
+                                    className="w-full h-9 text-xs text-muted-foreground hover:text-foreground"
                                 >
                                     Cancelar
                                 </Button>
