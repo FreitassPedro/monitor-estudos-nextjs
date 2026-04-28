@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -56,6 +56,9 @@ const calcDurationMinutes = (start?: Date, end?: Date): number => {
     if (!start || !end) return 0;
     return Math.max(0, Math.floor((end.getTime() - start.getTime()) / 60000));
 };
+
+const toUtcDateOnly = (date: Date): Date =>
+    new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
 
 const getFormSubmitError = (form: FormData): string | null => {
     console.log("Validating form:", form);
@@ -236,7 +239,7 @@ export function StudySessionForm() {
             return;
         }
 
-        const studyDate = submitForm.study_date!;
+        const studyDate = toUtcDateOnly(submitForm.study_date!);
         const startTime = submitForm.start_time!;
         const endTime = submitForm.end_time!;
         const durationMinutes = calcDurationMinutes(submitForm.start_time, submitForm.end_time);
