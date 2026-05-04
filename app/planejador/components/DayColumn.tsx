@@ -218,6 +218,8 @@ export function DayColumn({
     const [isDragOver, setIsDragOver] = useState(false);
     const [ghostTop, setGhostTop] = useState<number | null>(null);
 
+    console.log(`Renderizando ${getDayName(date)} - ${blocks.length} blocos`);
+
     const dayMinutes = useMemo(() => {
         return blocks.reduce((total, block) => {
             const s = parseTimeToMinutes(block.startTime);

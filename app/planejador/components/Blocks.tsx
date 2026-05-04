@@ -92,6 +92,7 @@ export function BlockCard({
                         e.stopPropagation();
                         toggleBlockStatus(block.id);
                     }}
+                    className="absolute opacity-0 hover:opacity-100"
                 >
                     {block.status === "done" ? (
                         <CheckCircle2 className="w-3.5 h-3.5 text-current opacity-80" />

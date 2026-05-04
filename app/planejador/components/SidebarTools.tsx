@@ -3,6 +3,8 @@ import { COLOR_MAP, formatDuration } from "../utils";
 import { Separator } from "@/components/ui/separator";
 import { useMemo } from "react";
 import { usePlannerActions } from "./PlannerActionsContext";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 function ProgressBar({ progress }: { progress: number }) {
     return (
@@ -49,32 +51,45 @@ export function SidebarTools() {
     }, [allBlocks]);
 
     return (
-        <aside className="w-64 border-l bg-muted/10 flex flex-col h-full p-4">
-            <h2 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground  mb-4">Matérias Dedicadas</h2>
-            <div className="space-y-3">
+        <aside className="w-100 border-l bg-muted/10 flex flex-col h-full p-4">
+            <div className="space-y-8">
+                <div className="space-y-4">
+                    <h2 className="font-semibold text-xs uppercase tracking-wider text-muted-foreground  mb-4">Matérias Dedicadas</h2>
 
-                {subjectsSummary.map(({ subject, plannedMinutes, doneMinutes, color }) => {
-                    const progress = plannedMinutes > 0 ? (doneMinutes / plannedMinutes) * 100 : 0;
-                    const colors = COLOR_MAP[color];
-                    return (
-                        <div key={subject}>
-                            <div className="flex justify-between items-center font-semibold text-sm">
-                                <div className={cn("w-2 h-2 rounded-full shrink-0", colors.badge)}></div>
-                                <span className="text-[11px] font-semibold truncate">{subject}</span>
-                                <span className="text-[10px] ">{formatDuration(doneMinutes)} / {formatDuration(plannedMinutes)}</span>
+                    {subjectsSummary.map(({ subject, plannedMinutes, doneMinutes, color }) => {
+                        const progress = plannedMinutes > 0 ? (doneMinutes / plannedMinutes) * 100 : 0;
+                        const colors = COLOR_MAP[color];
+                        return (
+                            <div key={subject}>
+                                <div className="flex justify-between items-center font-semibold text-sm">
+                                    <div className="flex flex-row items-center gap-2">
+                                        <div className={cn("w-2 h-4 rounded-full shrink-0", colors.badge)}></div>
+                                        <span className="font-sm font-semibold truncate">{subject}</span>
+                                    </div>
+                                    <span className="text-[10px] ">{formatDuration(doneMinutes)} / {formatDuration(plannedMinutes)}</span>
+                                </div>
+                                <ProgressBar progress={progress} />
                             </div>
-                            <ProgressBar progress={progress} />
-                        </div>
-                    );
-                })}
+                        );
+                    })}
 
-                {subjectsSummary.length === 0 && (
-                    <p className="text-xs text-muted-foreground">Nenhum bloco cadastrado ainda.</p>
-                )}
+                    {subjectsSummary.length === 0 && (
+                        <p className="text-xs text-muted-foreground">Nenhum bloco cadastrado ainda.</p>
+                    )}
+                </div>
 
-            </div>
-            <Separator />
-            <div>
+
+                <Separator />
+
+                <section>
+                    <Button
+                        variant={"outline"}
+                        className="py-2 px-2 w-full h-auto bg-background flex flex-col"
+                    >
+                        <Plus className="w-4 h-4" />
+                        <span className="font-medium"> Adicionar Matéria </span>
+                    </Button>
+                </section>
 
             </div>
 
