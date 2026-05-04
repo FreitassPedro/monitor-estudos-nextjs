@@ -35,30 +35,39 @@ export function minutesToTimeStr(minutes: number): string {
 }
 
 export function usePlannerState() {
-    const [blocks, setBlocks] = useState<StudyBlock[]>(() => {
-        if (typeof window === "undefined") return MOCK_BLOCKS;
+    const [blocks, setBlocks] = useState<StudyBlock[]>(MOCK_BLOCKS);
+    const [isLoaded, setIsLoaded] = useState(false);
 
-        try {
-            const raw = window.localStorage.getItem(PLANNER_BLOCKS_STORAGE_KEY);
-            if (!raw) return MOCK_BLOCKS;
-
-            const parsed = JSON.parse(raw);
-            if (!Array.isArray(parsed)) return MOCK_BLOCKS;
-
-            return parsed.map((block) => ({
-                ...block,
-                status: block?.status === "done" ? "done" : "todo",
-            })) as StudyBlock[];
-        } catch {
-            return MOCK_BLOCKS;
+    // 2. Transição de Estado Assíncrona: Delegação da leitura do cache para a fase pós-hidratação.
+    useEffect(() => {
+        
+        const stored = localStorage.getItem(PLANNER_BLOCKS_STORAGE_KEY);
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored) as StudyBlock[];
+                // eslint-disable-next-line react-hooks/set-state-in-effect
+                setBlocks(parsed);
+            } catch {
+                console.error("Failed to parse stored blocks");
+            }
         }
-    });
+        // Sinaliza que a árvore cliente-side está pronta e o estado reflete a persistência local
+        setIsLoaded(true);
+    }, []);
+
+    // 3. Serialização: Omitida no primeiro render, acionada somente após a sincronização do cache.
+    useEffect(() => {
+        if (isLoaded) {
+            localStorage.setItem(PLANNER_BLOCKS_STORAGE_KEY, JSON.stringify(blocks));
+        }
+    }, [blocks, isLoaded]);
 
     const [editingBlock, setEditingBlock] = useState<StudyBlock | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [form, setForm] = useState<NewBlockForm>(DEFAULT_FORM);
     const [draggedId, setDraggedId] = useState<string | null>(null);
     const [resizingId, setResizingId] = useState<string | null>(null);
+
 
     // Used to detect single-click vs drag
     const dragMovedRef = useRef(false);
@@ -194,13 +203,10 @@ export function usePlannerState() {
         []
     );
 
-    useEffect(() => {
-        if (typeof window === "undefined") return;
-        window.localStorage.setItem(PLANNER_BLOCKS_STORAGE_KEY, JSON.stringify(blocks));
-    }, [blocks]);
 
     return {
         blocks,
+        isLoaded,
         form,
         setForm,
         draggedId,

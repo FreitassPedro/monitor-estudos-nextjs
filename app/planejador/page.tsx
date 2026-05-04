@@ -18,6 +18,7 @@ function formatHourLabel(hour: number) {
 export default function Page() {
     const {
         blocks,
+        isLoaded,
         form,
         setForm,
         draggedId,
@@ -148,6 +149,14 @@ export default function Page() {
         return `${start.toLocaleDateString("pt-BR", opts)} – ${end.toLocaleDateString("pt-BR", opts)}`;
     }, [weekDates]);
 
+    if (!isLoaded) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <div className="text-sm text-muted-foreground">Carregando...</div>
+            </div>
+        );
+    }
+
     return (
         <PlannerActionsProvider
             value={{
@@ -211,9 +220,9 @@ export default function Page() {
                     </div>
                 </div>
 
-                <div className="flex flex-1 overflow-hidden relative">
+                <div className="flex  overflow-hidden relative">
                     {/* ── Main planner ── */}
-                    <div className="flex flex-1 min-w-0 bg-background border border-muted m-4 mr-0 rounded-2xl p-4 flex-col">
+                    <div className="flex flex-1 min-w-0 px-4 bg-background m-4 mr-0 rounded-2xl p-4 flex-col">
                         <div className="flex-1 overflow-auto">
                             <div
                                 ref={gridRef}
@@ -241,9 +250,7 @@ export default function Page() {
                                 </div>
                                 <Suspense fallback={<div>Loading...</div>}>
                                     {weekDates.map((date, dayIndex) => (
-                                        <div
-                                            key={dayIndex}
-                                        >
+                                        <div key={dayIndex}>
                                             <DayColumn
                                                 blocks={blocks.filter((b) => b.dayIndex === dayIndex)}
                                                 date={date}
